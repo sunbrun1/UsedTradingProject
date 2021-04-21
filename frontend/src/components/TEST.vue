@@ -1,12 +1,15 @@
 <template>
-  <div id="app">
-    <KakaoLogin
-      api-key="9e5ccd7c82e2dc838fd8c0ac039bdceb"
-      image="kakao_login_btn_large"
-      :on-success=onSuccess
-      :on-failure=onFailure
-      />
-  </div>
+  <body>
+    <div id="app">
+      <KakaoLogin
+        api-key="9e5ccd7c82e2dc838fd8c0ac039bdceb"
+        image="kakao_login_btn_large"
+        :on-success=onSuccess
+        :on-failure=onFailure
+        />
+    </div>
+
+  </body>
 </template>
  
 <script>
@@ -34,7 +37,7 @@ export default {
 </script>
  
 <style>
-#app{
+#body{
    padding-top: 300px;
 
 }

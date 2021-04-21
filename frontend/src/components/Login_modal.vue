@@ -3,7 +3,6 @@
         <div class="modal-mask" >
             <div class="modal-wrapper">
                 <div class="modal-container">
-
                     <div class="login_close">
                         <button @click="$emit('close')">x</button>
                     </div>
@@ -22,16 +21,104 @@
                     <div class="login_item">
                         <span>비밀번호 찾기</span> <span>/</span> <span>회원가입</span>
                     </div>
+                    <div class="kakao_login">
+                    <KakaoLogin
+                        api-key="9e5ccd7c82e2dc838fd8c0ac039bdceb"
+                        image="kakao_login_btn_medium" 
+                        :on-success=onSuccess
+                        :on-failure=onFailure>
+                    </KakaoLogin>
+                    </div>
                 </div>
             </div>
         </div>
     </transition>
 </template>
 
+<script>
+import KakaoLogin from 'vue-kakao-login'
+
+
+export default {
+    components: {
+        KakaoLogin
+    },
+    data(){ 
+        return {
+            access_token:'',
+            refresh_token:''
+        }
+    },
+    methods:{
+        onSuccess(data){
+            console.log(data)
+            this.access_token = data.access_token;
+            this.refresh_token = data.refresh_token;
+            console.log("success")
+        },
+        onFailure(data){
+            console.log(data)
+            console.log("failure")
+        },
+        upload(){
+            this.$axios.post("http://localhost:3000/api/board/oauth/callback",this.access_token,this.refresh_token)
+			.then((res)=>{
+                if(res.data.success){
+                    alert("등록완료");
+                    this.getlist();
+                }
+                else{
+                    alert("등록실패");
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        }
+	}
+    
+    
+}
+</script>
 
 <style scoped>
     body{
         padding-top: 200px;
+    }
+    .modal-enter {
+        opacity: 0;
+    }
+    .modal-leave-active {
+        opacity: 0;
+    }
+    .modal-enter .modal-container,
+    .modal-leave-active .modal-container {
+        -webkit-transform: scale(1.1);
+        transform: scale(1.1);
+    }
+    .modal-mask {
+        position: fixed;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, .5);
+        display: table;
+        transition: opacity .3s ease;
+    }
+    .modal-wrapper {
+        display: table-cell;
+        vertical-align: middle;
+    }
+    .modal-container {
+        width: 500px;
+        margin: auto;
+        background-color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+        transition: all .3s ease;
+        font-family: Helvetica, Arial, sans-serif;
+        position: relative;
     }
     /* 로그인창 닫기 */
     .login_close button{
@@ -95,54 +182,5 @@
     .login_item span{
         color: #696969;
     }
-
-    .modal-mask {
-        position: fixed;
-        z-index: 9998;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, .5);
-        display: table;
-        transition: opacity .3s ease;
-    }
-
-    .modal-wrapper {
-        display: table-cell;
-        vertical-align: middle;
-    }
-
-    .modal-container {
-        width: 500px;
-        margin: auto;
-        background-color: #fff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
-        transition: all .3s ease;
-        font-family: Helvetica, Arial, sans-serif;
-        position: relative;
-    }
-    /*
-    * The following styles are auto-applied to elements with
-    * transition="modal" when their visibility is toggled
-    * by Vue.js.
-    *
-    * You can easily play with the modal transition by editing
-    * these styles.
-    */
-
-    .modal-enter {
-    opacity: 0;
-    }
-
-    .modal-leave-active {
-    opacity: 0;
-    }
-
-    .modal-enter .modal-container,
-    .modal-leave-active .modal-container {
-    -webkit-transform: scale(1.1);
-    transform: scale(1.1);
-    }
-
+  
 </style>

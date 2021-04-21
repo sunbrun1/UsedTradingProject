@@ -1,6 +1,5 @@
 const db = require('../../../config/db'); //db설정 호출
 const conn =  db.init(); //db 연결
-const imageupload = require('../../../config/imageupload'); //이미지 업로드 모듈(multer) 호출
 const multer = require('multer');
 
 // 업로드를위한 multer 모듈
@@ -87,7 +86,6 @@ exports.upload = (req,res)  =>{
 	})
 }
 
-
 // 상품 상세페이지 모듈
 exports.product = (req,res) => { //리스트 모듈 router 에서 호출
 	conn.query("SELECT a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, b.image_name FROM product a, product_image b WHERE a.id=b.id AND a.id=?",req.params.id,(err,product) => { //쿼리 실행
@@ -109,6 +107,10 @@ exports.product = (req,res) => { //리스트 모듈 router 에서 호출
 		}
 	})
 	
+}
+// 카카오 로그인 api
+exports.kakao = (req,res) => { //리스트 모듈 router 에서 호출
+	console.log(req.data);
 }
 
 
