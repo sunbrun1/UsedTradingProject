@@ -19,8 +19,11 @@
                         로그인
                     </button>
                     <div class="login_item">
-                        <span>비밀번호 찾기</span> <span>/</span> <span>회원가입</span>
+                        <span class="span">비밀번호 찾기</span>
+                        <span>/</span>
+                        <span class="span" @click="openModal">회원가입</span>
                     </div>
+                    <SignUpModal @close="closeModal" v-if="modal"></SignUpModal>
                     <div class="kakao_login">
                     <KakaoLogin
                         api-key="9e5ccd7c82e2dc838fd8c0ac039bdceb"
@@ -37,16 +40,15 @@
 
 <script>
 import KakaoLogin from 'vue-kakao-login'
-
+import SignUpModal from '@/components/SignUp_modal'; 
 
 export default {
-    components: {
-        KakaoLogin
-    },
+    components: {KakaoLogin,SignUpModal},
     data(){ 
         return {
             access_token:'',
-            refresh_token:''
+            refresh_token:'',
+            modal:false,
         }
     },
     methods:{
@@ -60,24 +62,13 @@ export default {
             console.log(data)
             console.log("failure")
         },
-        upload(){
-            this.$axios.post("http://localhost:3000/api/board/oauth/callback",this.access_token,this.refresh_token)
-			.then((res)=>{
-                if(res.data.success){
-                    alert("등록완료");
-                    this.getlist();
-                }
-                else{
-                    alert("등록실패");
-                }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
-        }
+        openModal() {
+            this.modal = true;
+        },
+        closeModal() {
+            this.modal = false;
+        },
 	}
-    
-    
 }
 </script>
 
@@ -182,5 +173,8 @@ export default {
     .login_item span{
         color: #696969;
     }
-  
+    .span{
+        padding: 0px 3px 0px 3px;
+        cursor: pointer;
+    }
 </style>

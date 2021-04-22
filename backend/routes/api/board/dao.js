@@ -113,4 +113,42 @@ exports.kakao = (req,res) => { //리스트 모듈 router 에서 호출
 	console.log(req.data);
 }
 
+exports.signup = (req,res) =>{
+	var body = req.body;
+	if(body.id.length < 6 ){
+		res.send("id_length error")
+	}else{
+		if(body.pw.length < 6){
+			res.send("pw_length error")
+		}else{
+			if(body.pw != body.pwcheck){
+				res.send("pwcheck error")
+			}else{
+				conn.query("SELECT * FROM member WHERE member_id = ?", body.id, (err,data) =>{
+					console.log(data);
+					if(data.length > 0){
+						res.send("idcheck error")
+					}
+					else{
+						conn.query("INSERT INTO member (member_id, pw, email) values(?, ?, ?);",
+						[body.id, body.pw, body.email],
+						(err,data) => { //쿼리 실행
+							if(err){
+								throw err;
+							}
+							else{
+								res.send({
+									success:true
+								})
+							}
+						});	
+					}
+				})
+
+			}
+		}
+	}
+}
+
+
 

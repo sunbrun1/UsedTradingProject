@@ -9,9 +9,7 @@
             <div class="newproduct-item" v-for="(item) in new_product" :key="item.id">
                 <router-link :to="`/product/` + item.id">
                     <div class="newproduct-image">
-                        
-                            <img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="214" height="200"/>
-                        
+                        <img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="214" height="200"/>
                     </div>
                     <div class="newproduct_info">
                         <div class="newproduct-name">
@@ -156,35 +154,37 @@ body{
 .newproduct-item:not(:nth-child(5n)){
     margin-right: 25px;
 }
-
 .newproduct_info{
     width: 214px;
-    height: 44px;
+    height: 70px;
 }
-/* price,date 가로정렬 */
+.newproduct-name{
+    width: 194px;
+    text-align: left;
+    padding: 8px 10px 8px 10px;
+    font-size: 14px;
+    overflow:hidden; 
+    text-overflow:ellipsis; 
+    white-space:nowrap;
+}
+.newproduct_item_div{
+    width: 194px;
+    height: 15px;
+    line-height: 15px;
+    padding: 8px 10px 0px 10px;
+}
+/* price date 가로정렬 */
 .newproduct_item3{
     float: left;
 }
-.newproduct-name{
-    padding: 8px 10px 0px 10px;
-    text-align: left;
-    font-size: 14px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    
-}
 .newproduct-price{
-    padding: 10px 10px 10px 10px;
     float: left;
 }
 .newproduct-date{
-    height: 24px;
-    line-height: 24px;
-    padding: 10px 10px 10px 36px;
     float: right;
     font-size: 12px;
 }
+
 
 /* 인기상품 */
 /* 인기상품 타이틀 */
@@ -210,26 +210,32 @@ body{
 }
 .popular_product_info{
     width: 214px;
-    height: 44px;
+    height: 70px;
 }
-/* price,date 가로정렬 */
+.popular_product-name{
+    width: 194px;
+    text-align: left;
+    padding: 8px 10px 8px 10px;
+    font-size: 14px;
+    overflow:hidden; 
+    text-overflow:ellipsis; 
+    white-space:nowrap;
+
+}
+.popular_product_item_div{
+    width: 194px;
+    height: 15px;
+    line-height: 15px;
+    padding: 8px 10px 0px 10px;
+}
+/* price date 가로정렬 */
 .popular_product_item3{
     float: left;
 }
-.popular_product-name{
-    padding: 8px 10px 0px 10px;
-    text-align: left;
-    font-size: 14px;
-    
-}
 .popular_product-price{
-    padding: 10px 10px 10px 10px;
     float: left;
 }
 .popular_product-date{
-    height: 24px;
-    line-height: 24px;
-    padding: 10px 10px 10px 36px;
     float: right;
     font-size: 12px;
 }

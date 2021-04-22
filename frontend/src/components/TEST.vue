@@ -5,8 +5,8 @@
         api-key="9e5ccd7c82e2dc838fd8c0ac039bdceb"
         image="kakao_login_btn_large"
         :on-success=onSuccess
-        :on-failure=onFailure
-        />
+        :on-failure=onFailure>
+      </KakaoLogin>
     </div>
 
   </body>

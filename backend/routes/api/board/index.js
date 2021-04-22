@@ -6,6 +6,7 @@ router.get("/category",dao.category); // get 접근 시 dao.category 모듈 실�
 router.post("/upload",dao.upload); // POST방식으로 접근 시 dao.upload 모듈 실행
 router.get("/product/:id",dao.product); // POST방식으로 접근 시 dao.upload 모듈 실행
 router.get("/oauth/callback",dao.kakao);
+router.post("/signup",dao.signup);
 
 router.all('*',(req, res)=> {
 	res.status(404).send({success:false, msg:'board unknown uri ${req.path}'});
