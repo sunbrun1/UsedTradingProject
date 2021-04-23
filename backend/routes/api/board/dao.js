@@ -1,6 +1,8 @@
 const db = require('../../../config/db'); //db설정 호출
 const conn =  db.init(); //db 연결
 const multer = require('multer');
+const jwt = require("jsonwebtoken");
+const secretObj = require("../../../config/jwt");
 
 // 업로드를위한 multer 모듈
 const storage = multer.diskStorage({ 
@@ -114,7 +116,7 @@ exports.kakao = (req,res) => { //리스트 모듈 router 에서 호출
 }
 
 exports.signup = (req,res) =>{
-	var body = req.body;
+	const body = req.body;
 	if(body.id.length < 6 ){
 		res.send("id_length error")
 	}else{
@@ -150,5 +152,92 @@ exports.signup = (req,res) =>{
 	}
 }
 
+exports.login = (req,res) =>{
+	var body = req.body;
+	let accesstoken  = jwt.sign(
+		{
+			member_id:body.id   // 토큰의 내용(payload)
+		},
+			secretObj.secret ,    // 비밀 키
+		{
+			expiresIn: '1m'    // 유효 시간은 5분
+		}
+	)
+	let refreshtoken  = jwt.sign(
+		{
+			member_id:body.id   // 토큰의 내용(payload)
+		},
+			secretObj.secret ,    // 비밀 키
+		{
+			expiresIn: '14d'    // 유효 시간은 5분
+		})
+	conn.query("SELECT pw FROM member WHERE member_id = ?", body.id, (err,data) =>{
+		if(data.length < 1){
+			res.send("login fail");
+		}
+		else if(data[0].pw === body.pw){
+			conn.query("UPDATE member SET refreshtoken = ? WHERE member_id = ?;",[refreshtoken,body.id],
+			(err,data) => { //쿼리 실행
+				if(err){
+				    throw err;
+				}
+				else{
+					res.cookie("accesstoken", accesstoken, {httpOnly: true});
+					res.cookie("refreshtoken", refreshtoken, {httpOnly: true});
+					res.send("login success");
+				}
+			});	
+		}else{
+			res.send("login fail");
+		}
 
+	})                                     
+}
+
+exports.someAPI = (req,res) =>{
+	let accesstoken = req.cookies.accesstoken;
+	let refreshtoken = req.cookies.refreshtoken;
+	console.log(accesstoken.length);
+	try{
+		if(accesstoken.length > 0){
+			let accesstoken_decoded = jwt.verify(accesstoken, secretObj.secret);
+			if(accesstoken_decoded){
+				res.send("check success")
+			}
+			else{
+				res.send("check fail")
+			}
+		}
+		else{
+			res.send("check fail")
+		}
+	}
+	catch(err){
+		let refreshtoken_decoded = jwt.verify(refreshtoken, secretObj.secret);
+		console.log(refreshtoken_decoded.member_id )
+		conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", refreshtoken_decoded.member_id ,(err,data) => {
+			if(data[0].refreshtoken == refreshtoken){
+				let accesstoken  = jwt.sign(
+					{
+						member_id:refreshtoken_decoded.member_id  // 토큰의 내용(payload)
+					},
+						secretObj.secret ,    // 비밀 키
+					{
+						expiresIn: '1m'    // 유효 시간은 5분
+					}
+				)
+				console.log(accesstoken)
+				res.cookie("accesstoken", accesstoken, {httpOnly: true});
+				res.send("check success")
+			}
+		})
+	}
+}
+
+exports.logout = (req,res) =>{
+	console.log("zz")
+	res.cookie("accesstoken", '', {httpOnly: true});
+	res.cookie("refreshtoken", '', {httpOnly: true});
+	res.send("logout success");
+}
 

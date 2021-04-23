@@ -57,7 +57,7 @@ export default {
                 email:this.email
 			} 
 
-            this.$axios.post("http://localhost:3000/api/board/signup",this.form)
+            this.$axios.post("http://192.168.219.100:3000/api/board/signup",this.form,{withCredentials: true})
 			.then((res)=>{
                 if(res.data == "id_length error"){
                     alert("ID 6자~13자로 입력해주세요");

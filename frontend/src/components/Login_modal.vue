@@ -3,35 +3,29 @@
         <div class="modal-mask" >
             <div class="modal-wrapper">
                 <div class="modal-container">
-                    <div class="login_close">
-                        <button @click="$emit('close')">x</button>
-                    </div>
-                    <div class="login_title">
-                        로그인
-                    </div>
-                    <div class="login_id">
-                        <input type="text" placeholder="ID"/>
-                    </div>
-                    <div class="login_pw">
-                        <input type="text" placeholder="PassWord"/>
-                    </div>
-                    <button class="login_btn" type="button">
-                        로그인
-                    </button>
-                    <div class="login_item">
-                        <span class="span">비밀번호 찾기</span>
-                        <span>/</span>
-                        <span class="span" @click="openModal">회원가입</span>
-                    </div>
-                    <SignUpModal @close="closeModal" v-if="modal"></SignUpModal>
-                    <div class="kakao_login">
-                    <KakaoLogin
-                        api-key="9e5ccd7c82e2dc838fd8c0ac039bdceb"
-                        image="kakao_login_btn_medium" 
-                        :on-success=onSuccess
-                        :on-failure=onFailure>
-                    </KakaoLogin>
-                    </div>
+                    <form>
+                        <div class="login_close">
+                            <button @click="$emit('close')">x</button>
+                        </div>
+                        <div class="login_title">
+                            로그인
+                        </div>
+                        <div class="login_id">
+                            <input type="text" v-model="id" placeholder="ID"/>
+                        </div>
+                        <div class="login_pw">
+                            <input type="text" v-model="pw" placeholder="PassWord"/>
+                        </div>
+                        <button class="login_btn" type="button" @click="login" >
+                            로그인
+                        </button>
+                        <div class="login_item">
+                            <span class="span">비밀번호 찾기</span>
+                            <span>/</span>
+                            <span class="span" @click="openModal">회원가입</span>
+                        </div>
+                        <SignUpModal @close="closeModal" v-if="modal"></SignUpModal>
+                    </form>
                 </div>
             </div>
         </div>
@@ -39,13 +33,15 @@
 </template>
 
 <script>
-import KakaoLogin from 'vue-kakao-login'
 import SignUpModal from '@/components/SignUp_modal'; 
 
 export default {
-    components: {KakaoLogin,SignUpModal},
+    components: {SignUpModal},
     data(){ 
         return {
+            form:'',
+            id:'',  
+            pw:'',  
             access_token:'',
             refresh_token:'',
             modal:false,
@@ -68,6 +64,25 @@ export default {
         closeModal() {
             this.modal = false;
         },
+        // 업로드
+        login(){
+            this.form = { //backend로 전송될 POST 데이터
+				id:this.id,
+                pw:this.pw,
+			} 
+            this.$axios.post("http://192.168.219.100:3000/api/board/login",this.form,{withCredentials: true})
+			.then((res)=>{
+                if(res.data == "login success"){
+                    this.$emit('close');
+                }
+                else if(res.data == "login fail"){
+                    alert("등록되지 않은 아이디이거나, 아이디 또는 비밀번호를 잘못 입력하셨습니다.");
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        }
 	}
 }
 </script>

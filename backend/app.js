@@ -6,13 +6,6 @@ var logger = require('morgan');
 var db = require('./config/db'); //db 연결 모듈 호출
 var cors = require('cors'); //교차통신 모듈 호출
 
-
-
-const bodyParser = require('body-parser');
-const multer = require('multer');
-const form_data = multer();
- 
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var index = require('./routes/api/board/index');
@@ -23,17 +16,16 @@ var conn = db.init();  //db 모듈 커넥션 실행
 db.conn(conn); //db 연결 확인
 
 
-app.use(cors()); // config 추가
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-
-
 app.use(logger('dev'));
+app.use(cors({origin: true, credentials: true})); // config 추가
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'images')));
 
 

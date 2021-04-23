@@ -110,7 +110,7 @@ export default {
         }
         ,
 		getList() {
-			this.$axios.get("http://localhost:3000/api/board/product/" + this.$route.params.id)
+			this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
 			.then((res)=>{
                 this.product = res.data.product;
                 for(var i=0; i<this.product.length; i++){

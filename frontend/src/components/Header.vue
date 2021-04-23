@@ -3,9 +3,9 @@
         <!-- =======상단바======= -->
         <div class="topbar">
             <ul class="topbar_item">
-                <li @click="openModal">로그인/회원가입</li>
-                <Loginmodal @close="closeModal" v-if="modal">
-                </Loginmodal>
+                <li @click="openModal" @loginstate="loginOk" v-if="logincheck">로그인/회원가입</li>
+                <li @click="logOut" v-else>로그아웃</li>
+                <Loginmodal @close="closeModal" v-if="modal"></Loginmodal>
                 <router-link to="/test">
                 <li><a href="#">앱 다운로드</a></li>
                 </router-link>
@@ -39,15 +39,13 @@
             <!-- 판매하기,마이페이지,채팅 -->
             <div class='logobar_item_menu'>
                 <!-- 판매하기 -->
-                <div class="logobar_item sell">
-                    <router-link to="/upload">
-                        <div>
-                            <font-awesome-icon icon="won-sign" class="font"/> 
-                        </div>
-                        <div>
-                            판매하기
-                        </div>
-                    </router-link>
+                <div class="logobar_item sell" @click="checkId">
+                    <div>
+                        <font-awesome-icon icon="won-sign" class="font"/> 
+                    </div>
+                    <div>
+                        판매하기
+                    </div>
                 </div>
                 <!-- 마이페이지 -->
                 <div class="logobar_item mypage">
@@ -156,7 +154,7 @@
 </template>
 
 <script>
-import Loginmodal from '@/components/Login_modal'; //게시판 리스트 컴포넌트 호출
+import Loginmodal from '@/components/Login_modal'; 
 export default {
     components:{Loginmodal},
     data(){
@@ -176,15 +174,51 @@ export default {
                     i:['생활용품','주방용품','가구','식품']
                 }],
             }],
+            logincheck:true
         }
     },
+    mounted() {
+	
+	},
 	methods:{
+        // 로그인창 열기
         openModal() {
             this.modal = true;
         },
+        // 로그인창 닫기
         closeModal() {
             this.modal = false;
+            this.logincheck = false;
         },
+        loginOk(){
+            this.logincheck = false;
+        },
+        // 로그인여부 확인
+        checkId(){
+            this.$axios.get("http://192.168.219.100:3000/api/board/someAPI",{withCredentials: true})
+            .then((res)=>{
+                if(res.data == 'check success'){
+                    this.$router.push({path:'./upload'});
+                }
+                else if(res.data == 'check fail'){
+                    this.openModal();
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        },
+        logOut(){
+            this.$axios.get("http://192.168.219.100:3000/api/board/logout",{withCredentials: true})
+            .then((res)=>{
+                if(res.data == 'logout success'){
+                    console.log("로그아웃 성공");
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        }
 	}
 }
 </script>

@@ -80,23 +80,19 @@ export default {
         timeForToday(value){
             const todayTime = new Date();
             const product_Time = new Date(value);
-
             const betweenTime = Math.floor((todayTime.getTime() - product_Time.getTime()) / 1000 / 60);
             if(betweenTime < 1) return '방금전';
             if(betweenTime < 60){
                 return betweenTime + '분전';
             }
-
             const betweenTimeHour = Math.floor((betweenTime / 60));
             if(betweenTimeHour < 24){
                 return betweenTimeHour + '시간전';
             } 
-
             const betweenTimeDay = Math.floor((betweenTime / 60 / 24));
             if(betweenTimeDay < 365){
                 return betweenTimeDay + '일전';
             } 
-
         },
 		getList() {
 			this.$axios.get("http://localhost:3000/api/board/")
@@ -184,8 +180,6 @@ body{
     float: right;
     font-size: 12px;
 }
-
-
 /* 인기상품 */
 /* 인기상품 타이틀 */
 .popular_product-title{
@@ -220,7 +214,6 @@ body{
     overflow:hidden; 
     text-overflow:ellipsis; 
     white-space:nowrap;
-
 }
 .popular_product_item_div{
     width: 194px;
