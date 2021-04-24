@@ -41,22 +41,33 @@ exports.list = (req,res) => { //리스트 모듈 router 에서 호출
 
 // 카테고리데이터 출력 모듈
 exports.category = (req,res) => { //리스트 모듈 router 에서 호출
-	conn.query("SELECT category_large_name,group_concat(category_medium_name) as category_medium_name from category_medium group by category_large_name;",(err,category) => { //쿼리 실행
+	conn.query("SELECT category_large_id,category_large_name,group_concat(category_medium_name) as category_medium_name ,group_concat(category_medium_id) as category_medium_id from category_medium group by category_large_id;  ",(err,category) => { //쿼리 실행
 		if(err) throw err;
-		const category_list = [{large:'', medium:''}];
+		const category_list = [{
+			large:[{
+				category_large_id:'',
+				category_large_name:''
+			}],
+			medium:[{
+				category_medium_id:'',
+				category_medium_name:''
+			}]
+		}];
 		for(let i=0; i<category.length; i++){
-			category_list.push({large:category[i].category_large_name, medium:category[i].category_medium_name.split(',')});
+			category_list.push({
+				large:{
+					category_large_id:category[i].category_large_id,
+					category_large_name:category[i].category_large_name},
+				medium:{
+					category_medium_id:category[i].category_medium_id.split(','),
+				    category_medium_name:category[i].category_medium_name.split(',')}
+				})
 		}
 		res.send({
 			success:true,
 			category_list:category_list,
 		})
 	})
-
-exports.juso = (req,res) =>{
-	console.log(req.data)
-}
-
 }
 // 업로드 모듈
 exports.upload = (req,res)  =>{
@@ -197,7 +208,7 @@ exports.login = (req,res) =>{
 exports.someAPI = (req,res) =>{
 	let accesstoken = req.cookies.accesstoken;
 	let refreshtoken = req.cookies.refreshtoken;
-	console.log(accesstoken.length);
+	console.log(accesstoken)
 	try{
 		if(accesstoken.length > 0){
 			let accesstoken_decoded = jwt.verify(accesstoken, secretObj.secret);
@@ -214,7 +225,6 @@ exports.someAPI = (req,res) =>{
 	}
 	catch(err){
 		let refreshtoken_decoded = jwt.verify(refreshtoken, secretObj.secret);
-		console.log(refreshtoken_decoded.member_id )
 		conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", refreshtoken_decoded.member_id ,(err,data) => {
 			if(data[0].refreshtoken == refreshtoken){
 				let accesstoken  = jwt.sign(
@@ -226,7 +236,6 @@ exports.someAPI = (req,res) =>{
 						expiresIn: '1m'    // 유효 시간은 5분
 					}
 				)
-				console.log(accesstoken)
 				res.cookie("accesstoken", accesstoken, {httpOnly: true});
 				res.send("check success")
 			}
@@ -235,9 +244,25 @@ exports.someAPI = (req,res) =>{
 }
 
 exports.logout = (req,res) =>{
-	console.log("zz")
 	res.cookie("accesstoken", '', {httpOnly: true});
 	res.cookie("refreshtoken", '', {httpOnly: true});
 	res.send("logout success");
 }
+
+
+// 메인화면 출력 모듈
+exports.ProductByCategory = (req,res) => { //리스트 모듈 router 에서 호출
+	console.log(req.params.id)
+	conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?",req.params.id,(err,data) => { //쿼리 실행
+		if(err) throw err;
+		conn.query("SELECT * FROM product  WHERE category_large_name = ? ORDER BY id DESC LIMIT 30;",data[0].category_large_name,(err,new_product) => { //쿼리 실행
+			if(err) throw err;
+			res.send({
+				success:true,
+				new_product:new_product
+			})
+		})
+	})
+}
+
 

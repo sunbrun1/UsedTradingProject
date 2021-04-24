@@ -224,9 +224,9 @@ export default {
         },
         // 카테고리 데이터 불러오기
         getCategory() {
-			this.$axios.get("http://http://192.168.219.100:3000//api/board/category",{withCredentials: true})
+			this.$axios.get("http://192.168.219.100:3000/api/board/category",{withCredentials: true})
 			.then((res)=>{
-                this.category_list = res.data.category_list; //신규상품
+                this.category_list = res.data.category_list; 
 			})
 			.catch((err)=>{
 				console.log(err);

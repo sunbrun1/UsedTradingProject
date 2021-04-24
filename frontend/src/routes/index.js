@@ -5,7 +5,8 @@ import Product_upload from '@/components/Product_upload'; //게시판 리스트 
 import hello from '@/components/HelloWorld'; //게시판 리스트 컴포넌트 호출
 import product_detail from '@/components/product_detail'; //게시판 리스트 컴포넌트 호출
 import Login from '@/components/Login'; //게시판 리스트 컴포넌트 호출
-import test from '@/components/TEST';
+import ProductByCategory from '@/components/ProductByCategory';
+
 Vue.use(Router); //vue 라우터 사용
 
 export default new Router({ //라우터 연결
@@ -37,9 +38,10 @@ export default new Router({ //라우터 연결
 			,component:Login
 		}
 		,{
-			path:'/test'
-			,name:test
-			,component:test
+			path:'/ProductByCategory/:id'
+			,name:ProductByCategory
+			,component:ProductByCategory,
+			props:true 
 		}
 	]
 	

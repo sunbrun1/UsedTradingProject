@@ -102,7 +102,6 @@ export default {
                 this.thumbnail = this.new_product.thumbnail; //썸네일
                 this.title = this.new_product.title; //상품 이름
                 this.price = this.new_product.price; //상품 가격
-                console.log(this.new_product)
                 // 신규 상품등록 시간
                 for(let i=0;  i<this.new_product.length; i++){
                     this.new_product[i].date = this.timeForToday(this.new_product[i].date)
@@ -133,7 +132,7 @@ body{
     width: 1180px;
     margin: auto;
     text-align: left;
-    padding-top: 40px;
+   padding-top: 40px; 
     padding-bottom: 20px;
 }
 .newproduct{

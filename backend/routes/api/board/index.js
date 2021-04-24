@@ -10,6 +10,7 @@ router.post("/signup",dao.signup);
 router.post("/login",dao.login);
 router.get("/someAPI",dao.someAPI);
 router.get("/logout",dao.logout);
+router.get("/ProductByCategory/:id",dao.ProductByCategory);
 
 router.all('*',(req, res)=> {
 	res.status(404).send({success:false, msg:'board unknown uri ${req.path}'});

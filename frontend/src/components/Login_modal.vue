@@ -5,7 +5,7 @@
                 <div class="modal-container">
                     <form>
                         <div class="login_close">
-                            <button @click="$emit('close')">x</button>
+                            <button type="button" @click="$emit('close')">x</button>
                         </div>
                         <div class="login_title">
                             로그인
@@ -20,7 +20,7 @@
                             로그인
                         </button>
                         <div class="login_item">
-                            <span class="span">비밀번호 찾기</span>
+                            <span class="span" @click="$emit('loginstate')">비밀번호 찾기</span>
                             <span>/</span>
                             <span class="span" @click="openModal">회원가입</span>
                         </div>
@@ -74,6 +74,7 @@ export default {
 			.then((res)=>{
                 if(res.data == "login success"){
                     this.$emit('close');
+                    this.$emit('loginstate');
                 }
                 else if(res.data == "login fail"){
                     alert("등록되지 않은 아이디이거나, 아이디 또는 비밀번호를 잘못 입력하셨습니다.");
