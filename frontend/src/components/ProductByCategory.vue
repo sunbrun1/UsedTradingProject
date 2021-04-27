@@ -7,7 +7,7 @@
             <h2>블라우스</h2>
         </div>
         <div class="newproduct">
-            <div class="newproduct-item" v-for="(item) in new_product" :key="item.id">
+            <div class="newproduct-item" v-for="(item) in product" :key="item.id">
                 <router-link :to="`/product/` + item.id">
                     <div class="newproduct-image">
                         <img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="214" height="200"/>
@@ -37,14 +37,13 @@ export default {
     watch: {
         '$route' (to, from) {
             if(to.path != from.path){
-                this.getList();
+                this.getCategoryList();
             }
         }
     },
     data(){
         return{
-            new_product:'',
-            popular_product:'',
+            product:'',
             thumbnail:'',
             title:'',
             price:'',
@@ -52,7 +51,7 @@ export default {
         }
     },
     mounted() {
-		this.getList();
+		this.getCategoryList();
 	},
 	methods:{
         timeForToday(value){
@@ -72,26 +71,24 @@ export default {
                 return betweenTimeDay + '일전';
             } 
         },
-		getList() {
-            console.log(this.$route.params.id);
-			this.$axios.get("http://192.168.219.100:3000/api/board/ProductByCategory/" + this.$route.params.id)
+		getCategoryList() {
+			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory/" + this.$route.params.id)
 			.then((res)=>{
-                this.new_product = res.data.new_product; //신규상품
-                this.thumbnail = this.new_product.thumbnail; //썸네일
-                this.title = this.new_product.title; //상품 이름
-                this.price = this.new_product.price; //상품 가격
-                // 신규 상품등록 시간
-                for(let i=0;  i<this.new_product.length; i++){
-                    this.new_product[i].date = this.timeForToday(this.new_product[i].date)
-                }
-                // 인기 상품등록 시간
+                this.product = res.data.product; //대분류 상품데이터
+                this.thumbnail = this.product.thumbnail; //썸네일
+                this.title = this.product.title; //상품 이름
+                this.price = this.product.price; //상품 가격
 
+                // 신규 상품등록 시간
+                for(let i=0;  i<this.product.length; i++){
+                    this.product[i].date = this.timeForToday(this.product[i].date)
+                }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
-            
 		},
+   
         
 	}
 }

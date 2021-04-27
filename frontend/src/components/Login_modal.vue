@@ -33,8 +33,7 @@
 </template>
 
 <script>
-import SignUpModal from '@/components/SignUp_modal'; 
-
+import SignUpModal from '@/components/SignupModal'; 
 export default {
     components: {SignUpModal},
     data(){ 
@@ -42,41 +41,31 @@ export default {
             form:'',
             id:'',  
             pw:'',  
-            access_token:'',
-            refresh_token:'',
             modal:false,
         }
     },
     methods:{
-        onSuccess(data){
-            console.log(data)
-            this.access_token = data.access_token;
-            this.refresh_token = data.refresh_token;
-            console.log("success")
-        },
-        onFailure(data){
-            console.log(data)
-            console.log("failure")
-        },
+        //회원가입창 열기
         openModal() {
             this.modal = true;
         },
+        //회원가입창 닫기
         closeModal() {
             this.modal = false;
         },
-        // 업로드
+        // 로그인
         login(){
-            this.form = { //backend로 전송될 POST 데이터
+            this.form = { 
 				id:this.id,
                 pw:this.pw,
 			} 
             this.$axios.post("http://192.168.219.100:3000/api/board/login",this.form,{withCredentials: true})
 			.then((res)=>{
-                if(res.data == "login success"){
+                if(res.data.success){
                     this.$emit('close');
-                    this.$emit('loginstate');
+                    this.$emit('loginCheck');
                 }
-                else if(res.data == "login fail"){
+                else{
                     alert("등록되지 않은 아이디이거나, 아이디 또는 비밀번호를 잘못 입력하셨습니다.");
                 }
 			})

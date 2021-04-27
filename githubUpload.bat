@@ -1,3 +1,3 @@
 git add --all
-git commit -m "카테고리수정"
+git commit -m "signup/login/loginCheck"
 git push -u origin master

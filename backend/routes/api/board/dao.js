@@ -1,6 +1,6 @@
 const db = require('../../../config/db'); //db설정 호출
 const conn =  db.init(); //db 연결
-const multer = require('multer');
+const multer = require('multer'); 
 const jwt = require("jsonwebtoken");
 const secretObj = require("../../../config/jwt");
 
@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 const upload2 = multer({ storage }).array("files",12);
 
 
-// 메인화면 출력 모듈
+/* 메인화면 출력 모듈 */
 exports.list = (req,res) => { //리스트 모듈 router 에서 호출
 	conn.query("SELECT * FROM product ORDER BY id DESC LIMIT 10 ;",(err,new_product) => { //쿼리 실행
 		if(err) throw err;
@@ -39,37 +39,50 @@ exports.list = (req,res) => { //리스트 모듈 router 에서 호출
 	})
 }
 
-// 카테고리데이터 출력 모듈
-exports.category = (req,res) => { //리스트 모듈 router 에서 호출
-	conn.query("SELECT category_large_id,category_large_name,group_concat(category_medium_name) as category_medium_name ,group_concat(category_medium_id) as category_medium_id from category_medium group by category_large_id;  ",(err,category) => { //쿼리 실행
-		if(err) throw err;
-		const category_list = [{
-			large:[{
-				category_large_id:'',
-				category_large_name:''
-			}],
-			medium:[{
-				category_medium_id:'',
-				category_medium_name:''
-			}]
-		}];
-		for(let i=0; i<category.length; i++){
-			category_list.push({
-				large:{
-					category_large_id:category[i].category_large_id,
-					category_large_name:category[i].category_large_name},
-				medium:{
-					category_medium_id:category[i].category_medium_id.split(','),
-				    category_medium_name:category[i].category_medium_name.split(',')}
+/* 카테고리별 상품 리스트 출력 */
+exports.byCategory = (req,res) => { 
+	const categoryId = req.params.id; // 카테고리 분류 id
+	//대분류 클릭시
+	if(categoryId < 20000){ 
+		conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?",categoryId,(err,data) => { 
+			if(err) throw err;
+			const categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
+			conn.query("SELECT * FROM product  WHERE category_large_name = ? ORDER BY id DESC LIMIT 30;",categoryLargeName,(err,data) => {
+				if(err) throw err;
+				res.send({
+					success:true,
+					product:data
 				})
-		}
+			})
+		})
+	}
+	//중분류 클릭시
+	else if(categoryId < 30000){
+		conn.query("SELECT category_medium_name FROM category_medium WHERE category_medium_id = ?",categoryId,(err,data) => { 
+			if(err) throw err;
+			const categoryMediumName = data[0].category_medium_name; //카테고리 중분류 name
+			conn.query("SELECT * FROM product  WHERE category_medium_name = ? ORDER BY id DESC LIMIT 30;",categoryMediumName,(err,data) => { 
+				if(err) throw err;
+				res.send({
+					success:true,
+					product:data
+				})
+			})
+		})
+	}
+}
+
+/* 카테고리데이터 출력 모듈 */
+exports.getCategory = (req,res) => { //리스트 모듈 router 에서 호출
+	conn.query("SELECT category_large_id,category_large_name,group_concat(category_medium_name) as category_medium_name ,group_concat(category_medium_id) as category_medium_id from category_medium group by category_large_id;  ",(err,data) => { //쿼리 실행
+		if(err) throw err;
 		res.send({
 			success:true,
-			category_list:category_list,
+			categoryData:data,
 		})
 	})
 }
-// 업로드 모듈
+/* 업로드 모듈 */
 exports.upload = (req,res)  =>{
 	upload2(req,res,(err) =>{
 		var body = req.body;
@@ -121,35 +134,28 @@ exports.product = (req,res) => { //리스트 모듈 router 에서 호출
 	})
 	
 }
-// 카카오 로그인 api
-exports.kakao = (req,res) => { //리스트 모듈 router 에서 호출
-	console.log(req.data);
-}
 
+/* 회원가입 모듈 */
 exports.signup = (req,res) =>{
 	const body = req.body;
 	if(body.id.length < 6 ){
-		res.send("id_length error")
+		res.send("idLengthError")
 	}else{
 		if(body.pw.length < 6){
-			res.send("pw_length error")
+			res.send("pwLengthError")
 		}else{
-			if(body.pw != body.pwcheck){
-				res.send("pwcheck error")
+			if(body.pw != body.pwCheck){
+				res.send("pwCheckError")
 			}else{
 				conn.query("SELECT * FROM member WHERE member_id = ?", body.id, (err,data) =>{
-					console.log(data);
 					if(data.length > 0){
-						res.send("idcheck error")
+						res.send("idCheckError")
 					}
 					else{
-						conn.query("INSERT INTO member (member_id, pw, email) values(?, ?, ?);",
-						[body.id, body.pw, body.email],
-						(err,data) => { //쿼리 실행
+						conn.query("INSERT INTO member (member_id, pw, email) values(?, ?, ?);",[body.id, body.pw, body.email],(err,data) => {
 							if(err){
 								throw err;
-							}
-							else{
+							}else{
 								res.send({
 									success:true
 								})
@@ -157,24 +163,24 @@ exports.signup = (req,res) =>{
 						});	
 					}
 				})
-
 			}
 		}
 	}
 }
 
+/* 로그인 모듈 */
 exports.login = (req,res) =>{
 	var body = req.body;
-	let accesstoken  = jwt.sign(
+	let accessToken  = jwt.sign(
 		{
 			member_id:body.id   // 토큰의 내용(payload)
 		},
 			secretObj.secret ,    // 비밀 키
 		{
-			expiresIn: '1m'    // 유효 시간은 5분
+			expiresIn: '20m'    // 유효 시간은 20분
 		}
 	)
-	let refreshtoken  = jwt.sign(
+	let refreshToken  = jwt.sign(
 		{
 			member_id:body.id   // 토큰의 내용(payload)
 		},
@@ -183,86 +189,87 @@ exports.login = (req,res) =>{
 			expiresIn: '14d'    // 유효 시간은 5분
 		})
 	conn.query("SELECT pw FROM member WHERE member_id = ?", body.id, (err,data) =>{
-		if(data.length < 1){
-			res.send("login fail");
+		if(data.length < 1){ //사용자가 입력한 id가 DB에 없다면
+			res.send({success:false})
 		}
-		else if(data[0].pw === body.pw){
-			conn.query("UPDATE member SET refreshtoken = ? WHERE member_id = ?;",[refreshtoken,body.id],
+		else if(data[0].pw === body.pw){ //비밀번호 재확인 체크
+			conn.query("UPDATE member SET refreshtoken = ? WHERE member_id = ?;",[refreshToken,body.id],
 			(err,data) => { //쿼리 실행
 				if(err){
 				    throw err;
 				}
 				else{
-					res.cookie("accesstoken", accesstoken, {httpOnly: true});
-					res.cookie("refreshtoken", refreshtoken, {httpOnly: true});
-					res.send("login success");
+					res.cookie("accessToken", accessToken, {httpOnly: true});
+					res.cookie("refreshToken", refreshToken, {httpOnly: true});
+					res.send({
+						success:true,
+						loginState:true
+					})
 				}
 			});	
-		}else{
-			res.send("login fail");
 		}
-
+		else{
+			res.send({success:false})
+		}
 	})                                     
 }
 
+/* 로그아웃 모듈 */
+exports.logout = (req,res) =>{
+	res.cookie("accessToken", '', {httpOnly: true,maxAge: 1000});
+	res.cookie("refreshToken", '', {httpOnly: true,maxAge: 1000});
+	res.send({success:true})
+}
+
+/* 로그인여부 확인 모듈 */
 exports.someAPI = (req,res) =>{
-	let accesstoken = req.cookies.accesstoken;
-	let refreshtoken = req.cookies.refreshtoken;
-	console.log(accesstoken)
+	let accessToken = req.cookies.accessToken;
+	let refreshToken = req.cookies.refreshToken;
 	try{
-		if(accesstoken.length > 0){
-			let accesstoken_decoded = jwt.verify(accesstoken, secretObj.secret);
-			if(accesstoken_decoded){
-				res.send("check success")
+		if(accessToken != null ){
+			let accessToken_decoded = jwt.verify(accessToken, secretObj.secret);
+			if(accessToken_decoded){
+				res.send({success:true})
 			}
 			else{
-				res.send("check fail")
+				res.send({success:false})
 			}
 		}
 		else{
-			res.send("check fail")
+			res.send({success:false})
 		}
 	}
 	catch(err){
-		let refreshtoken_decoded = jwt.verify(refreshtoken, secretObj.secret);
-		conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", refreshtoken_decoded.member_id ,(err,data) => {
-			if(data[0].refreshtoken == refreshtoken){
-				let accesstoken  = jwt.sign(
+		let refreshToken_decoded = jwt.verify(refreshToken, secretObj.secret);
+		conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", refreshToken_decoded.member_id ,(err,data) => {
+			if(data[0].refreshtoken == refreshToken){
+				let accessToken  = jwt.sign(
 					{
-						member_id:refreshtoken_decoded.member_id  // 토큰의 내용(payload)
+						member_id:refreshToken_decoded.member_id  // 토큰의 내용(payload)
 					},
 						secretObj.secret ,    // 비밀 키
 					{
-						expiresIn: '1m'    // 유효 시간은 5분
+						expiresIn: '1m'    // 유효 시간은 1분
 					}
 				)
-				res.cookie("accesstoken", accesstoken, {httpOnly: true});
-				res.send("check success")
+				res.cookie("accessToken", accessToken, {httpOnly: true});
+				res.send({success:true})
 			}
 		})
 	}
 }
+/* 초기 로그인/회원가입 버튼 렌더링 */
+exports.loginStatusCheck = (req,res) => {
+	let accessToken = req.cookies.accessToken;
+	console.log(accessToken)
+	if(accessToken != null){
+		res.send({success:true})
+	}
+	else{
+		res.send({success:false})
+	}
 
-exports.logout = (req,res) =>{
-	res.cookie("accesstoken", '', {httpOnly: true});
-	res.cookie("refreshtoken", '', {httpOnly: true});
-	res.send("logout success");
 }
 
-
-// 메인화면 출력 모듈
-exports.ProductByCategory = (req,res) => { //리스트 모듈 router 에서 호출
-	console.log(req.params.id)
-	conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?",req.params.id,(err,data) => { //쿼리 실행
-		if(err) throw err;
-		conn.query("SELECT * FROM product  WHERE category_large_name = ? ORDER BY id DESC LIMIT 30;",data[0].category_large_name,(err,new_product) => { //쿼리 실행
-			if(err) throw err;
-			res.send({
-				success:true,
-				new_product:new_product
-			})
-		})
-	})
-}
 
 

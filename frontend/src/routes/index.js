@@ -38,11 +38,12 @@ export default new Router({ //라우터 연결
 			,component:Login
 		}
 		,{
-			path:'/ProductByCategory/:id'
+			path:'/getcategory/:id'
 			,name:ProductByCategory
 			,component:ProductByCategory,
 			props:true 
 		}
+
 	]
 	
 })

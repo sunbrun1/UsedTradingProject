@@ -3,9 +3,9 @@
         <!-- =======상단바======= -->
         <div class="topbar">
             <ul class="topbar_item">
-                <li @click="openModal" v-if="logincheck">로그인/회원가입</li>
-                <li @click="logOut" v-else>로그아웃</li>
-                <Loginmodal @close="closeModal" @loginstate="logIn" v-if="modal"></Loginmodal>
+                <li @click="openModal" v-if="loginStatus">로그인/회원가입</li>
+                <li @click="logout" v-else>로그아웃</li>
+                <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
                 <router-link to="/ProductByCategory">
                 <li><a href="#">앱 다운로드</a></li>
                 </router-link>
@@ -39,7 +39,7 @@
             <!-- 판매하기,마이페이지,채팅 -->
             <div class='logobar_item_menu'>
                 <!-- 판매하기 -->
-                <div class="logobar_item sell" @click="checkId">
+                <div class="logobar_item sell" @click="loginCheckSell">
                     <div>
                         <font-awesome-icon icon="won-sign" class="font"/> 
                     </div>
@@ -48,7 +48,7 @@
                     </div>
                 </div>
                 <!-- 마이페이지 -->
-                <div class="logobar_item mypage" @click="checkId">
+                <div class="logobar_item mypage" @click="loginCheckSell">
                     <div>
                         <font-awesome-icon icon="user" class="font"/> 
                     </div>
@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 <!-- 채팅 -->
-                <div class="logobar_item chat" @click="checkId">
+                <div class="logobar_item chat" @click="loginCheckSell">
                     <div>
                         <font-awesome-icon icon="comments" class="font"/> 
                     </div>
@@ -72,22 +72,25 @@
          
         <!-- ======카테고리바======= -->
         <div class="category">
-
             <div class="categorybar">
                 <div class="categorybar_item category_all">
                     <ul class="maincategory">
                         <li>
                             <font-awesome-icon icon="list-ul" class="list-ul"/><span>전체 카테고리 </span>
                             <div class="subcategory">
-                                <ul class="subcategory_item" v-for="(item,index) in category_list" :key="index">
-                                    <router-link :to="`/ProductByCategory/` + item.large.category_large_id">
-                                        <li>
-                                            {{item.large.category_large_name}}                                        
+                                <ul class="category_large" v-for="(largeitem,index) in conv_data" :key="index">
+                                    <router-link :to="`/getcategory/` + largeitem.large[0][0]">
+                                        <li class="category_large_item">
+                                            {{largeitem.large[0][1]}}                                        
                                         </li>
                                     </router-link>
-                                    <li v-for="(item,index) in item.medium.category_medium_name" :key="index">
-                                        <a href="#">{{item}}</a>
-                                    </li>
+                                    <ul class="category_medium" v-for="(mediumitem,index1) in largeitem.medium" :key="index1">
+                                        <router-link :to="`/getcategory/` +mediumitem[0]">
+                                            <li class="category_medium_item">
+                                                {{mediumitem[1]}}
+                                            </li>    
+                                        </router-link>
+                                    </ul>
                                 </ul>                          
                             </div>
                         </li>
@@ -98,13 +101,8 @@
                 </div>
             </div>
         </div>
-
-        
-
         <!-- 구분선 -->
         <div class="line"></div>
-
-
     </header>
 </template>
 
@@ -115,17 +113,14 @@ export default {
     data(){
         return{
             modal:false,
-            //카테고리 대분류, 중분류 
-            category_list:[{ 
-                large:'',
-                medium:[]
-            }],
-            logincheck:true
+            loginStatus:'',
+            categoryList:[],
+            conv_data:[]
         }
     },
     mounted() {
         this.getCategory();
-	
+        this.loginStatusCheck();
 	},
 	methods:{
         // 로그인창 열기
@@ -136,17 +131,17 @@ export default {
         closeModal() {
             this.modal = false;
         },
-        logIn(){
-            this.logincheck = false;
+        login(){
+            this.loginStatus = false;
         },
         // 판매하기 로그인여부 확인
-        checkId(){
-            this.$axios.get("http://192.168.219.100:3000/api/board/someAPI",{withCredentials: true})
+        loginCheckSell(){
+            this.$axios.get("http://192.168.219.100:3000/api/board/someAPI")
             .then((res)=>{
-                if(res.data == 'check success'){
+                if(res.data.success){
                     this.$router.push({path:'./upload'});
                 }
-                else if(res.data == 'check fail'){
+                else{
                     this.openModal();
                 }
 			})
@@ -154,10 +149,36 @@ export default {
 				console.log(err);
 			})
         },
-        logOut(){
+        // 카테고리 데이터 불러오기
+        getCategory() {
+			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory")
+			.then((res)=>{
+                this.categoryList = res.data.categoryData; //카테고리 리스트 데이터
+                let zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
+
+                this.conv_data = this.categoryList.map((data) => {
+                    let large = zip(
+                        data.category_large_id.split(","),
+                        data.category_large_name.split(","),
+                    );
+                    let medium= zip(
+                        data.category_medium_id.split(","),
+                        data.category_medium_name.split(","),
+                    );
+                    return {
+                        large: large,
+                        medium: medium,
+                    };
+                });
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+		},
+        logout(){
             this.$axios.get("http://192.168.219.100:3000/api/board/logout",{withCredentials: true})
             .then((res)=>{
-                if(res.data == 'logout success'){
+                if(res.data.success){
                     alert("로그아웃 되었습니다")
                     this.logincheck = true;
                     this.$router.push({path:'./'});
@@ -167,17 +188,21 @@ export default {
 				console.log(err);
 			})
         },
-        // 카테고리 데이터 불러오기
-        getCategory() {
-			this.$axios.get("http://192.168.219.100:3000/api/board/category",{withCredentials: true})
-			.then((res)=>{
-                this.category_list = res.data.category_list; 
-                console.log(this.category_list);
+        loginStatusCheck(){
+            this.$axios.get("http://192.168.219.100:3000/api/board/loginstatuscheck",{withCredentials: true})
+            .then((res)=>{
+                if(res.data.success){
+                    this.loginStatus = false; 
+                }
+                else{
+                    this.loginStatus = true;
+                }
+                
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
-		},
+        }
 	}
 }
 </script>
@@ -306,9 +331,8 @@ export default {
         }
         .categorybar_item{
             float: left;
-            
         }
-        /* 전체 카테고리 */
+        /* 전체카테고리 */
         .category_all{
             width: 220px;
             height: 50px;
@@ -316,7 +340,6 @@ export default {
         }
         .category_all span{
             padding-left: 12px;
-            
         }
         /* HOME */
         .home{
@@ -324,44 +347,44 @@ export default {
         }
         .subcategory{
             width: 1180px;
-            height: 335px;
+            height: 320px;
             background: #ffffff;
             display: none;
             border: 1px solid #c8c8c8;
             position: relative;
-           
-
         }
-        /* 서브카테고리 */
-        .subcategory_item{
-            float: left;
-            color: black;
-            line-height: 20px;
-        }
+        /* 아이콘 */
         .list-ul{
             padding-left: 15px;
         }
+        /* 대분류 카테고리 */
+        .category_large{
+            float: left;
+            line-height: 20px;
+            font-size: 22px;
+            padding: 10px 21px 10px 21px;
+        }
+        .category_large_item{
+            padding-bottom: 15px;
+        }
+        .category_medium_item{
+            color: #696969;
+        }
+        /* 중분류 카테고리 */
+        .category_medium{
+            font-size: 15px;
+            padding: 4px 0px 0px 0px;
+        }
+        /* 호버시 서브카테고리 보이기 */
         .category_all :hover >.subcategory{
             display: block;
         }
-        .subcategory_item:not(:first-child){
-            padding: 20px 0px 10px 0px;
+        .category_large_item:hover{
+            color: #19b2f5;
         }
-        .subcategory_item:not(:last-child){
-            padding-right: 38px;
+        .category_medium_item:hover{
+            color: #19b2f5;
         }
-        .subcategory_item li:first-child{
-            font-size: 20px;
-            padding-bottom: 20px;
-        }
-        .subcategory_item li:not(first-child){
-            font-size: 15px;
-            padding-bottom: 5px;
-        }
-        .subcategory_item li:hover a{
-            color: #1b5ac2;
-        }
-
+        
 </style>
 
-       

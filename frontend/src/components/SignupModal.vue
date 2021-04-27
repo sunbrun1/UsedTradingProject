@@ -43,32 +43,31 @@ export default {
             form:'',
             id:'',  
             pw:'',  
-            pwcheck:'',
+            pwCheck:'',
             email:'',  
         }
     },
     methods:{
-        // 업로드
+        /* 회원가입 */
         signup(){
-            this.form = { //backend로 전송될 POST 데이터
+            this.form = { 
 				id:this.id,
                 pw:this.pw,
-                pwcheck:this.pwcheck,
+                pwCheck:this.pwcheck,
                 email:this.email
 			} 
-
-            this.$axios.post("http://192.168.219.100:3000/api/board/signup",this.form,{withCredentials: true})
+            this.$axios.post("http://192.168.219.100:3000/api/board/signup",this.form)
 			.then((res)=>{
-                if(res.data == "id_length error"){
+                if(res.data == "idLengthError"){
                     alert("ID 6자~13자로 입력해주세요");
                 }
-                else if(res.data == "pw_length error"){
+                else if(res.data == "pwLengthError"){
                     alert("PW 6자~13자로 입력해주세요");
                 }
-                else if(res.data == "pwcheck error"){
+                else if(res.data == "pwCheckError"){
                     alert("비밀번호가 일치하지 않습니다.");
                 }
-                else if(res.data == "idcheck error"){
+                else if(res.data == "idCheckError"){
                     alert(this.id + "는 이미 사용 중입니다.");
                 }
                 else if(res.data.success){
@@ -80,10 +79,7 @@ export default {
 				console.log(err);
 			})
         }
-
-	}
-    
-    
+	} 
 }
 </script>
 
