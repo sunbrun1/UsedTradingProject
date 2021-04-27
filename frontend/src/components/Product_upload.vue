@@ -74,9 +74,9 @@
                 <!-- 대분류 -->
                 <div class="category-item category_large" >
                     <ul class="category_large_ul">
-                        <li class="category_large_li" v-for="(item,index) in category_list" :key="index"
-                        @click="[category_list[0].medium = item.medium, category_Large_Select(index)]">
-                            {{item.large}}
+                        <li class="category_large_li" v-for="(largeitem,index) in categoryList" :key="index"
+                        @click="[categoryList.medium = largeitem.medium, selectCategoryLarge(index)]">
+                            {{largeitem.large[0][1]}}
                             
                         </li>
                     </ul>
@@ -84,9 +84,9 @@
                 <!-- 중분류 -->
                 <div class="category-item category_medium">
                     <ul class="category_medium_ul">
-                        <li v-for="(item,index) in category_list[0].medium" :key="index" 
-                        class="category_medium_li" @click="category_Medium_Select(index)">
-                            {{item}}
+                        <li v-for="(mediumitem,index) in categoryList.medium" :key="index" 
+                        class="category_medium_li" @click="selectCategoryMedium(index)">
+                            {{mediumitem[1]}}
                         </li>
                     </ul>
                 </div>
@@ -96,7 +96,7 @@
             <!-- 선택한 카테고리 -->
             <div class="select-category">
                 <div class="select-category-item">
-                    선택한 카테고리: <b>{{select_category_large}}</b><span v-if="select_category_large">></span><b>{{select_category_medium}}</b>
+                    선택한 카테고리: <b>{{selectLargeName}}</b><span v-if="selectLargeName">></span><b>{{selectMediumName}}</b>
                 </div>
             </div>
 
@@ -170,14 +170,11 @@ export default {
             state:'',  //상품 상태
             content:'',  //내용
             //카테고리 대분류, 중분류 
-            category_list:[{ 
-                large:'',
-                medium:[]
-            }],
+            categoryList:[],
             title_length:0, //제목 글자수
             // 카테고리 대분류,중분류 선택
-            select_category_large:'', 
-            select_category_medium:'',
+            selectLargeName:'', 
+            selectMediumName:'',
         }
     },
     mounted() {
@@ -224,22 +221,22 @@ export default {
         },
         // 카테고리 데이터 불러오기
         getCategory() {
-			this.$axios.get("http://192.168.219.100:3000/api/board/category",{withCredentials: true})
+			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory")
 			.then((res)=>{
-                this.category_list = res.data.category_list; 
+                this.categoryList = res.data.categoryList; 
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
 		},
-        // 대분류 카테고리 선택 함수
-        category_Large_Select(index){
-            this.select_category_medium = '';
-            this.select_category_large=this.category_list[index].large;
+         // 대분류 카테고리 선택 함수
+        selectCategoryLarge(index){
+            this.selectMediumName = '';
+            this.selectLargeName=this.categoryList[index].large[0][1];
         },
         // 중분류 카테고리 선택 함수
-        category_Medium_Select(index){
-            this.select_category_medium=this.category_list[0].medium[index];
+        selectCategoryMedium(index){
+            this.selectMediumName=this.categoryList.medium[index][1];
         },
         // 업로드
         upload(){
@@ -249,16 +246,18 @@ export default {
             }
             frm.append('title', this.title);
             frm.append('price', this.price);
-            frm.append('select_category_large', this.select_category_large);
-            frm.append('select_category_medium', this.select_category_medium);
+            frm.append('select_category_large', this.selectLargeName);
+            frm.append('select_category_medium', this.selectLargeName);
             frm.append('state', this.state);
             frm.append('content', this.content);
 
             const config = {
-                header: { 'content-type': 'multipart/form-data' },
+                header: { 'content-type': 'multipart/form-data'},
+                'withCredentials': true
+                
             };
 
-            this.$axios.post("http://192.168.219.100:3000/api/board/upload",frm,config,{withCredentials: true})
+            this.$axios.post("http://192.168.219.100:3000/api/board/upload",frm, config)
 			.then((res)=>{
                 if(res.data.success){
                     alert("등록완료");
@@ -477,13 +476,13 @@ export default {
         overflow-y: scroll;
     }
 
-    .category_large ul:not(:first-child){
+    .category_large ul{
         cursor: pointer;
     }
-    .category_large li:not(:first-child){
+    .category_large li{
         padding: 10px;
     }
-    .category_large li:hover:not(:first-child){
+    .category_large li:hover{
         background: #DADCE0;
     }
     /* 카테고리 중분류 */

@@ -76,20 +76,39 @@ exports.byCategory = (req,res) => {
 exports.getCategory = (req,res) => { //리스트 모듈 router 에서 호출
 	conn.query("SELECT category_large_id,category_large_name,group_concat(category_medium_name) as category_medium_name ,group_concat(category_medium_id) as category_medium_id from category_medium group by category_large_id;  ",(err,data) => { //쿼리 실행
 		if(err) throw err;
+		let zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
+
+		let categoryList = data.map((data) => {
+			let large = zip(
+				data.category_large_id.split(","),
+				data.category_large_name.split(","),
+			);
+			let medium= zip(
+				data.category_medium_id.split(","),
+				data.category_medium_name.split(","),
+			);
+			return {
+				large: large,
+				medium: medium,
+			};
+		});
+
 		res.send({
 			success:true,
-			categoryData:data,
+			categoryList:categoryList,
 		})
 	})
 }
 /* 업로드 모듈 */
 exports.upload = (req,res)  =>{
 	upload2(req,res,(err) =>{
-		var body = req.body;
-		var date = new Date();
-		console.log(date);
-		conn.query("INSERT INTO product (thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date) values(?, ?, ?, ?, ?, ?, ?, ?, ?);",
-		[req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date],
+		let body = req.body;
+		let date = new Date();
+		let accessToken = req.cookies.accessToken;
+		let accessTokenDecoded = jwt.verify(accessToken, secretObj.secret);
+
+		conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+		[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date],
 		(err,data) => { //쿼리 실행
 			if(err){
 				throw err;

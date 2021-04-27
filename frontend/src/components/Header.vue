@@ -78,7 +78,7 @@
                         <li>
                             <font-awesome-icon icon="list-ul" class="list-ul"/><span>전체 카테고리 </span>
                             <div class="subcategory">
-                                <ul class="category_large" v-for="(largeitem,index) in conv_data" :key="index">
+                                <ul class="category_large" v-for="(largeitem,index) in categoryList" :key="index">
                                     <router-link :to="`/getcategory/` + largeitem.large[0][0]">
                                         <li class="category_large_item">
                                             {{largeitem.large[0][1]}}                                        
@@ -115,7 +115,6 @@ export default {
             modal:false,
             loginStatus:'',
             categoryList:[],
-            conv_data:[]
         }
     },
     mounted() {
@@ -139,7 +138,7 @@ export default {
             this.$axios.get("http://192.168.219.100:3000/api/board/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    this.$router.push({path:'./upload'});
+                    this.$router.push({path:'/upload'});
                 }
                 else{
                     this.openModal();
@@ -153,23 +152,7 @@ export default {
         getCategory() {
 			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory")
 			.then((res)=>{
-                this.categoryList = res.data.categoryData; //카테고리 리스트 데이터
-                let zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
-
-                this.conv_data = this.categoryList.map((data) => {
-                    let large = zip(
-                        data.category_large_id.split(","),
-                        data.category_large_name.split(","),
-                    );
-                    let medium= zip(
-                        data.category_medium_id.split(","),
-                        data.category_medium_name.split(","),
-                    );
-                    return {
-                        large: large,
-                        medium: medium,
-                    };
-                });
+                this.categoryList = res.data.categoryList; //카테고리 리스트 데이터
 			})
 			.catch((err)=>{
 				console.log(err);
