@@ -136,7 +136,7 @@ export default {
         },
         // 판매하기 로그인여부 확인
         loginCheckSell(){
-            this.$axios.get("http://192.168.219.100:3000/api/board/someAPI")
+            this.$axios.get("http://192.168.219.100:3000/api/board/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.$router.push({path:'./upload'});
@@ -180,8 +180,8 @@ export default {
             .then((res)=>{
                 if(res.data.success){
                     alert("로그아웃 되었습니다")
-                    this.logincheck = true;
-                    this.$router.push({path:'./'});
+                    this.loginStatus = true;
+                    this.$router.push({path:'/'}).catch(()=>{});
                 }
 			})
 			.catch((err)=>{
@@ -301,15 +301,18 @@ export default {
         }
         .sell{
             padding-right: 20px;
+            cursor: pointer;
         }
         .mypage{
             border-left:1px solid #DADCE0;
             padding-right: 20px;
             padding-left: 20px;
+            cursor: pointer;
         }
         .chat{
             border-left:1px solid #DADCE0;
             padding-left: 20px;
+            cursor: pointer;
         }
         .font{
             color: #19b2f5;
@@ -344,6 +347,7 @@ export default {
         /* HOME */
         .home{
             padding: 0px 30px 0px 30px;
+            cursor: pointer;
         }
         .subcategory{
             width: 1180px;
