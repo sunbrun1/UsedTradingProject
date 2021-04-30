@@ -6,7 +6,7 @@
                 <li @click="openModal" v-if="loginStatus">로그인/회원가입</li>
                 <li @click="logout" v-else>로그아웃</li>
                 <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
-                <router-link to="/ProductByCategory">
+                <router-link to="/mypage">
                 <li><a href="#">앱 다운로드</a></li>
                 </router-link>
             </ul>

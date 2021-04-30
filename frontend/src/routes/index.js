@@ -7,6 +7,9 @@ import product_detail from '@/components/product_detail'; //게시판 리스트 
 import Login from '@/components/Login'; //게시판 리스트 컴포넌트 호출
 import ProductByCategory from '@/components/ProductByCategory';
 
+import myPage from '@/components/MyPage/MyPage';
+import myProdcut from '@/components/MyPage/MyProduct';
+
 Vue.use(Router); //vue 라우터 사용
 
 export default new Router({ //라우터 연결
@@ -41,6 +44,18 @@ export default new Router({ //라우터 연결
 			path:'/getcategory/:id'
 			,name:ProductByCategory
 			,component:ProductByCategory,
+			props:true 
+		}
+		,{
+			path:'/mypage'
+			,name:myPage
+			,component:myPage,
+			props:true 
+		}
+		,{
+			path:'/mypage/myproduct'
+			,name:myProdcut
+			,component:myProdcut,
 			props:true 
 		}
 

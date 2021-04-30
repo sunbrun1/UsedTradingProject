@@ -280,15 +280,43 @@ exports.someAPI = (req,res) =>{
 /* 초기 로그인/회원가입 버튼 렌더링 */
 exports.loginStatusCheck = (req,res) => {
 	let accessToken = req.cookies.accessToken;
-	console.log(accessToken)
 	if(accessToken != null){
 		res.send({success:true})
 	}
 	else{
 		res.send({success:false})
 	}
-
 }
+
+/* 마이페이지/내게시물 */
+exports.myProduct = (req,res) => {
+	let accessToken = req.cookies.accessToken;
+	let accessToken_decoded = jwt.verify(accessToken, secretObj.secret);
+	conn.query("SELECT * FROM product WHERE member_id = ? ORDER BY id DESC LIMIT 10;", accessToken_decoded.member_id ,(err,myProduct) => {
+		if(err) throw err;
+		console.log(myProduct[0].date.toLocaleString());
+		res.send({
+			success:true,
+			myProduct:myProduct,
+		})
+	})
+}
+
+/* 마이페이지/내게시물 삭제 */
+exports.myProductDelete = (req,res) => {
+	console.log(req.body.id);
+	conn.query("DELETE FROM product_image WHERE id = ?;", req.body.id ,(err) => {
+		if(err) throw err;
+		conn.query("Delete FROM product WHERE id = ?;", req.body.id ,(err) => {
+			if(err) throw err;
+			res.send({
+				success:true,
+			})
+		})
+	})
+	
+}
+
 
 
 

@@ -10,6 +10,11 @@ router.post("/upload",dao.upload); // 상품 업로드 모듈(POST)
 
 router.get("/product/:id",dao.product); // 상품 상세보기 모듈(GET)
 
+router.get("/mypage/myproduct",dao.myProduct); // 내게시물 모듈(GET)
+router.post("/mypage/myproduct/delete",dao.myProductDelete); // 내게시물 삭제(post)
+
+
+
 /*      로그인/회원가입 관련       */
 router.post("/signup",dao.signup); // 회원가입 모듈(POST)
 router.post("/login",dao.login); // 로그인 모듈 (POST)
