@@ -6,7 +6,7 @@
                 <li @click="openModal" v-if="loginStatus">로그인/회원가입</li>
                 <li @click="logout" v-else>로그아웃</li>
                 <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
-                <router-link to="/mypage">
+                <router-link to="/Test">
                 <li><a href="#">앱 다운로드</a></li>
                 </router-link>
             </ul>
@@ -48,7 +48,7 @@
                     </div>
                 </div>
                 <!-- 마이페이지 -->
-                <div class="logobar_item mypage" @click="loginCheckSell">
+                <div class="logobar_item mypage" @click="loginCheckMypage">
                     <div>
                         <font-awesome-icon icon="user" class="font"/> 
                     </div>
@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 <!-- 채팅 -->
-                <div class="logobar_item chat" @click="loginCheckSell">
+                <div class="logobar_item chat" @click="loginCheckMypage">
                     <div>
                         <font-awesome-icon icon="comments" class="font"/> 
                     </div>
@@ -135,10 +135,25 @@ export default {
         },
         // 판매하기 로그인여부 확인
         loginCheckSell(){
-            this.$axios.get("http://192.168.219.100:3000/api/board/someAPI",{withCredentials: true})
+            this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.$router.push({path:'/upload'});
+                }
+                else{
+                    this.openModal();
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        },
+        // 판매하기 로그인여부 확인
+        loginCheckMypage(){
+            this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
+            .then((res)=>{
+                if(res.data.success){
+                    this.$router.push({path:'/mypage'});
                 }
                 else{
                     this.openModal();
@@ -159,7 +174,7 @@ export default {
 			})
 		},
         logout(){
-            this.$axios.get("http://192.168.219.100:3000/api/board/logout",{withCredentials: true})
+            this.$axios.get("http://192.168.219.100:3000/api/member/logout",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     alert("로그아웃 되었습니다")
@@ -172,7 +187,7 @@ export default {
 			})
         },
         loginStatusCheck(){
-            this.$axios.get("http://192.168.219.100:3000/api/board/loginstatuscheck",{withCredentials: true})
+            this.$axios.get("http://192.168.219.100:3000/api/member/loginstatuscheck",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.loginStatus = false; 
@@ -313,7 +328,6 @@ export default {
             line-height: 50px;
             margin: auto;
             text-align: left;
-            
         }
         .categorybar_item{
             float: left;

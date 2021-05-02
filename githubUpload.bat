@@ -1,3 +1,3 @@
 git add --all
-git commit -m "mypage add+"
+git commit -m "paging +"
 git push -u origin master

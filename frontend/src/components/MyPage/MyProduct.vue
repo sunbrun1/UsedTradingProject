@@ -45,7 +45,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in myProduct" :key="index">
+                            <tr v-for="(item, index) in paginatedData" :key="index">
                                 <td><img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="150" height="100"/></td>
                                 <td class="title">{{item.title}}</td>
                                 <td>{{item.price.toLocaleString('ko-KR')}} 원</td>
@@ -57,15 +57,31 @@
                                     </div>
                                     <div class="button" @click="productDelete(item)">
                                         <button>삭제</button>
-                                    </div>
-                                   
+                                    </div>                           
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-
+                </div>
+                <div class="btn-cover">
+                    <button :disabled="pageNum === 0" @click="prevPage" class="page-btn">
+                        처음으로
+                    </button>
+                    <span class="page-count">{{ pageNum + 1 }} / {{ pageCount }} 페이지</span>
+                    <button :disabled="pageNum >= pageCount - 1" @click="nextPage" class="page-btn">
+                        다음
+                    </button>
+                </div>
+                <div class="paging">
+                    <ul v-for="index in pageCount" :key="index">
+                        <li @click="selectPage(index)">
+                            {{index}}
+                        </li>
+                    </ul>
+                    
                 </div>
             </div>
+    
         </div>
     </body>
 </template>
@@ -80,28 +96,57 @@ export default {
             price:'',
             pick:'',
             date:'',
-            productId:''
+            pageNum: 0,
+            pageSize: 1,
         }
     },
     mounted() {
 		this.getList();
 	},
+    computed: {
+        pageCount () {
+            let page = Math.floor(this.myProduct.length / this.pageSize); // 상품리스트 길이 / 3
+            if (this.myProduct.length % this.pageSize > 0) page += 1;
+            /*
+            아니면 page = Math.floor((listLeng - 1) / listSize) + 1;
+            이런식으로 if 문 없이 고칠 수도 있다!
+            */
+            return page;
+        },
+        paginatedData () {
+            const start = this.pageNum * this.pageSize,
+                    end = start + this.pageSize;
+            return this.myProduct.slice(start, end);
+        },
+    },
 	methods:{
+        nextPage () {
+            this.pageNum += 1;
+        },
+        prevPage () {
+            this.pageNum = 0;
+        },
+        selectPage (index) {
+            this.pageNum = index - 1;
+        },
+
+        // 내 게시물 불러오기
 		getList() {
-			this.$axios.get("http://192.168.219.100:3000/api/board/mypage/myproduct",{withCredentials: true})
+			this.$axios.get("http://192.168.219.100:3000/api/mypage/myproduct",{withCredentials: true})
 			.then((res)=>{
-                this.myProduct = res.data.myProduct; //신규상품
+                this.myProduct = res.data.myProduct; 
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
 		},
+        // 내 게시물 삭제
         productDelete(product) {
-			this.$axios.post("http://192.168.219.100:3000/api/board/mypage/myproduct/delete",product)
+			this.$axios.post("http://192.168.219.100:3000/api/mypage/myproduct/delete",product)
 			.then((res)=>{
                 if(res.data.success){
                     alert("삭제되었습니다.")
-                    this.$router.push({path:'/mypage/myproduct'})
+                    this.$router.go({path:'/mypage/myproduct'});
                 }
 			})
 			.catch((err)=>{
@@ -200,7 +245,26 @@ export default {
         border: 1px solid rgb(195, 194, 204);
         cursor: pointer;
     }
+    .paging{
+        width: 929px;
+        height: 53px;
+        text-align: center;
+    }
+    .paging > ul{
+        display: inline-block;
+    }
+    .paging > ul > li{
+        width: 30px;
+        height: 30px;
+        color: #9b99a9;
+        border: solid 1px rgb(204, 204, 204);;
+        margin: 10px 5px 10px 5px;
+        float: left;
+        
+
+
     
+    }
 
 
 </style>

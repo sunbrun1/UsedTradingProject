@@ -6,9 +6,7 @@ var logger = require('morgan');
 var db = require('./config/db'); //db 연결 모듈 호출
 var cors = require('cors'); //교차통신 모듈 호출
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var index = require('./routes/api/board/index');
+var index = require('./routes/api/index');
 
 var app = express();
 
@@ -29,9 +27,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'images')));
 
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/api/board', index);
+
+app.use('/api', index);
 
 
 // catch 404 and forward to error handler

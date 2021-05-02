@@ -59,7 +59,7 @@ export default {
 				id:this.id,
                 pw:this.pw,
 			} 
-            this.$axios.post("http://192.168.219.100:3000/api/board/login",this.form,{withCredentials: true})
+            this.$axios.post("http://192.168.219.100:3000/api/member/login",this.form,{withCredentials: true})
 			.then((res)=>{
                 if(res.data.success){
                     this.$emit('close');
