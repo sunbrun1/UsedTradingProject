@@ -12,7 +12,7 @@
                     <router-link to="/mypage">
                         <li class="home">마이페이지 홈</li>
                     </router-link>
-                    <router-link to="/mypage/myproduct">
+                    <router-link to="/mypage/myproduct/list">
                         <li class="myproduct">내게시물</li>
                     </router-link>
                     <li>거래상태</li>

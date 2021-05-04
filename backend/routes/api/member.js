@@ -118,7 +118,7 @@ exports.someAPI = (req,res) =>{
 					},
 						secretObj.secret ,    // 비밀 키
 					{
-						expiresIn: '1m'    // 유효 시간은 1분
+						expiresIn: '20m'    // 유효 시간은 1분
 					}
 				)
 				res.cookie("accessToken", accessToken, {httpOnly: true});

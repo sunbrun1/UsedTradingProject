@@ -6,6 +6,7 @@ import product_detail from '@/components/product_detail'; //게시판 리스트 
 import ProductByCategory from '@/components/ProductByCategory';
 import Test from '@/components/Test';
 
+/* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
 import myProdcut from '@/components/MyPage/MyProduct';
 
@@ -42,11 +43,13 @@ export default new Router({ //라우터 연결
 			props:true 
 		}
 		,{
-			path:'/mypage/myproduct'
+			path:'/mypage/myproduct/list'
 			,name:myProdcut
 			,component:myProdcut,
 			props:true 
 		}
+
+
 		,{
 			path:'/Test'
 			,name:Test
