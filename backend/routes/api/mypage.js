@@ -10,9 +10,10 @@ exports.myProduct = (req,res) => {
 	let accessToken_decoded = jwt.verify(accessToken, secretObj.secret);
 	let limit = parseInt(req.query.limit);
 	let offset = parseInt(req.query.offset);
+	console.log(req.query)
 	if(req.query.no == null){
 		conn.query("SELECT * FROM product ORDERS WHERE member_id = ? LIMIT ? OFFSET ?;",
-		[accessToken_decoded.member_id, limit, offset] ,
+		[accessToken_decoded.member_id, limit, offset],
 		(err,myProduct) => {
 			if(err) throw err;
 			res.send({
@@ -23,7 +24,7 @@ exports.myProduct = (req,res) => {
 	}
 	else{
 		conn.query("SELECT * FROM product ORDERS WHERE member_id = ? LIMIT ? OFFSET ?;",
-		[accessToken_decoded.member_id, limit, offset] ,
+		[accessToken_decoded.member_id, limit, offset],
 		(err,myProduct) => {
 			if(err) throw err;
 			res.send({

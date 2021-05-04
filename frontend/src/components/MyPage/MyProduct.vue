@@ -12,7 +12,7 @@
                     <router-link to="/mypage">
                         <li class="home">마이페이지 홈</li>
                     </router-link>
-                    <router-link to="/mypage/myproduct">
+                    <router-link to="/mypage/myproduct/list">
                         <li class="myproduct">내게시물</li>
                     </router-link>
                     <li>거래상태</li>
@@ -62,28 +62,27 @@
                             </tr>
                         </tbody>
                     </table>
-                     <div>
-                        <ul class="pagination justify-content-center">
+                    <div class="paging">
+                        <ul>
                             <!-- 이전 버튼 -->
                             <li class="page-item" v-if="prev">
-                            <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex - 1) * listRowCount }`" @click.native="movePage(startPageIndex - 1)">
-                                <span aria-hidden="true">&laquo;</span>
-                            </router-link>
+                                <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex - 1) * listRowCount }`" @click.native="movePage(startPageIndex - 1)">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </router-link>
                             </li>
                             <!-- 페이징 -->
-                            <li v-for="index in endPageIndex-startPageIndex + 1 " :key="index" class="page-item" >
-                                <router-link :to="`/mypage/myproduct/list?no=${ (index) }`" @click="myProductList">
+                            <li class="page-item" v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
+                                <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex+index) -1 }`" @click.native="movePage(startPageIndex + index - 1)">
                                     {{startPageIndex+ index -1 }}
                                 </router-link>
                             </li>
 
                             <!-- 다음버튼 -->
                             <li class="page-item" v-if="next">
-                            <router-link :to="`/mypage/myproduct/list?no=${ (endPageIndex + 1) * listRowCount }`" @click.native="movePage(endPageIndex + 1)">
-                                <span aria-hidden="true">&raquo;</span>
-                            </router-link>
+                                <router-link :to="`/mypage/myproduct/list?no=${ (endPageIndex + 1) * listRowCount }`" @click.native="movePage(endPageIndex + 1)">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </router-link>
                             </li>
-
                         </ul>
                     </div>
                 </div>
@@ -99,7 +98,7 @@ export default {
     watch: {
         '$route' (to, from) {
             if(to.query != from.query){
-                this.myProductList();
+                this.getListByPage();
             }
         }
     },
@@ -107,18 +106,18 @@ export default {
         return{
             myProduct:'', //상품 데이터
             totalListItemCount: 0, //내 게시물 개수
-            listRowCount: 1, // 한 페이지당 출력할 게시물 개수
-            pageLinkCount: 10, //페이징 버튼 단위 10,20,30....
+            listRowCount: 2, // 한 페이지당 출력할 게시물 개수
+            pageLinkCount: 10, //페이징 단위 
             currentPageIndex: 1, //현재 페이지
 
-            pageCount: 0, //게시물개수에 대한 페이징 (총 게시물 개수 / 한 페이지당 출력할 게시물 개수) 
+            pageCount: 0, //출력할 페이지 버튼 개수
             startPageIndex: 0,
             endPageIndex: 0,
-            prev: false,
-            next: false,
+            prev: false, //이전버튼
+            next: false, //다음버튼
 
-            pageLimit : 1,
-            pageOffset : 0
+            pageLimit : 2, //pageLimit = listRowCount sql 2개만 출력
+            pageOffset : 0 
         }
     },
     mounted() {
@@ -126,11 +125,13 @@ export default {
         this.myProductCount();
 	},
 	methods:{
+        // 페이지 이동 
         movePage( param ) {
             this.currentPageIndex = param;
             this.myProductCount();
+            this.initUI();
         },
-        // 내 게시물 불러오기
+        // 내 게시물 불러오기(초기화면)
 		getList() {
 			this.$axios.get("http://192.168.219.100:3000/api/mypage/myproduct/list",{
                 withCredentials: true,
@@ -141,36 +142,6 @@ export default {
              })
 			.then((res)=>{
                 this.myProduct = res.data.myProduct; 
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
-		},
-        myProductList() {
-			this.$axios.get("http://192.168.219.100:3000/api/mypage/myproduct/list",{
-                withCredentials: true,
-                params: {
-                    no : this.$route.query.no,
-                    limit : this.pageLimit,
-                    offset : (this.$route.query.no - 1) * this.pageLimit
-                }
-             })
-			.then((res)=>{
-                this.myProduct = res.data.myProduct; 
-                this.initUI();
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
-		},
-        // 내 게시물 삭제
-        productDelete(product) {
-			this.$axios.post("http://192.168.219.100:3000/api/mypage/myproduct/delete",product)
-			.then((res)=>{
-                if(res.data.success){
-                    alert("삭제되었습니다.")
-                    this.$router.go({path:'/mypage/myproduct'});
-                }
 			})
 			.catch((err)=>{
 				console.log(err);
@@ -187,8 +158,9 @@ export default {
 				console.log(err);
 			})
         },
+        // 초기 페이징 UI
         initUI(){
-            this.pageCount = Math.ceil(this.totalListItemCount/this.listRowCount);
+            this.pageCount = Math.ceil(this.totalListItemCount/this.listRowCount); //출력될 페이지개수 = (게시물총개수/한페이지에 출력할 게시물 개수)
 
             if((this.currentPageIndex % this.pageLinkCount) == 0 ){ // 10,20,30... 맨마지막 
                 this.startPageIndex = ((this.currentPageIndex / this.pageLinkCount)-1)*this.pageLinkCount + 1
@@ -196,8 +168,6 @@ export default {
                 // startPageIndex = (10/10)-1 * 10 + 1 = 1
                 // ex) 20 % 10 == 0 이므로
                 // startPageIndex = (20/10)-1 * 10 + 1 = 11
-                // ex) 90 % 10 == 0 이므로
-                // startPageIndex = (90/10)-1 * 10 + 1 = 81
                 // 즉 currentPageIndex = 10 이면 startPageIndex 는 1 이다
                 // 즉 currentPageIndex = 20 이면 startPageIndex 는 11 이다
             }
@@ -206,8 +176,6 @@ export default {
                 // ex) 1 % 10 != 0 이므로 
                 // startPageIndex = math.floor(1/10) * 10 + 1 = 0 * 10 + 1 = 1
                 // ex) 2 % 10 ! = 0 이므로
-                // startPageIndex = math.floor(2/10) * 10 + 1 = 0 * 10 + 1 = 1
-                // ex) 9 % 10 ! = 0 이므로
                 // startPageIndex = math.floor(2/10) * 10 + 1 = 0 * 10 + 1 = 1
                 // ex) 11 % 10 ! = 0 이므로
                 // startPageIndex = math.floor(11/10) * 10 + 1 = 1 * 10 + 1 = 11
@@ -221,8 +189,6 @@ export default {
                 // endPageIndex = (10/10)-1 * 10 + 10 = 10
                 // ex) 20 % 10 == 0 이므로
                 // endPageIndex = (20/10)-1 * 10 + 10 = 20
-                // ex) 90 % 10 == 0 이므로
-                // endPageIndex = (90/10)-1 * 10 + 10 = 90
                 // 즉 currentPageIndex = 10 이면 endPageIndex 는 10 이다
                 // 즉 currentPageIndex = 20 이면 endPageIndex 는 20 이다
             }else{  //1~9, 11~19 ...
@@ -231,32 +197,58 @@ export default {
                 // endPageIndex = Math.floor(1/10) * 10 + 10 = 0 * 10 + 10 = 10
                 // ex) 2 % 10 ! = 0 이므로
                 // endPageIndex = Math.floor(2/10) * 10 + 10 = 0 * 10 + 10 = 10
-                // ex) 9 % 10 ! = 0 이므로
-                // endPageIndex = Math.floor(9/10) * 10 + 10 = 0 * 10 + 10 = 10
                 // ex) 11 % 10 ! = 0 이므로
                 // endPageIndex = Math.floor(11/10) * 10 + 10 = 1 * 10 + 10 = 20
                 // 즉 currentPageIndex = 1~9 이면 endPageIndex 는 10 이다
                 // 즉 currentPageIndex = 10~19 이면 endPageIndex 는 20 이다
-
             }
-
-            if(this.endPageIndex > this.pageCount){ //ex) 9 > 12
+            if(this.endPageIndex > this.pageCount){ 
                 this.endPageIndex = this.pageCount 
             }
             // 이전 버튼 
-            if(this.currentPageIndex <= this.pageLinkCount ){ //현재 페이지 <= 10
+            if(this.currentPageIndex <= this.pageLinkCount ){ //현재 페이지 <= 페이지 최대개수
                 this.prev = false; //이전버튼 숨기기
-            }else{ //현재 페이지 > 10
+            }else{ 
                 this.prev = true; //이전버튼 보이기
             }
             // 다음버튼
-            if(this.endPageIndex >= this.pageCount){ //끝페이지 > 페이지 최대수
+            if(this.endPageIndex >= this.pageCount){ //마지막페이지 > 페이지 최대개수
                 this.endPageIndex = this.pageCount;
                 this.next = false;
             }else{
                 this.next = true;
             }
-        }
+        },
+        // 페이지별 게시물 불러오기
+        getListByPage() {
+			this.$axios.get("http://192.168.219.100:3000/api/mypage/myproduct/list",{
+                withCredentials: true,
+                params: {
+                    no : this.$route.query.no,
+                    limit : this.pageLimit,
+                    offset : (this.$route.query.no - 1) * this.pageLimit
+                }
+             })
+			.then((res)=>{
+                this.myProduct = res.data.myProduct; 
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+		},
+        // 게시물 삭제
+        productDelete(product) {
+			this.$axios.post("http://192.168.219.100:3000/api/mypage/myproduct/delete",product)
+			.then((res)=>{
+                if(res.data.success){
+                    alert("삭제되었습니다.")
+                    this.$router.go({path:'/mypage/myproduct'});
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+		},
 	}
 }
 </script>
@@ -357,14 +349,6 @@ export default {
     .paging > ul{
         display: inline-block;
     }
-    .paging > ul > li{
-        width: 30px;
-        height: 30px;
-        color: #9b99a9;
-        border: solid 1px rgb(204, 204, 204);;
-        margin: 10px 5px 10px 5px;
-        float: left;
-    }
     .page-item{
         float: left;
         width: 30px;
@@ -372,7 +356,6 @@ export default {
         color: #9b99a9;
         border: solid 1px rgb(204, 204, 204);;
         margin: 10px 5px 10px 5px;
-        
     }
 
 
