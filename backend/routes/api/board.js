@@ -3,9 +3,10 @@ const conn =  db.init(); //db 연결
 const multer = require('multer'); 
 const jwt = require("jsonwebtoken");
 const secretObj = require("../../config/jwt");
+var fs = require('fs');
 
-// 업로드를위한 multer 모듈
-const storage = multer.diskStorage({ 
+/* Create */
+const storage = multer.diskStorage({  // 업로드를위한 multer 모듈
 	destination: (req, res, cb) => {
 		cb(null, "./images/");
 	},
@@ -23,7 +24,39 @@ const storage = multer.diskStorage({
 });
 const upload2 = multer({ storage }).array("files",12);
 
+/* 업로드 모듈 */
+exports.upload = (req,res)  =>{ /* 업로드 모듈 */
+	upload2(req,res,(err) =>{ //multer
+		let body = req.body;
+		let date = new Date();
+		let accessToken = req.cookies.accessToken;
+		let accessTokenDecoded = jwt.verify(accessToken, secretObj.secret);
 
+		conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+		[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date],
+		(err,data) => { //쿼리 실행
+			if(err){
+				throw err;
+			}
+			else{
+				for(var i=0; i<req.files.length; i++){
+					conn.query("INSERT INTO product_image (image_name,id) values(?,LAST_INSERT_ID());",
+					[req.files[i].filename],
+					(err,data) => { //쿼리 실행
+						if(err){
+							throw err;
+						}
+					});
+				}
+				res.send({
+					success:true
+				})
+			}
+		});	
+	})
+}
+
+/* Read */
 /* 메인화면 출력 모듈 */
 exports.list = (req,res) => { //리스트 모듈 router 에서 호출
 	conn.query("SELECT * FROM product ORDER BY id DESC LIMIT 10 ;",(err,new_product) => { //쿼리 실행
@@ -38,7 +71,6 @@ exports.list = (req,res) => { //리스트 모듈 router 에서 호출
 		})
 	})
 }
-
 /* 카테고리별 상품 리스트 출력 */
 exports.byCategory = (req,res) => { 
 	const categoryId = req.params.id; // 카테고리 분류 id
@@ -99,39 +131,8 @@ exports.getCategory = (req,res) => { //리스트 모듈 router 에서 호출
 		})
 	})
 }
-/* 업로드 모듈 */
-exports.upload = (req,res)  =>{
-	upload2(req,res,(err) =>{
-		let body = req.body;
-		let date = new Date();
-		let accessToken = req.cookies.accessToken;
-		let accessTokenDecoded = jwt.verify(accessToken, secretObj.secret);
 
-		conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-		[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date],
-		(err,data) => { //쿼리 실행
-			if(err){
-				throw err;
-			}
-			else{
-				for(var i=0; i<req.files.length; i++){
-					conn.query("INSERT INTO product_image (image_name,id) values(?,LAST_INSERT_ID());",
-					[req.files[i].filename],
-					(err,data) => { //쿼리 실행
-						if(err){
-							throw err;
-						}
-					});
-				}
-				res.send({
-					success:true
-				})
-			}
-		});	
-	})
-}
-
-// 상품 상세페이지 모듈
+/* 상품 상세페이지 모듈 */
 exports.product = (req,res) => { //리스트 모듈 router 에서 호출
 	conn.query("SELECT a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, b.image_name FROM product a, product_image b WHERE a.id=b.id AND a.id=?",req.params.id,(err,product) => { //쿼리 실행
 		if(err) throw err;
@@ -151,7 +152,21 @@ exports.product = (req,res) => { //리스트 모듈 router 에서 호출
 			});	
 		}
 	})
-	
+}
+
+/* Update */
+/* 게시물 삭제 모듈 */
+exports.update = (req,res) => {
+	console.log(req.params)
+	conn.query("SELECT a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, b.image_name FROM product a, product_image b WHERE a.id=b.id AND a.id=?",req.params.id,(err,product) => { //쿼리 실행
+		if(err) throw err;
+		console.log(product);
+		res.send({
+			success:true,
+			product:product
+		})
+	})
+
 }
 
 

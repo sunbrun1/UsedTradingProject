@@ -2,6 +2,7 @@ const db = require('../../config/db'); //db설정 호출
 const conn =  db.init(); //db 연결
 const jwt = require("jsonwebtoken");
 const secretObj = require("../../config/jwt");
+var fs = require('fs');
 
 
 /* 마이페이지-내게시물-초기화면 */
@@ -51,14 +52,22 @@ exports.myProductCount = (req,res) => {
 
 /* 마이페이지/내게시물 삭제 */
 exports.myProductDelete = (req,res) => {
-	conn.query("DELETE FROM product_image WHERE id = ?;", req.body.id ,(err) => {
+	conn.query("SELECT image_name FROM product_image WHERE id = ?", req.body.id,(err,data) => {
 		if(err) throw err;
-		conn.query("Delete FROM product WHERE id = ?;", req.body.id ,(err) => {
+		for(let i=0; i<data.length; i++){
+			fs.unlink("./images/" + data[i].image_name, (err) => {
+				if(err) throw err;
+			})
+		}
+		conn.query("DELETE FROM product_image WHERE id = ?;", req.body.id ,(err) => {
 			if(err) throw err;
-			res.send({
-				success:true,
+			conn.query("Delete FROM product WHERE id = ?;", req.body.id ,(err) => {
+				if(err) throw err;
+				res.send({
+					success:true,
+				})
 			})
 		})
+
 	})
-	
 }

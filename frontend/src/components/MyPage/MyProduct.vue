@@ -52,9 +52,11 @@
                                 <td>{{item.zzim}}</td>
                                 <td>{{new Date(item.date).toLocaleString('ko-KR')}}</td>
                                 <td class="option">
-                                    <div class="button">
-                                        <button @click="myProductCount">수정</button>
-                                    </div>
+                                    <router-link :to="`/update/` + item.id">
+                                        <div class="button">
+                                            <button @click="myProductCount">수정</button>
+                                        </div>
+                                    </router-link>
                                     <div class="button" @click="productDelete(item)">
                                         <button>삭제</button>
                                     </div>                           

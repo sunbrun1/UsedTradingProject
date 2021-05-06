@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import SignUpModal from '@/components/SignupModal'; 
+import SignUpModal from '@/components/Member/SignupModal'; 
 export default {
     components: {SignUpModal},
     data(){ 

@@ -168,35 +168,26 @@ export default {
             title:'',  //제목
             price:'',  //가격
             state:'',  //상품 상태
-            content:'',  //내용
-            //카테고리 대분류, 중분류 
-            categoryList:[],
+            content:'',  //내용 
+            categoryList:[], //카테고리 데이터
+            selectLargeName:'',  //선택한 카테고리 대분류
+            selectMediumName:'', //선택한 카테고리 중분류
             title_length:0, //제목 글자수
-            // 카테고리 대분류,중분류 선택
-            selectLargeName:'', 
-            selectMediumName:'',
         }
     },
     mounted() {
-        this.getCategory();
+        this.getCategory(); //접속시 카테고리 데이터 불러오기
 	},
 	methods:{
-        // 라우터 이동 함수
-        getlist(){
-            this.$router.push({path:'./'}); //localhost:3000/ 로 라우터 이동
-        },
-        // 이미지 추가
-        imageUpload(){
+        /* 상품 이미지 관련 */
+        imageUpload(){  //이미지 업로드 
             if(this.files.length < 12){
                 for (let i = 0; i < this.$refs.files.files.length; i++) {
                     this.files = [
-                        ...this.files,
-                        //이미지 추가
+                        ...this.files, //이미지 추가
                         {
-                            //실제 파일
-                            file: this.$refs.files.files[i],
-                            //이미지 프리뷰
-                            preview: URL.createObjectURL(this.$refs.files.files[i]),
+                            file: this.$refs.files.files[i], //실제 파일
+                            preview: URL.createObjectURL(this.$refs.files.files[i]), //이미지 미리보기
                         }
                     ];
                 }
@@ -205,12 +196,12 @@ export default {
                 alert("이미지는 최대 12개 까지 업로드 할 수 있습니다.");
             }
         },
-        // 이미지 삭제
-        fileDeleteButton(index) {
+        fileDeleteButton(index) { // 이미지 삭제
             this.files.splice(index, 1);
         },
-        // 제목 글자수 체크(v-model 한글 처리)
-        textLengthCheck(e){
+
+        /* 상품 제목 관련 */
+        textLengthCheck(e){ // 제목 글자수 체크(v-model 한글 처리)
             console.log(this.title.length)
             if(e.target.value.length > e.target.maxLength){
                 e.target.value = e.target.value.substr(0, e.target.maxLength);
@@ -219,8 +210,9 @@ export default {
                 this.title_length = e.target.value.length;
             }
         },
-        // 카테고리 데이터 불러오기
-        getCategory() {
+
+        /* 상품 카테고리 관련 */
+        getCategory() { // 카테고리 데이터 불러오기
 			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory")
 			.then((res)=>{
                 this.categoryList = res.data.categoryList; 
@@ -229,17 +221,16 @@ export default {
 				console.log(err);
 			})
 		},
-         // 대분류 카테고리 선택 함수
-        selectCategoryLarge(index){
+        selectCategoryLarge(index){ // 대분류 카테고리 선택 함수
             this.selectMediumName = '';
             this.selectLargeName=this.categoryList[index].large[0][1];
         },
-        // 중분류 카테고리 선택 함수
-        selectCategoryMedium(index){
+        selectCategoryMedium(index){ // 중분류 카테고리 선택 함수
             this.selectMediumName=this.categoryList.medium[index][1];
         },
-        // 업로드
-        upload(){
+
+        /* 업로드 관련 */
+        upload(){  //상품 업로드
             var frm = new FormData()
             for(var i=0; i<this.files.length; i++){
                 frm.append('files',  this.files[i].file);
@@ -254,14 +245,13 @@ export default {
             const config = {
                 header: { 'content-type': 'multipart/form-data'},
                 'withCredentials': true
-                
             };
 
             this.$axios.post("http://192.168.219.100:3000/api/board/upload",frm, config)
 			.then((res)=>{
                 if(res.data.success){
                     alert("등록완료");
-                    this.getlist();
+                    this.$router.push({path:'./'});
                 }
                 else{
                     alert("등록실패");

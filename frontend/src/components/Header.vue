@@ -107,7 +107,7 @@
 </template>
 
 <script>
-import Loginmodal from '@/components/Login_modal'; 
+import Loginmodal from '@/components/Member/Login_modal'; 
 export default {
     components:{Loginmodal},
     data(){
