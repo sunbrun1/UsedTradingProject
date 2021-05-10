@@ -108,7 +108,7 @@ export default {
         return{
             myProduct:'', //상품 데이터
             totalListItemCount: 0, //내 게시물 개수
-            listRowCount: 2, // 한 페이지당 출력할 게시물 개수
+            listRowCount: 5, // 한 페이지당 출력할 게시물 개수
             pageLinkCount: 10, //페이징 단위 
             currentPageIndex: 1, //현재 페이지
 
@@ -118,7 +118,7 @@ export default {
             prev: false, //이전버튼
             next: false, //다음버튼
 
-            pageLimit : 2, //pageLimit = listRowCount sql 2개만 출력
+            pageLimit : 5, //pageLimit = listRowCount sql 2개만 출력
             pageOffset : 0 
         }
     },

@@ -22,15 +22,16 @@ const storage = multer.diskStorage({  // 업로드를위한 multer 모듈
 	}, 
 	limits: { fileSize: 20 * 1024 * 1024 },
 });
-const upload2 = multer({ storage }).array("files",12);
+const multertUpload = multer({ storage }).array("files",12);
 
 /* 업로드 모듈 */
 exports.upload = (req,res)  =>{ /* 업로드 모듈 */
-	upload2(req,res,(err) =>{ //multer
+	multertUpload(req,res,(err) =>{ //multer
 		let body = req.body;
 		let date = new Date();
 		let accessToken = req.cookies.accessToken;
 		let accessTokenDecoded = jwt.verify(accessToken, secretObj.secret);
+		console.log(req.files);
 
 		conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
 		[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date],
@@ -134,17 +135,18 @@ exports.getCategory = (req,res) => { //리스트 모듈 router 에서 호출
 
 /* 상품 상세페이지 모듈 */
 exports.product = (req,res) => { //리스트 모듈 router 에서 호출
-	conn.query("SELECT a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, b.image_name FROM product a, product_image b WHERE a.id=b.id AND a.id=?",req.params.id,(err,product) => { //쿼리 실행
+	conn.query("SELECT a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",req.params.id,(err,product) => { //쿼리 실행
 		if(err) throw err;
 		res.send({
 			success:true,
 			product:product
 		})
 	})
-	conn.query("SELECT views FROM product WHERE id=?",req.params.id,(err,views) => { //쿼리 실행
+	// 조회수 모듈
+	conn.query("SELECT views FROM product WHERE id=?",req.params.id,(err,data) => { //쿼리 실행
 		if(err) throw err;
 		else{
-			conn.query("UPDATE product SET views=? WHERE id=?",[views[0].views+1,req.params.id],
+			conn.query("UPDATE product SET views=? WHERE id=?",[data[0].views+1,req.params.id],
 			(err,data) => { //쿼리 실행
 				if(err){
 					throw err;
@@ -153,20 +155,71 @@ exports.product = (req,res) => { //리스트 모듈 router 에서 호출
 		}
 	})
 }
+        
 
 /* Update */
-/* 게시물 삭제 모듈 */
+/* 게시물 수정 모듈 */
 exports.update = (req,res) => {
-	console.log(req.params)
-	conn.query("SELECT a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, b.image_name FROM product a, product_image b WHERE a.id=b.id AND a.id=?",req.params.id,(err,product) => { //쿼리 실행
-		if(err) throw err;
-		console.log(product);
-		res.send({
-			success:true,
-			product:product
-		})
+	multertUpload(req,res,(err) =>{ //multer
+		let body = req.body
+		let image_name = req.body.image_name.split(","); //남아있는 기존 이미지
+		let deleteImage = req.body.deleteImage.split(","); //삭제된 기존 이미지
+		if(body.image_name != ''){ // 기존 이미지가 남아있는경우
+			//수정하기쿼리
+			conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, state = ?, content = ?, category_large_name = ?, category_medium_name = ? WHERE id = ?;",
+			[image_name[0], body.title, body.price, body.state, body.content, body.category_large_name, body.category_medium_name, req.params.id],(err) => { //쿼리 실행
+				if(err) throw err;
+				//추가된 이미지 INSERT
+				for(var i=0; i<req.files.length; i++){  
+					conn.query("INSERT INTO product_image (image_name,id) values(?,?);",[req.files[i].filename, req.params.id],(err,data) => { //쿼리 실행
+						if(err) throw err;
+					});
+				}
+				/* 이미지 삭제관련 */
+				if(deleteImage != ''){
+					for(var i=0; i<deleteImage.length; i++){
+						fs.unlink("./images/" + deleteImage[i], (err) => { //실제파일 삭제
+							if(err) throw err;
+						})			
+						conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
+							if(err) throw err;
+						})
+					}
+			    }
+				res.send({
+					success:true
+				})
+			})
+			
+		}
+		else{ // 없는 경우
+			conn.query("UPDATE product SET thumbnail = ?,title = ?,price = ?,state = ?,content = ?,category_large_name = ?, category_medium_name = ? WHERE id = ?;",
+			[req.files[0].filename, body.title, body.price, body.state, body.content, body.category_large_name, body.category_medium_name, req.params.id],(err) => { //쿼리 실행
+				if(err) throw err;
+				//추가된 이미지 INSERT
+				for(var i=0; i<req.files.length; i++){  
+					conn.query("INSERT INTO product_image (image_name,id) values(?,?);",[req.files[i].filename, req.params.id],(err,data) => { //쿼리 실행
+						if(err) throw err;
+					});
+				}
+				/* 이미지 삭제관련 */
+				if(deleteImage != ''){
+					for(var i=0; i<deleteImage.length; i++){
+						fs.unlink("./images/" + deleteImage[i], (err) => { //실제파일 삭제
+							if(err) throw err;
+						})			
+						conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
+							if(err) throw err;
+						})
+					}
+			    }
+			
+				res.send({
+					success:true
+				})
+			})
+		}
 	})
-
 }
 
 

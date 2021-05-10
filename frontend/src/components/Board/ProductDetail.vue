@@ -88,7 +88,7 @@ export default {
     data(){
         return{
             product:'',
-            image:[],
+            image:'',
             title:'',
             category_large_name:'',
             category_medium_name:'',
@@ -113,9 +113,7 @@ export default {
 			this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
 			.then((res)=>{
                 this.product = res.data.product;
-                for(var i=0; i<this.product.length; i++){
-                    this.image.push(this.product[i].image_name);
-                }
+         
                 this.title = this.product[0].title;
                 this.price = this.product[0].price;
                 this.category = this.product[0].category;
@@ -123,6 +121,7 @@ export default {
                 this.category_large_name = this.product[0].category_large_name;
                 this.category_medium_name = this.product[0].category_medium_name;
                 this.state = this.product[0].state;
+                this.image = this.product[0].image_name.split(',');
 			})
 			.catch((err)=>{
 				console.log(err);

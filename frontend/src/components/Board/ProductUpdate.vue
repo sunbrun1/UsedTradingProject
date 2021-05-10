@@ -36,7 +36,7 @@
                             <div class="file-close-button">
                                 <button type="button" @click="fileDeleteButton(index)">x</button>
                             </div>
-                            <img :src="item.preview" width="239" height="239"/>
+                            <img :src="item.preview" width="239" height="239"/> <!-- 이미지-->
                         </div>
                         <div class="productimage-addimage2">
                             <label for="files">+</label>
@@ -151,7 +151,7 @@
 
             <!-- 등록 -->
             <div class="product-upload">
-                <button type="button" @click="upload">등록</button>
+                <button type="button" @click="update">등록</button>
             </div>
             
             
@@ -174,6 +174,8 @@ export default {
             selectLargeName:'',  //선택한 카테고리 대분류
             selectMediumName:'', //선택한 카테고리 중분류
             title_length:0, //제목 글자수
+            deleteImage:[], //삭제된 이미지
+            test:''
         }
     },
     mounted() {
@@ -183,16 +185,19 @@ export default {
 	methods:{
         /* 상품 기존 데이터 불러오기 */
         getProductDate(){
-            this.$axios.post("http://192.168.219.100:3000/api/board/update/" + this.$route.params.id)
+            this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id)
 			.then((res)=>{
                 this.product = res.data.product;
-                console.log(this.product)
                 this.title = this.product[0].title;
                 this.price = this.product[0].price;
                 this.state = this.product[0].state;
                 this.content = this.product[0].content;
                 this.selectLargeName = this.product[0].category_large_name;
                 this.selectMediumName = this.product[0].category_medium_name;
+                this.test = this.product[0].image_name.split(',')
+                for(let i=0; i<this.test.length; i++){
+                    this.files.push({preview : "http://192.168.219.100:3000/" + this.test[i], image_name : this.test[i]})
+                }
 			})
 			.catch((err)=>{
 				console.log(err);
@@ -208,7 +213,8 @@ export default {
                             file: this.$refs.files.files[i], //실제 파일
                             preview: URL.createObjectURL(this.$refs.files.files[i]), //이미지 미리보기
                         }
-                    ];
+                    ];           
+                    console.log(this.files);  
                 }
             }
             else{
@@ -216,7 +222,9 @@ export default {
             }
         },
         fileDeleteButton(index) { // 이미지 삭제
+            this.deleteImage.push(this.test[index])
             this.files.splice(index, 1);
+            this.test.splice(index, 1);
         },
 
         /* 상품 제목 관련 */
@@ -249,7 +257,7 @@ export default {
         },
 
         /* 업로드 관련 */
-        upload(){  //상품 업로드
+        update(){  //상품 업로드
             var frm = new FormData()
             for(var i=0; i<this.files.length; i++){
                 frm.append('files',  this.files[i].file);
@@ -260,17 +268,19 @@ export default {
             frm.append('select_category_medium', this.selectLargeName);
             frm.append('state', this.state);
             frm.append('content', this.content);
+            frm.append('image_name', this.test);
+            frm.append('deleteImage', this.deleteImage);
 
             const config = {
                 header: { 'content-type': 'multipart/form-data'},
                 'withCredentials': true
             };
 
-            this.$axios.post("http://192.168.219.100:3000/api/board/upload",frm, config)
+            this.$axios.post("http://192.168.219.100:3000/api/board/update/" + this.$route.params.id ,frm, config)
 			.then((res)=>{
                 if(res.data.success){
-                    alert("등록완료");
-                    this.$router.push({path:'./'});
+                    alert("수정완료");
+                    this.$router.push({path:'/mypage/myproduct/list'});
                 }
                 else{
                     alert("등록실패");

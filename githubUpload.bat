@@ -1,3 +1,3 @@
 git add --all
-git commit -m "update +, unlink +"
+git commit -m "update ++"
 git push -u origin master
