@@ -3,6 +3,13 @@ const dao = require('./board');
 const member = require('./member'); 
 const mypage = require('./mypage'); 
 
+
+/* 배포 */
+router.get('/zz', function(req, res, next) {
+	console.log("성공")
+	res.sendFile(path.join(__dirname, '../../public', 'index.html'));
+  })
+
 /*        CRUD 관련        */
 router.get("/board",dao.list,); // 메인 상품리스트 출력 모듈(GET) 
 router.get("/board/getcategory/:id",dao.byCategory); //카테고리별 상품리스트 출력(GET)
@@ -23,6 +30,8 @@ router.get("/member/loginstatuscheck",member.loginStatusCheck); //Header 컴포�
 router.get("/mypage/myproduct/list",mypage.myProduct); // 내게시물 모듈(GET)
 router.get("/mypage/myproduct/myProductCount",mypage.myProductCount); // 게시물 카운트(get)
 router.post("/mypage/myproduct/delete",mypage.myProductDelete); // 내게시물 삭제(post)
+
+
 
 
 router.all('*',(req, res)=> {

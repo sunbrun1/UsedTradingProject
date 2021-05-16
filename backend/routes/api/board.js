@@ -8,7 +8,7 @@ var fs = require('fs');
 /* Create */
 const storage = multer.diskStorage({  // 업로드를위한 multer 모듈
 	destination: (req, res, cb) => {
-		cb(null, "./images/");
+		cb(null, "./public/images/");
 	},
 	filename: (req, file, cb) => {
 		cb(null, `${Date.now()}_${file.originalname}`);
@@ -167,7 +167,7 @@ exports.update = (req,res) => {
 		if(body.image_name != ''){ // 기존 이미지가 남아있는경우
 			//수정하기쿼리
 			conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, state = ?, content = ?, category_large_name = ?, category_medium_name = ? WHERE id = ?;",
-			[image_name[0], body.title, body.price, body.state, body.content, body.category_large_name, body.category_medium_name, req.params.id],(err) => { //쿼리 실행
+			[image_name[0], body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, req.params.id],(err) => { //쿼리 실행
 				if(err) throw err;
 				//추가된 이미지 INSERT
 				for(var i=0; i<req.files.length; i++){  
@@ -213,7 +213,6 @@ exports.update = (req,res) => {
 						})
 					}
 			    }
-			
 				res.send({
 					success:true
 				})

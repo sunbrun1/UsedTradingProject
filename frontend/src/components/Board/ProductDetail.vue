@@ -47,7 +47,7 @@
                         <button class='product_btn_item buy'>구매하기</button>
                     </div>
                     <div>
-                        <button class='product_btn_item chat'>연락하기 </button>
+                        <button class='product_btn_item chat' @click="newPage">연락하기 </button>
                     </div>
                     <div>
                         <button class='product_btn_item wish'>관심목록 추가 </button>
@@ -126,7 +126,10 @@ export default {
 			.catch((err)=>{
 				console.log(err);
 			})
-		}
+		},
+        newPage(){
+            window.open('http://192.168.219.100:8081/chat');
+        }
 	}
 }
 </script>

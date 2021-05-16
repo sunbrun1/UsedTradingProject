@@ -13,6 +13,9 @@ import productByCategory from '@/components/Board/ProductByCategory';
 import myPage from '@/components/MyPage/MyPage';
 import myProdcut from '@/components/MyPage/MyProduct';
 
+/* 채팅 관련 */
+import chat from '@/components/Chat/Chat';
+
 
 Vue.use(Router); //vue 라우터 사용
 
@@ -60,9 +63,14 @@ export default new Router({ //라우터 연결
 			,component:myProdcut,
 			props:true 
 		}
-		
-
-
+		/* 채팅 관련 */
+		,{
+			path:'/chat'
+			,name:chat
+			,component:chat,
+			props:true 
+		}
+		/* 테스트 */
 		,{
 			path:'/Test'
 			,name:Test

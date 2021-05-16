@@ -254,6 +254,7 @@ export default {
         },
         selectCategoryMedium(index){ // 중분류 카테고리 선택 함수
             this.selectMediumName=this.categoryList.medium[index][1];
+            console.log(this.selectMediumName)
         },
 
         /* 업로드 관련 */
@@ -265,7 +266,7 @@ export default {
             frm.append('title', this.title);
             frm.append('price', this.price);
             frm.append('select_category_large', this.selectLargeName);
-            frm.append('select_category_medium', this.selectLargeName);
+            frm.append('select_category_medium', this.selectMediumName);
             frm.append('state', this.state);
             frm.append('content', this.content);
             frm.append('image_name', this.test);
