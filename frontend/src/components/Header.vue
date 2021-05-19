@@ -20,7 +20,7 @@
            <!-- 로고 -->
             <div class="logobar_item logo">
                 <router-link to="/">
-                    <img alt='logo' src="@/assets/junho.png" width="225px" height="46px">
+                    <img alt='logo' src="" width="225px" height="46px">
                 </router-link>
             </div>
             <!-- 검색창 -->
@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 <!-- 채팅 -->
-                <div class="logobar_item chat" @click="loginCheckMypage">
+                <div class="logobar_item chat" @click="loginCheckChat">
                     <div>
                         <font-awesome-icon icon="comments" class="font"/> 
                     </div>
@@ -148,12 +148,27 @@ export default {
 				console.log(err);
 			})
         },
-        // 판매하기 로그인여부 확인
+        // 마이페이지 로그인여부 확인
         loginCheckMypage(){
             this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.$router.push({path:'/mypage'});
+                }
+                else{
+                    this.openModal();
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        },
+        // 채팅리스트 로그인여부 확인
+        loginCheckChat(){
+            this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
+            .then((res)=>{
+                if(res.data.success){
+                    this.$router.push({path:'/ChatList'});
                 }
                 else{
                     this.openModal();

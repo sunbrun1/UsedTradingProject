@@ -15,6 +15,7 @@ import myProdcut from '@/components/MyPage/MyProduct';
 
 /* 채팅 관련 */
 import chat from '@/components/Chat/Chat';
+import chatList from '@/components/Chat/ChatList';
 
 
 Vue.use(Router); //vue 라우터 사용
@@ -65,10 +66,15 @@ export default new Router({ //라우터 연결
 		}
 		/* 채팅 관련 */
 		,{
-			path:'/chat'
+			path:'/chat/:productId'
 			,name:chat
 			,component:chat,
 			props:true 
+		}
+		,{
+			path:'/chatList'
+			,name:chatList
+			,component:chatList,
 		}
 		/* 테스트 */
 		,{

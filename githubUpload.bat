@@ -1,3 +1,3 @@
 git add --all
-git commit -m "update ++"
+git commit -m "add myProductCheck "
 git push -u origin master

@@ -185,7 +185,7 @@ export default {
 	methods:{
         /* 상품 기존 데이터 불러오기 */
         getProductDate(){
-            this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id)
+            this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
 			.then((res)=>{
                 this.product = res.data.product;
                 this.title = this.product[0].title;

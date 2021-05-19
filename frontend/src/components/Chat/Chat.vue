@@ -7,7 +7,7 @@
             <div class="chat">
                 <ul v-for="(item) in testData" :key="item.id">
                     <li>
-                        {{item.name}} : {{item.msg}}
+                        {{item.send_id}} : {{item.text}}
                     </li>
                 </ul>
 
@@ -27,7 +27,7 @@ export default {
             text:'',
             name:'',
             testData:[],
-            tttt:''
+            tttt:'',
         }
     },
     mounted(){
@@ -36,9 +36,14 @@ export default {
     },
 	methods:{
         test(){
-            this.$axios.get("http://192.168.219.100:3000/chat",{withCredentials: true})
+            let productId = this.$route.params.productId;
+            this.$axios.get("http://192.168.219.100:3000/chat/" + productId,{withCredentials: true})
 			.then((res)=>{
-                console.log(res);
+                if(res.data.success){
+                    this.testData = res.data.msgData
+                    console.log(this.text);
+
+                }
 			})
 			.catch((err)=>{
 				console.log(err);
@@ -48,14 +53,14 @@ export default {
             this.$socket.on('update', (data) =>{
                 console.log(data.name + " : " + data.message);
                 if(data.message != null){
-                    this.testData.push({name:"상대방",msg:data.message}); 
+                    this.testData.push({send_id:"상대방",text:data.message}); 
                     console.log(this.testData);
                 }
             })
         },
         send(){
             this.$socket.emit('message', {type: 'message', message: this.text})
-            this.testData.push({name:"나",msg:this.text}); 
+            this.testData.push({send_id:"나",text:this.text}); 
             console.log("나: " + this.text)
             this.text = '';
         }

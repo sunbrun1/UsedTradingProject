@@ -42,8 +42,8 @@
                 <!-- 얇은 구분선 -->
                 <div class="short_thin-line"></div>
 
-                <div class="product_btn">
-                    <div class>
+                <div class="product_btn" v-if="myProductCheck">
+                    <div>
                         <button class='product_btn_item buy'>구매하기</button>
                     </div>
                     <div>
@@ -52,6 +52,13 @@
                     <div>
                         <button class='product_btn_item wish'>관심목록 추가 </button>
                     </div>
+                </div>
+                <div class="product_btn" v-else>
+                    <router-link to="/mypage/myproduct/list">
+                    <div>
+                        <button>수정/삭제</button>
+                    </div>
+                    </router-link>
                 </div>
             </div>
         </div>
@@ -95,7 +102,8 @@ export default {
             state:'',
             price:'',
             content:'',
-            currentNumber: 0
+            currentNumber: 0,
+            myProductCheck:true 
         }
     },
     mounted() {
@@ -113,7 +121,6 @@ export default {
 			this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
 			.then((res)=>{
                 this.product = res.data.product;
-         
                 this.title = this.product[0].title;
                 this.price = this.product[0].price;
                 this.category = this.product[0].category;
@@ -122,13 +129,21 @@ export default {
                 this.category_medium_name = this.product[0].category_medium_name;
                 this.state = this.product[0].state;
                 this.image = this.product[0].image_name.split(',');
+
+                if(res.data.myProduct){
+                    this.myProductCheck = false;
+                }
+                else{
+                    this.myProductCheck = true;
+                }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
 		},
         newPage(){
-            window.open('http://192.168.219.100:8081/chat');
+            let productId = this.product[0].id;
+            window.open('http://192.168.219.100:8081/chat/' + productId);
         }
 	}
 }
