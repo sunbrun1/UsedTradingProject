@@ -168,7 +168,7 @@ export default {
             this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    this.$router.push({path:'/ChatList'});
+                    this.$router.push({path:'/talk'});
                 }
                 else{
                     this.openModal();

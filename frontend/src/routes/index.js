@@ -66,13 +66,12 @@ export default new Router({ //라우터 연결
 		}
 		/* 채팅 관련 */
 		,{
-			path:'/chat/:productId'
+			path:'/talk/user/:memberId'
 			,name:chat
 			,component:chat,
-			props:true 
 		}
 		,{
-			path:'/chatList'
+			path:'/talk'
 			,name:chatList
 			,component:chatList,
 		}

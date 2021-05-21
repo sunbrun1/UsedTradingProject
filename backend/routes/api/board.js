@@ -134,33 +134,54 @@ exports.getCategory = (req,res) => { //리스트 모듈 router 에서 호출
 }
 
 /* 상품 상세페이지 모듈 */
-exports.product = (req,res) => { //리스트 모듈 router 에서 호출
-	let accessToken = req.cookies.accessToken;
-	let Decode = jwt.verify(accessToken, secretObj.secret);
+exports.product = (req,res) => { 
+	let accessToken = req.cookies.accessToken; //엑세스 토큰
 	let productId = req.params.id; // 방문한 상품게시물 ID
-	let loginId =  Decode.member_id;  //현재 로그인된 ID
-
-	
-	// 상품정보 조회 쿼리
-	conn.query("SELECT a.id, a.member_id, a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productId,(err,product) => { //쿼리 실행
+	let memberNum;
+	conn.query("SELECT a.member_num FROM member AS a, product AS b WHERE a.member_id = b.member_id and b.id =?;", productId, (err,data) =>{ 
 		if(err) throw err;
-		//내 게시물인지 아닌지 확인하는 쿼리
-		conn.query("SELECT member_id FROM product WHERE id = ?",productId,(err,data) =>{ 
-			if(err) throw err;
-			if(data[0].member_id == loginId) { // 방문한 상품게시물 작성자 ID == 로그인된 ID (내 게시물이라면)
-				res.send({
-					myProduct:true, 
-					product:product
-				})
-			}
-			else{ // 방문한 상품게시물 작성자 ID != 로그인된 ID (다른유저의 게시물이라면)
-				res.send({
-					myProduct:false, 
-					product:product
-				})
-			}
-		})
+		memberNum = data[0].member_num;
 	})
+
+	if(accessToken != null){ // 로그인상태
+		console.log("로그인상태입니다")
+		let Decode = jwt.verify(accessToken, secretObj.secret);
+		let loginId =  Decode.member_id;  //현재 로그인된 ID
+		console.log(loginId)
+
+		// 상품정보 조회 쿼리
+		conn.query("SELECT a.*, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productId,(err,product) => { //쿼리 실행
+			if(err) throw err;
+			//내 게시물인지 아닌지 확인하는 쿼리
+			conn.query("SELECT member_id FROM product WHERE id = ?",productId,(err,data) =>{ 
+				if(err) throw err;
+				if(data[0].member_id == loginId) { // 방문한 상품게시물 작성자 ID == 로그인된 ID (내 게시물이라면)
+					res.send({
+						myProduct:true, 
+						product:product,
+					})
+				}
+				else{ // 방문한 상품게시물 작성자 ID != 로그인된 ID (다른유저의 게시물이라면)
+					res.send({
+						myProduct:false, 
+						product:product,
+						memberNum:memberNum
+					})
+				}
+			})
+		})
+	}
+	else{ // 비로그인 상태
+		console.log("비로그인 상태입니다")
+		// 상품정보 조회 쿼리
+		conn.query("SELECT a.id, a.member_id, a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productId,(err,product) => { //쿼리 실행
+			if(err) throw err;
+			res.send({
+				myProduct:false, 
+				product:product
+			})
+		})
+	}
 	// 조회수 증가 쿼리
 	conn.query("SELECT views FROM product WHERE id=?",req.params.id,(err,data) => { //쿼리 실행
 		if(err) throw err;

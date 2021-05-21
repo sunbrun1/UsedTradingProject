@@ -4,7 +4,7 @@
             <h2>채팅 리스트</h2>
             <div class="chatList">
                 <ul v-for="(item) in chatList" :key="item.id">
-                    <router-link :to="`/chat/` + item.product_id">
+                    <router-link :to="`/talk/user/` + item.host_member_num + '?isDirect=false&product_no=' + item.product_id + '&room_no=' + item.id">
                         <li>
                             {{item.id}}
                         </li>
@@ -22,7 +22,8 @@
 export default {
     data(){
         return{
-            chatList:""
+            chatList:"",
+            memberNum:""
         }
     },
     mounted(){
@@ -30,10 +31,11 @@ export default {
     },
 	methods:{
         test(){
-            this.$axios.get("http://192.168.219.100:3000/chatList", {withCredentials: true})
+            this.$axios.get("http://192.168.219.100:3000/talk", {withCredentials: true})
 			.then((res)=>{
                 if(res.data.success){
                     this.chatList = res.data.chatList;
+                    this.memberNum = res.data.hostMemberNum;
                 }
 			})
 			.catch((err)=>{

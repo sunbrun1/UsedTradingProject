@@ -103,7 +103,8 @@ export default {
             price:'',
             content:'',
             currentNumber: 0,
-            myProductCheck:true 
+            myProductCheck:true ,
+            memberNum:''
         }
     },
     mounted() {
@@ -121,6 +122,7 @@ export default {
 			this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
 			.then((res)=>{
                 this.product = res.data.product;
+                this.memberNum = res.data.memberNum;
                 this.title = this.product[0].title;
                 this.price = this.product[0].price;
                 this.category = this.product[0].category;
@@ -129,6 +131,7 @@ export default {
                 this.category_medium_name = this.product[0].category_medium_name;
                 this.state = this.product[0].state;
                 this.image = this.product[0].image_name.split(',');
+                console.log(this.memberNum)
 
                 if(res.data.myProduct){
                     this.myProductCheck = false;
@@ -142,8 +145,9 @@ export default {
 			})
 		},
         newPage(){
-            let productId = this.product[0].id;
-            window.open('http://192.168.219.100:8081/chat/' + productId);
+            let memberNum = this.memberNum;
+            let productId = this.product[0].id
+            window.open('http://192.168.219.100:8081/talk/user/' + memberNum + "?isDirect=true&product_no=" + productId);
         }
 	}
 }

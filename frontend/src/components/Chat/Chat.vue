@@ -36,8 +36,18 @@ export default {
     },
 	methods:{
         test(){
-            let productId = this.$route.params.productId;
-            this.$axios.get("http://192.168.219.100:3000/chat/" + productId,{withCredentials: true})
+            let memberNum = this.$route.params.memberNum;
+            let productId = this.$route.query.product_no;
+            let isDirect = this.$route.query.isDirect;
+            let roomId = this.$route.query.room_no;
+            this.$axios.get("http://192.168.219.100:3000/talk/user/" + memberNum, {
+                withCredentials: true,
+                params: {
+                    isDirect: isDirect,
+                    product_no : productId,
+                    room_no : roomId
+                }
+             })
 			.then((res)=>{
                 if(res.data.success){
                     this.testData = res.data.msgData
