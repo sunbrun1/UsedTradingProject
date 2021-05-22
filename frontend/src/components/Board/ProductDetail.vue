@@ -4,7 +4,7 @@
             <!-- 사진 슬라이드 -->
             <div class="product_info_item images">
                 <div>
-                    <img :src="`http://192.168.219.100:3000/`+image[currentNumber]" width="400" height="400"/>
+                    <img :src="`http://localhost:3000/`+image[currentNumber]" width="400" height="400"/>
                     <div class="previous" v-if='currentNumber>0' @click="previous">
                         <font-awesome-icon icon="arrow-alt-circle-left"/>
                     </div>
@@ -119,7 +119,7 @@ export default {
         }
         ,
 		getList() {
-			this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
+			this.$axios.get("http://localhost:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
 			.then((res)=>{
                 this.product = res.data.product;
                 this.memberNum = res.data.memberNum;
@@ -131,7 +131,7 @@ export default {
                 this.category_medium_name = this.product[0].category_medium_name;
                 this.state = this.product[0].state;
                 this.image = this.product[0].image_name.split(',');
-                console.log(this.memberNum)
+                console.log(res.data.memberNum)
 
                 if(res.data.myProduct){
                     this.myProductCheck = false;
@@ -147,7 +147,7 @@ export default {
         newPage(){
             let memberNum = this.memberNum;
             let productId = this.product[0].id
-            window.open('http://192.168.219.100:8081/talk/user/' + memberNum + "?isDirect=true&product_no=" + productId);
+            window.open('http://localhost:8081/talk/user/' + memberNum + "?isDirect=true&product_no=" + productId);
         }
 	}
 }

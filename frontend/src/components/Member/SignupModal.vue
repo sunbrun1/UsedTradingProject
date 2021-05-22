@@ -56,7 +56,7 @@ export default {
                 pwCheck:this.pwcheck,
                 email:this.email
 			} 
-            this.$axios.post("http://192.168.219.100:3000/api/member/signup",this.form)
+            this.$axios.post("http://localhost:3000/api/member/signup",this.form)
 			.then((res)=>{
                 if(res.data == "idLengthError"){
                     alert("ID 6자~13자로 입력해주세요");

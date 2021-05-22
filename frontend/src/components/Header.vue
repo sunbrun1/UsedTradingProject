@@ -135,7 +135,7 @@ export default {
         },
         // 판매하기 로그인여부 확인
         loginCheckSell(){
-            this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.$router.push({path:'/upload'});
@@ -150,7 +150,7 @@ export default {
         },
         // 마이페이지 로그인여부 확인
         loginCheckMypage(){
-            this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.$router.push({path:'/mypage'});
@@ -165,7 +165,7 @@ export default {
         },
         // 채팅리스트 로그인여부 확인
         loginCheckChat(){
-            this.$axios.get("http://192.168.219.100:3000/api/member/someAPI",{withCredentials: true})
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.$router.push({path:'/talk'});
@@ -180,7 +180,7 @@ export default {
         },
         // 카테고리 데이터 불러오기
         getCategory() {
-			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory")
+			this.$axios.get("http://localhost:3000/api/board/getcategory")
 			.then((res)=>{
                 this.categoryList = res.data.categoryList; //카테고리 리스트 데이터
 			})
@@ -189,7 +189,7 @@ export default {
 			})
 		},
         logout(){
-            this.$axios.get("http://192.168.219.100:3000/api/member/logout",{withCredentials: true})
+            this.$axios.get("http://localhost:3000/api/member/logout",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     alert("로그아웃 되었습니다")
@@ -202,7 +202,7 @@ export default {
 			})
         },
         loginStatusCheck(){
-            this.$axios.get("http://192.168.219.100:3000/api/member/loginstatuscheck",{withCredentials: true})
+            this.$axios.get("http://localhost:3000/api/member/loginstatuscheck",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
                     this.loginStatus = false; 

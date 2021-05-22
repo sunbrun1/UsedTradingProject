@@ -9,7 +9,7 @@
             <div class="newproduct-item" v-for="(item) in new_product" :key="item.id">
                 <router-link :to="`/product/` + item.id">
                     <div class="newproduct-image">
-                        <img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="214" height="200"/>
+                        <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
                     </div>
                     <div class="newproduct_info">
                         <div class="newproduct-name">
@@ -38,7 +38,7 @@
                 <router-link :to="`/product/` + item.id">
                     <div class="popular_product-image">
                         
-                            <img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="214" height="200"/>
+                            <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
                         
                     </div>
                     <div class="popular_product_info">

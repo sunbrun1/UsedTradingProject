@@ -21,7 +21,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 app.use(logger('dev'));
-app.use(cors({origin: true, credentials: true})); // config 추가
+app.use(cors({origin: "http://localhost:8081", credentials: true})); // config 추가
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
@@ -43,29 +43,42 @@ app.get("/talk", (req,res) =>{ //채팅 리스트 조회
   })
 })
 
+
+/* 전역변수 */
+let currentLoginId; // 로그인한 ID
+let productId; //판매글 ID
+let isDirect; //상품페이지에서 바로 채팅
+let sellerId; //상품 판매자
+let roomId; //채팅방 넘버
+
 /*        채팅관련             */
 app.get("/talk/user/:memberNum",(req,res) => {
-  let accessToken = req.cookies.accessToken; //엑세스토큰
-  let Decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
-  let loginId = Decode.member_id; // 로그인한 ID
+  /* jwt토큰 로그인ID 추출 */
+  let accessToken = req.cookies.accessToken; // 엑세스토큰
+  let Decode = jwt.verify(accessToken, secretObj.secret); // 엑세스토큰 복호화
+  currentLoginId = Decode.member_id; // 현재 로그인 ID
 
-  let productId = req.query.product_no; //판매글 ID
-  let isDirect = req.query.isDirect; //상품페이지에서 바로 채팅
+  /* req.query */
+  productId = req.query.product_no; // 상품 ID
+  isDirect = req.query.isDirect; // 상품페이지에서 바로 채팅했는지 유무
 
-  let sellerId;
-  let roomId;
-  console.log(req.query);
+  if(isDirect == 'true'){ // 상품페이지에서 판매자에게 채팅한 경우
+    console.log("===상품 페이지에서 채팅===")
 
-  if(isDirect == 'true'){ // 상품페이지에서 바로 채팅
-    conn.query("SELECT member_id FROM product WHERE id = ?;" , productId, (err,data) =>{ //판매자 ID SELECT 쿼리
+    /* 상품 판매자 ID 조회 쿼리 */
+    conn.query("SELECT member_id FROM product WHERE id = ?;" , productId, (err,data) =>{ 
       if(err) throw err;
       sellerId = data[0].member_id; // 판매자 ID
 
-      conn.query("SELECT id FROM chat_room WHERE host = ? and guest = ? and product_id = ?",[sellerId,loginId,productId], (err,data) =>{
-        if(data[0] != null){ // 데이터가 있다면
+      /* 채팅내역(채팅방) 조회 쿼리 */
+      conn.query("SELECT id FROM chat_room WHERE host = ? and guest = ? and product_id = ?",[sellerId,currentLoginId,productId], (err,data) =>{
+        if(err) throw err;
+        if(data[0] != null){ // 기존 채팅방이 있다면 채팅방으로 이동
           console.log("채팅방 이동");
           roomId = data[0].id; // 채팅방 ID
-          conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomId, (err,data) => { //채팅 데이터 조회
+
+          /* 채팅 내역 조회 쿼리*/
+          conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomId, (err,data) => { 
             if(err) throw err;
             res.send({
               msgData:data,
@@ -73,22 +86,45 @@ app.get("/talk/user/:memberNum",(req,res) => {
             })
           })
         }
-        else{ //데이터가 없다면
-          console.log("방 생성");
-          conn.query("INSERT INTO chat_room (host, guest, title, product_id) value(?, ?, ?, ?);",[sellerId, loginId, "방입니다", productId], (err) => {
+        else{ // 기존 채팅방이 없다면 새로운 방 생성후 채팅방 이동
+          console.log("===새로운 채팅방 생성후 이동===");
+
+          /* 채팅방 생성 쿼리 */
+          conn.query("INSERT INTO chat_room (host, guest, title, product_id) value(?, ?, ?, ?);",[sellerId, currentLoginId, "방입니다", productId], (err) => {
             if(err) throw err;
-            conn.query("SELECT id FROM chat_room WHERE id = LAST_INSERT_ID();", (err,data) => {
-              if(err) throw err;
-              roomId = data[0].id
-            })
           })
         } 
       })
     })
   }
-  else{ //채팅페이지에서 채팅
-    console.log("채팅페이지에서 채팅")
-    roomId = req.query.room_no; 
+  else{ // 채팅리스트에서 채팅한 경우
+    console.log("===채팅 페이지에서 채팅===")
+    /* req.query */
+    roomId = req.query.room_no; // 채팅방 ID
+
+    /* 판매자 ID 조회 쿼리 */
+    conn.query("SELECT member_id FROM product WHERE id = ?;", productId, (err,data) =>{
+      if(err) throw err;
+      sellerId = data[0].member_id; // 판매자 ID
+      if(currentLoginId == sellerId){ // 현재 로그인 유저가 판매자인 경우
+        console.log("로그인한 유저는 판매자입니다")
+        console.log("판매자 ID : " + sellerId)
+        console.log("로그인 ID : " + currentLoginId)
+        /* 구매자 ID 조회 쿼리 */
+        conn.query("SELECT guest FROM chat_room WHERE id = ?;" , roomId, (err,data) =>{
+          if(err) throw err;
+          sellerId = data[0].guest; // 구매자 ID
+        })
+      }
+      else{
+        console.log("로그인한 유저는 구매자입니다.")
+        console.log("판매자 ID : " + sellerId)
+        console.log("로그인 ID : " + currentLoginId)
+        
+      }
+    })
+
+    /* 채팅 내역 조회 쿼리 */
     conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomId, (err,data) => {
       if(err) throw err;
       res.send({
@@ -97,37 +133,43 @@ app.get("/talk/user/:memberNum",(req,res) => {
       })
     })
   }
-
-  /* 소켓 */
-  app.io.once('connection',(socket) => {
-    console.log("socket connect!");
-    socket.join(roomId);
-    /* 새로운 유저가 접속했을 경우 다른 소켓에게도 알려줌 */
-    socket.to(roomId).emit('update', {type: 'connect', name: "SERVER", message: loginId + "님이 접속하였습니다."})
-
-    /* 전송한 메세지 받기 */
-    socket.on('message', (data) => {
-      /* 받은 데이터에 누가 보냈는지 이름 추가 */
-      data.name = loginId;
-
-      console.log(data);
-
-      /* 보낸 사람을 제외한 나머지 유저에게 메시지 전송 */
-      socket.broadcast.to(roomId).emit('update', data)
-
-      conn.query("INSERT INTO chat_message (send_id, send_time, text, room_id, unidentified_id) values(?, ?, ?, ?, ?)",[loginId, "gd", data.message ,roomId, sellerId],(err) => { //메세지 내용 DB 저장
-        if(err) throw err;
-      })
-    });
-    /* 접속 종료 */
-    socket.on('disconnect',() => {
-      console.log("socket disconnect!");
-      console.log(loginId + "님이 나가셨습니다");
-    })
-  })
-
 })
 
+
+/* 소켓 */
+app.io.on('connection',(socket) => {
+  console.log("socket connect!");
+  socket.join(roomId);
+
+  socket.sendId = currentLoginId; // 메시지 보낸 ID
+  socket.recevieId = sellerId; // 메시지 받는 ID
+
+  console.log("socket.sendId : " + socket.sendId)
+  console.log("socket.recevieId : " + socket.recevieId)
+
+  /* 새로운 유저가 접속했을 경우 다른 소켓에게도 알려줌 */
+  app.io.to(roomId).emit('update', {type: 'connect', name: "SERVER", message: socket.sendId  + "님이 접속하였습니다."})
+
+  /* 전송한 메세지 받기 */
+  socket.on('message', (data) => {
+    /* 받은 데이터에 누가 보냈는지 이름 추가 */
+    data.name = socket.sendId;
+
+    console.log(data);
+
+    /* 보낸 사람을 제외한 나머지 유저에게 메시지 전송 */
+    socket.broadcast.to(roomId).emit('update', data)
+
+    conn.query("INSERT INTO chat_message (send_id, send_time, text, room_id, unidentified_id) values(?, ?, ?, ?, ?)",[socket.sendId, "gd", data.message ,roomId, socket.recevieId],(err) => { //메세지 내용 DB 저장
+      if(err) throw err;
+    })
+  });
+  /* 접속 종료 */
+  socket.on('disconnect',() => {
+    console.log("socket disconnect!");
+    console.log(currentLoginId + "님이 나가셨습니다");
+  })
+})
 
 
 

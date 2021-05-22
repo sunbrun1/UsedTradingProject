@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import io from 'socket.io-client';
+
 export default {
     data(){
         return{
@@ -28,19 +30,25 @@ export default {
             name:'',
             testData:[],
             tttt:'',
+            socket : io('http://localhost:3000')
         }
     },
     mounted(){
         this.test();
-        this.chatList();
+      
+    },
+    created(){
+        this.socket.on('update', (data) =>{
+                this.testData.push({send_id:"상대방",text:data.message}); 
+            })
     },
 	methods:{
         test(){
-            let memberNum = this.$route.params.memberNum;
+            let memberNum = this.$route.params.memberId;
             let productId = this.$route.query.product_no;
             let isDirect = this.$route.query.isDirect;
             let roomId = this.$route.query.room_no;
-            this.$axios.get("http://192.168.219.100:3000/talk/user/" + memberNum, {
+            this.$axios.get("http://localhost:3000/talk/user/" + memberNum, {
                 withCredentials: true,
                 params: {
                     isDirect: isDirect,
@@ -60,16 +68,13 @@ export default {
 			})
         },
         chatList(){
-            this.$socket.on('update', (data) =>{
-                console.log(data.name + " : " + data.message);
-                if(data.message != null){
-                    this.testData.push({send_id:"상대방",text:data.message}); 
-                    console.log(this.testData);
-                }
+            this.socket.on('update', (data) =>{
+                this.testData.push({send_id:"상대방",text:data.message}); 
             })
         },
         send(){
-            this.$socket.emit('message', {type: 'message', message: this.text})
+            console.log(this.text)
+            this.socket.emit('message', {type: 'message', message: this.text})
             this.testData.push({send_id:"나",text:this.text}); 
             console.log("나: " + this.text)
             this.text = '';

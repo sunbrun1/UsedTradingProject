@@ -31,7 +31,7 @@ export default {
     },
 	methods:{
         test(){
-            this.$axios.get("http://192.168.219.100:3000/talk", {withCredentials: true})
+            this.$axios.get("http://localhost:3000/talk", {withCredentials: true})
 			.then((res)=>{
                 if(res.data.success){
                     this.chatList = res.data.chatList;

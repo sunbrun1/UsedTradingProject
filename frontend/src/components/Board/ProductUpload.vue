@@ -213,7 +213,7 @@ export default {
 
         /* 상품 카테고리 관련 */
         getCategory() { // 카테고리 데이터 불러오기
-			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory")
+			this.$axios.get("http://localhost:3000/api/board/getcategory")
 			.then((res)=>{
                 this.categoryList = res.data.categoryList; 
 			})
@@ -247,7 +247,7 @@ export default {
                 'withCredentials': true
             };
 
-            this.$axios.post("http://192.168.219.100:3000/api/board/upload",frm, config)
+            this.$axios.post("http://localhost:3000/api/board/upload",frm, config)
 			.then((res)=>{
                 if(res.data.success){
                     alert("등록완료");

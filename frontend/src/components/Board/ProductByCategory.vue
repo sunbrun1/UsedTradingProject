@@ -10,7 +10,7 @@
             <div class="newproduct-item" v-for="(item) in product" :key="item.id">
                 <router-link :to="`/product/` + item.id">
                     <div class="newproduct-image">
-                        <img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="214" height="200"/>
+                        <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
                     </div>
                     <div class="newproduct_info">
                         <div class="newproduct-name">
@@ -72,7 +72,7 @@ export default {
             } 
         },
 		getCategoryList() {
-			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory/" + this.$route.params.id)
+			this.$axios.get("http://localhost:3000/api/board/getcategory/" + this.$route.params.id)
 			.then((res)=>{
                 this.product = res.data.product; //대분류 상품데이터
                 this.thumbnail = this.product.thumbnail; //썸네일

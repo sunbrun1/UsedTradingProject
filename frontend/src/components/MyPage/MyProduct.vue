@@ -46,7 +46,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in myProduct" :key="index">
-                                <td><img :src="`http://192.168.219.100:3000/`+item.thumbnail" width="150" height="100"/></td>
+                                <td><img :src="`http://localhost:3000/`+item.thumbnail" width="150" height="100"/></td>
                                 <td class="title">{{item.title}}</td>
                                 <td>{{item.price.toLocaleString('ko-KR')}} 원</td>
                                 <td>{{item.zzim}}</td>
@@ -135,7 +135,7 @@ export default {
         },
         // 내 게시물 불러오기(초기화면)
 		getList() {
-			this.$axios.get("http://192.168.219.100:3000/api/mypage/myproduct/list",{
+			this.$axios.get("http://localhost:3000/api/mypage/myproduct/list",{
                 withCredentials: true,
                 params: {
                     limit : this.pageLimit,
@@ -151,7 +151,7 @@ export default {
 		},
         // 초기 페이징 화면
         myProductCount(){
-            this.$axios.get("http://192.168.219.100:3000/api/mypage/myproduct/myProductCount",{withCredentials: true})
+            this.$axios.get("http://localhost:3000/api/mypage/myproduct/myProductCount",{withCredentials: true})
             .then((res)=>{
                 this.totalListItemCount = res.data.count[0].count; 
                 this.initUI();
@@ -223,7 +223,7 @@ export default {
         },
         // 페이지별 게시물 불러오기
         getListByPage() {
-			this.$axios.get("http://192.168.219.100:3000/api/mypage/myproduct/list",{
+			this.$axios.get("http://localhost:3000/api/mypage/myproduct/list",{
                 withCredentials: true,
                 params: {
                     no : this.$route.query.no,
@@ -240,7 +240,7 @@ export default {
 		},
         // 게시물 삭제
         productDelete(product) {
-			this.$axios.post("http://192.168.219.100:3000/api/mypage/myproduct/delete",product)
+			this.$axios.post("http://localhost:3000/api/mypage/myproduct/delete",product)
 			.then((res)=>{
                 if(res.data.success){
                     alert("삭제되었습니다.")

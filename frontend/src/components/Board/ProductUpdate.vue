@@ -185,7 +185,7 @@ export default {
 	methods:{
         /* 상품 기존 데이터 불러오기 */
         getProductDate(){
-            this.$axios.get("http://192.168.219.100:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
+            this.$axios.get("http://localhost:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
 			.then((res)=>{
                 this.product = res.data.product;
                 this.title = this.product[0].title;
@@ -196,7 +196,7 @@ export default {
                 this.selectMediumName = this.product[0].category_medium_name;
                 this.test = this.product[0].image_name.split(',')
                 for(let i=0; i<this.test.length; i++){
-                    this.files.push({preview : "http://192.168.219.100:3000/" + this.test[i], image_name : this.test[i]})
+                    this.files.push({preview : "http://localhost:3000/" + this.test[i], image_name : this.test[i]})
                 }
 			})
 			.catch((err)=>{
@@ -240,7 +240,7 @@ export default {
 
         /* 상품 카테고리 관련 */
         getCategory() { // 카테고리 데이터 불러오기
-			this.$axios.get("http://192.168.219.100:3000/api/board/getcategory")
+			this.$axios.get("http://localhost:3000/api/board/getcategory")
 			.then((res)=>{
                 this.categoryList = res.data.categoryList; 
 			})
@@ -277,7 +277,7 @@ export default {
                 'withCredentials': true
             };
 
-            this.$axios.post("http://192.168.219.100:3000/api/board/update/" + this.$route.params.id ,frm, config)
+            this.$axios.post("http://localhost:3000/api/board/update/" + this.$route.params.id ,frm, config)
 			.then((res)=>{
                 if(res.data.success){
                     alert("수정완료");
