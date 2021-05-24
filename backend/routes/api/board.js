@@ -3,7 +3,8 @@ const conn =  db.init(); //db 연결
 const multer = require('multer'); 
 const jwt = require("jsonwebtoken");
 const secretObj = require("../../config/jwt");
-var fs = require('fs');
+let fs = require('fs');
+const { brotliDecompress } = require('zlib');
 
 /* Create */
 const storage = multer.diskStorage({  // 업로드를위한 multer 모듈
@@ -28,46 +29,65 @@ const multertUpload = multer({ storage }).array("files",12);
 exports.upload = (req,res)  =>{ /* 업로드 모듈 */
 	multertUpload(req,res,(err) =>{ //multer
 		let body = req.body;
+		let files = req.files;
 		let date = new Date();
 		let accessToken = req.cookies.accessToken;
 		let accessTokenDecoded = jwt.verify(accessToken, secretObj.secret);
-		console.log(req.files);
 
-		conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-		[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date],
-		(err,data) => { //쿼리 실행
-			if(err){
-				throw err;
+		if(files.length > 0){ // 이미지공백 체크
+			if(body.title.length > 2){ // 제목 2글자 이하 체크 
+				if(body.select_category_large.length > 0 && body.select_category_medium.length > 0){ // 카테고리 선택 공백 체크
+					if(body.price.length > 0 ){ // 가격 공백 체크
+						if(body.state.length > 0){
+							/* 상품 업로드 쿼리 */
+							conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+							[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date],(err) => { 
+								if(err) throw err;
+								for(let i=0; i<req.files.length; i++){
+									/* 상품 이미지 업로드 쿼리 */
+									conn.query("INSERT INTO product_image (image_name,id) values(?,LAST_INSERT_ID());",[req.files[i].filename],(err,) => { 
+										if(err) throw err;
+									});
+								}
+								res.send({
+									success:true
+								})
+								
+							});	
+						}
+						else{
+							res.send("stateCheckError") 
+						}
+					} 
+					else{
+						res.send("priceCheckError") 
+					}
+				}
+				else{
+					res.send("categoryCheckError");
+				}
 			}
 			else{
-				for(var i=0; i<req.files.length; i++){
-					conn.query("INSERT INTO product_image (image_name,id) values(?,LAST_INSERT_ID());",
-					[req.files[i].filename],
-					(err,data) => { //쿼리 실행
-						if(err){
-							throw err;
-						}
-					});
-				}
-				res.send({
-					success:true
-				})
+				res.send("titleCheckError"); 
 			}
-		});	
+		}
+		else{
+			res.send("imageCheckError"); 
+		}
 	})
 }
 
 /* Read */
 /* 메인화면 출력 모듈 */
 exports.list = (req,res) => { //리스트 모듈 router 에서 호출
-	conn.query("SELECT * FROM product ORDER BY id DESC LIMIT 10 ;",(err,new_product) => { //쿼리 실행
+	conn.query("SELECT * FROM product ORDER BY id DESC LIMIT 10 ;",(err,newProduct) => { //쿼리 실행
 		if(err) throw err;
-		conn.query("SELECT * FROM product ORDER BY views DESC LIMIT 10 ; ;",(err,popular_product) => { //쿼리 실행
+		conn.query("SELECT * FROM product ORDER BY views DESC LIMIT 10 ; ;",(err,bestProduct) => { //쿼리 실행
 			if(err) throw err;
 			res.send({
 				success:true,
-				new_product:new_product,
-				popular_product:popular_product
+				newProduct:newProduct,
+				bestProduct:bestProduct
 			})
 		})
 	})
@@ -136,45 +156,46 @@ exports.getCategory = (req,res) => { //리스트 모듈 router 에서 호출
 /* 상품 상세페이지 모듈 */
 exports.product = (req,res) => { 
 	let accessToken = req.cookies.accessToken; //엑세스 토큰
-	let productId = req.params.id; // 방문한 상품게시물 ID
-	let memberNum;
-	conn.query("SELECT a.member_num FROM member AS a, product AS b WHERE a.member_id = b.member_id and b.id =?;", productId, (err,data) =>{ 
+	let productNo = req.params.no; // 상품 ID
+	let memberNo;
+
+	/* 유저ID 넘버 조회 쿼리 */
+	conn.query("SELECT a.member_no FROM member AS a, product AS b WHERE a.member_id = b.member_id and b.id =?;", productNo, (err,data) =>{ 
 		if(err) throw err;
-		memberNum = data[0].member_num;
+		memberNo = data[0].member_no;
 	})
 
-	if(accessToken != null){ // 로그인상태
-		console.log("로그인상태입니다")
-		let Decode = jwt.verify(accessToken, secretObj.secret);
-		let loginId =  Decode.member_id;  //현재 로그인된 ID
-		console.log(loginId)
+	if(accessToken != null){ // 로그인상태인 경우
+		console.log("로그인 상태입니다")
+		let decode = jwt.verify(accessToken, secretObj.secret);
+		let loginId =  decode.member_id;  //현재 로그인된 ID
 
 		// 상품정보 조회 쿼리
-		conn.query("SELECT a.*, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productId,(err,product) => { //쿼리 실행
+		conn.query("SELECT a.*, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productNo,(err,product) => {
 			if(err) throw err;
 			//내 게시물인지 아닌지 확인하는 쿼리
-			conn.query("SELECT member_id FROM product WHERE id = ?",productId,(err,data) =>{ 
+			conn.query("SELECT member_id FROM product WHERE id = ?",productNo,(err,data) =>{ 
 				if(err) throw err;
-				if(data[0].member_id == loginId) { // 방문한 상품게시물 작성자 ID == 로그인된 ID (내 게시물이라면)
+				if(data[0].member_id == loginId) { // 내 게시물이라면
 					res.send({
 						myProduct:true, 
 						product:product,
 					})
 				}
-				else{ // 방문한 상품게시물 작성자 ID != 로그인된 ID (다른유저의 게시물이라면)
+				else{ // 다른유저의 게시물이라면
 					res.send({
 						myProduct:false, 
 						product:product,
-						memberNum:memberNum
+						memberNo:memberNo
 					})
 				}
 			})
 		})
 	}
-	else{ // 비로그인 상태
+	else{ // 비로그인 상태인 경우
 		console.log("비로그인 상태입니다")
 		// 상품정보 조회 쿼리
-		conn.query("SELECT a.id, a.member_id, a.title, a.price, a.state, a.content, a.category_large_name, a.category_medium_name, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productId,(err,product) => { //쿼리 실행
+		conn.query("SELECT a.*, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productNo,(err,product) => {
 			if(err) throw err;
 			res.send({
 				myProduct:false, 
@@ -183,16 +204,12 @@ exports.product = (req,res) => {
 		})
 	}
 	// 조회수 증가 쿼리
-	conn.query("SELECT views FROM product WHERE id=?",req.params.id,(err,data) => { //쿼리 실행
+	conn.query("SELECT views FROM product WHERE id = ?", productNo, (err,data) => { //쿼리 실행
 		if(err) throw err;
-		else{
-			conn.query("UPDATE product SET views=? WHERE id=?",[data[0].views+1,req.params.id],
-			(err,data) => { //쿼리 실행
-				if(err){
-					throw err;
-				}
-			});	
-		}
+		let views = data[0].views;
+		conn.query("UPDATE product SET views=? WHERE id = ?",[views+1, productNo], (err) => { 
+			if(err) throw err;
+		});	
 	})
 }
         
@@ -202,61 +219,91 @@ exports.product = (req,res) => {
 exports.update = (req,res) => {
 	multertUpload(req,res,(err) =>{ //multer
 		let body = req.body
+		let files = req.files;
 		let image_name = req.body.image_name.split(","); //남아있는 기존 이미지
 		let deleteImage = req.body.deleteImage.split(","); //삭제된 기존 이미지
-		if(body.image_name != ''){ // 기존 이미지가 남아있는경우
-			//수정하기쿼리
-			conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, state = ?, content = ?, category_large_name = ?, category_medium_name = ? WHERE id = ?;",
-			[image_name[0], body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, req.params.id],(err) => { //쿼리 실행
-				if(err) throw err;
-				//추가된 이미지 INSERT
-				for(var i=0; i<req.files.length; i++){  
-					conn.query("INSERT INTO product_image (image_name,id) values(?,?);",[req.files[i].filename, req.params.id],(err,data) => { //쿼리 실행
-						if(err) throw err;
-					});
-				}
-				/* 이미지 삭제관련 */
-				if(deleteImage != ''){
-					for(var i=0; i<deleteImage.length; i++){
-						fs.unlink("./images/" + deleteImage[i], (err) => { //실제파일 삭제
-							if(err) throw err;
-						})			
-						conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
-							if(err) throw err;
-						})
+		console.log(image_name);
+		console.log(deleteImage);
+
+		if(files.length > 0){ // 이미지공백 체크
+			if(body.title.length > 2){ // 제목 2글자 이하 체크 
+				if(body.select_category_large.length > 0 && body.select_category_medium.length > 0){ // 카테고리 선택 공백 체크
+					if(body.price.length > 0 ){ // 가격 공백 체크
+						if(body.state.length > 0){
+							/* 상품 업로드 쿼리 */
+							if(body.image_name != ''){ // 기존 이미지가 남아있는경우
+								//수정하기쿼리
+								conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, state = ?, content = ?, category_large_name = ?, category_medium_name = ? WHERE id = ?;",
+								[image_name[0], body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, req.params.id],(err) => { //쿼리 실행
+									if(err) throw err;
+									//추가된 이미지 INSERT
+									for(let i=0; i<req.files.length; i++){  
+										conn.query("INSERT INTO product_image (image_name,id) values(?,?);",[req.files[i].filename, req.params.id],(err,data) => { //쿼리 실행
+											if(err) throw err;
+										});
+									}
+									/* 이미지 삭제관련 */
+									if(deleteImage != ''){
+										for(let i=0; i<deleteImage.length; i++){
+											fs.unlink("./public/images/" + deleteImage[i], (err) => { //실제파일 삭제
+												if(err) throw err;
+											})			
+											conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
+												if(err) throw err;
+											})
+										}
+									}
+									res.send({
+										success:true
+									})
+								})
+								
+							}
+							else{ // 기존 이미지가 남아있지 않은경우
+								conn.query("UPDATE product SET thumbnail = ?,title = ?,price = ?,state = ?,content = ?,category_large_name = ?, category_medium_name = ? WHERE id = ?;",
+								[req.files[0].filename, body.title, body.price, body.state, body.content, body.category_large_name, body.category_medium_name, req.params.id],(err) => { //쿼리 실행
+									if(err) throw err;
+									//추가된 이미지 INSERT
+									for(let i=0; i<req.files.length; i++){  
+										conn.query("INSERT INTO product_image (image_name,id) values(?,?);",[req.files[i].filename, req.params.id],(err,data) => { //쿼리 실행
+											if(err) throw err;
+										});
+									}
+									/* 이미지 삭제관련 */
+									if(deleteImage != ''){
+										for(let i=0; i<deleteImage.length; i++){
+											fs.unlink("./public/images/" + deleteImage[i], (err) => { //실제파일 삭제
+												if(err) throw err;
+											})			
+											conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
+												if(err) throw err;
+											})
+										}
+									}
+									res.send({
+										success:true
+									})
+								})
+							}
+						}
+						else{
+							res.send("stateCheckError") 
+						}
+					} 
+					else{
+						res.send("priceCheckError") 
 					}
-			    }
-				res.send({
-					success:true
-				})
-			})
-			
+				}
+				else{
+					res.send("categoryCheckError");
+				}
+			}
+			else{
+				res.send("titleCheckError"); 
+			}
 		}
-		else{ // 없는 경우
-			conn.query("UPDATE product SET thumbnail = ?,title = ?,price = ?,state = ?,content = ?,category_large_name = ?, category_medium_name = ? WHERE id = ?;",
-			[req.files[0].filename, body.title, body.price, body.state, body.content, body.category_large_name, body.category_medium_name, req.params.id],(err) => { //쿼리 실행
-				if(err) throw err;
-				//추가된 이미지 INSERT
-				for(var i=0; i<req.files.length; i++){  
-					conn.query("INSERT INTO product_image (image_name,id) values(?,?);",[req.files[i].filename, req.params.id],(err,data) => { //쿼리 실행
-						if(err) throw err;
-					});
-				}
-				/* 이미지 삭제관련 */
-				if(deleteImage != ''){
-					for(var i=0; i<deleteImage.length; i++){
-						fs.unlink("./images/" + deleteImage[i], (err) => { //실제파일 삭제
-							if(err) throw err;
-						})			
-						conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
-							if(err) throw err;
-						})
-					}
-			    }
-				res.send({
-					success:true
-				})
-			})
+		else{
+			res.send("imageCheckError"); 
 		}
 	})
 }

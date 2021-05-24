@@ -1,6 +1,7 @@
 <template>
     <body>
-        <form id="zz">
+        <form>
+            <!-- 기본정보 -->
             <div class="basicinfo">
                 <div class="basicinfo_item title1">
                     <h2>기본정보</h2>
@@ -14,20 +15,20 @@
             <div class="thick-line"></div>
 
             <!-- 상품이미지 -->
-            <div class="prouctimage">
-                <div class="productimage-item title">
+            <div class="image_wrap">
+                <div class="wrap_item title">
                     상품이미지<span>*</span>
                 </div>
-                <div class="productimage-item file" >
+                <div class="wrap_item file" >
                     <!-- 이미지추가 -->
-                    <div v-if="!files.length" class="productimage-item preview" >
+                    <div v-if="!files.length" class="wrap_item preview" >
                         <label for='files' >
                             +<input type="file" name='files' id='files' ref="files" @change="imageUpload" accept="image/jpeg,image/png"/>
                         </label>
                     </div>
                     <!-- 이미지 출력 -->
-                    <div v-else class="productimage-item addpreview" >
-                        <div class="productimage-addimage" v-for="(item,index) in files" :key="index">
+                    <div v-else class="wrap_item addpreview" >
+                        <div class="image_add" v-for="(item,index) in files" :key="index">
                             <!-- 대표이미지 -->
                             <div v-if="index=='0'" class="mainimage">
                                 대표이미지
@@ -38,7 +39,7 @@
                             </div>
                             <img :src="item.preview" width="239" height="239"/>
                         </div>
-                        <div class="productimage-addimage2">
+                        <div class="image_add2">
                             <label for="files">+</label>
                             <input type="file" name='files' id="files" ref="files" @change="imageUpload" accept="image/jpeg,image/png"/>
                         </div>
@@ -51,13 +52,13 @@
 
             <!-- 제목 -->
             <div class="productname">
-                <div class="productname-item title" >
+                <div class="productname_item title" >
                     제목<span>*</span>
                 </div>
-                <div class="productname-item input">
+                <div class="productname_item input">
                     <input type="text" v-on:input="textLengthCheck" v-model="title" ref="title" placeholder="제목을 입력해주세요." maxlength='20' spellcheck="false">
                 </div>
-                <div class="productname-item limit" >
+                <div class="productname_item limit" >
                     {{title_length}}/20
                 </div>
             </div>
@@ -175,11 +176,17 @@ export default {
             title_length:0, //제목 글자수
         }
     },
+    watch:{
+        /* 상품 가격 숫자만 입력가능 */
+        price(){
+                return this.price = this.price.replace(/[^0-9]/g, '');
+            }
+        },
     mounted() {
         this.getCategory(); //접속시 카테고리 데이터 불러오기
 	},
 	methods:{
-        /* 상품 이미지 관련 */
+        /* 상품 이미지 배열 추가 */
         imageUpload(){  //이미지 업로드 
             if(this.files.length < 12){
                 for (let i = 0; i < this.$refs.files.files.length; i++) {
@@ -196,11 +203,12 @@ export default {
                 alert("이미지는 최대 12개 까지 업로드 할 수 있습니다.");
             }
         },
-        fileDeleteButton(index) { // 이미지 삭제
+        /* 이미지 삭제 */
+        fileDeleteButton(index) { 
             this.files.splice(index, 1);
         },
 
-        /* 상품 제목 관련 */
+        /* 상품 제목 길이체크 */
         textLengthCheck(e){ // 제목 글자수 체크(v-model 한글 처리)
             console.log(this.title.length)
             if(e.target.value.length > e.target.maxLength){
@@ -229,38 +237,62 @@ export default {
             this.selectMediumName=this.categoryList.medium[index][1];
         },
 
-        /* 업로드 관련 */
-        upload(){  //상품 업로드
-            var frm = new FormData()
-            for(var i=0; i<this.files.length; i++){
-                frm.append('files',  this.files[i].file);
-            }
-            frm.append('title', this.title);
-            frm.append('price', this.price);
-            frm.append('select_category_large', this.selectLargeName);
-            frm.append('select_category_medium', this.selectLargeName);
-            frm.append('state', this.state);
-            frm.append('content', this.content);
-
-            const config = {
-                header: { 'content-type': 'multipart/form-data'},
-                'withCredentials': true
-            };
-
-            this.$axios.post("http://localhost:3000/api/board/upload",frm, config)
-			.then((res)=>{
-                if(res.data.success){
-                    alert("등록완료");
-                    this.$router.push({path:'./'});
+        /* 업로드 */
+        upload(){  
+            /* 로그인여부 확인 */
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                let frm = new FormData()
+                for(let i=0; i<this.files.length; i++){
+                    frm.append('files',  this.files[i].file);
                 }
-                else{
-                    alert("등록실패");
-                }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
-        }
+                frm.append('title', this.title);
+                frm.append('price', this.price);
+                frm.append('select_category_large', this.selectLargeName);
+                frm.append('select_category_medium', this.selectMediumName);
+                frm.append('state', this.state);
+                frm.append('content', this.content);
+
+                const config = {
+                    header: { 'content-type': 'multipart/form-data'},
+                    'withCredentials': true
+                };
+                /* 업로드 POST */
+                this.$axios.post("http://localhost:3000/api/board/upload",frm, config)
+                .then((res)=>{
+                    if(res.data.success){
+                        alert("등록완료");
+                        this.$router.push({path:'./'});
+                    }
+                    else if(res.data == "imageCheckError"){
+                        alert("상품 사진을 등록해주세요.")
+                    }
+                    else if(res.data == "titleCheckError"){
+                        alert("상품명을 2자 이상 입력해주세요.")
+                        this.$refs.title.focus();
+                    }
+                    else if(res.data == "categoryCheckError"){
+                        alert("카테고리를 선택해주세요.")
+                    }
+                    else if(res.data == "priceCheckError"){
+                        alert("상품 가격을 입력해주세요.")
+                        this.$refs.price.focus();
+                    }
+                    else if(res.data == "stateCheckError"){
+                        alert("상품 상태를 선택해주세요.")
+                    }
+                    else{
+                        alert("등록실패");
+                    }
+                })
+                .catch((err)=>{
+                    console.log(err);
+                })
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
+        },
 	}
 }
 
@@ -270,7 +302,7 @@ export default {
     body{
         padding-top: 196px;
     }
-    /* 기본정보 h2*/
+    /* === 기본정보 h2 ===*/
     .basicinfo{
         width: 1180px;
         height: 30px;
@@ -306,7 +338,7 @@ export default {
         background-color: #DADCE0;
     }
     /*=================  상품이미지  =========================*/
-    .prouctimage{
+    .image_wrap{
         overflow:hidden;
         width: 1180px;
 		height:auto;
@@ -315,35 +347,35 @@ export default {
         padding-bottom: 30px;
     }
     /* 가로정렬 */
-    .productimage-item{
+    .wrap_item{
         float: left;
     }
     /* 상품이미지 타이틀 */
-    .productimage-item.title{
+    .wrap_item.title{
         font-size: 18px;
         padding-right: 54px;
         margin-top: 6px;
     }
     /* 별표 */
-    .productimage-item.title span{
+    .wrap_item.title span{
         color: red;
     }
     /* 이미지추가1 */
-    .productimage-item.preview input{
+    .wrap_item.preview input{
         display: none;
     }
-    .productimage-item.preview label{
+    .wrap_item.preview label{
         padding: 107px 115px;
         cursor: pointer;
         line-height: 238px;
         background: #DADCE0;
     }
     /* 이미지 */
-    .productimage-item.addpreview{
+    .wrap_item.addpreview{
         width: 1034px;
         position: relative;
     }
-    .productimage-addimage{
+    .image_add{
         float: left;
         margin-bottom: 20px;
         position: relative;
@@ -373,17 +405,17 @@ export default {
         position: absolute;
         left: 219px;
     }
-    .productimage-addimage:not(:nth-child(4n)){
+    .image_add:not(:nth-child(4n)){
         margin-right: 25px;
     }
     /* 이미지추가 */
-    .productimage-addimage2{
+    .image_add2{
         float: left;
     }
-    .productimage-addimage2 input{
+    .image_add2 input{
         display: none;
     }
-    .productimage-addimage2 label{
+    .image_add2 label{
         padding: 107px 115px;
         cursor: pointer;
         line-height: 238px;
@@ -399,37 +431,37 @@ export default {
         padding-bottom: 30px;
     }
     /* 가로 정렬 */
-    .productname-item{
+    .productname_item{
         float: left;
     }
     /* 제목  */
-    .productname-item.title{
+    .productname_item.title{
         font-size: 18px;
         height: 50px;
         line-height: 50px;
         padding-right: 103px;
     }
-    .productname-item.title span{
+    .productname_item.title span{
        color: red;
     }
     /* 상품명 input  */
-    .productname-item.input{
+    .productname_item.input{
         width: 604px;
         height: 48px;
         border: 1px solid #DADCE0;
     }
-    .productname-item.input input{
+    .productname_item.input input{
         width: 584px;
         height: 28px;
         padding: 10px;
         border: 0px;
         outline: 0px;
     }
-    .productname-item.input:hover{
+    .productname_item.input:hover{
         border: 1px solid black;
     }
     /* 글자수 제한 */
-    .productname-item.limit{
+    .productname_item.limit{
         height: 50px;
         line-height: 50px;
         font-size: 20px;

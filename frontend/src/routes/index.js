@@ -6,7 +6,7 @@ import Test from '@/components/Test';
 import productMain from '@/components/Board/ProductMain'; 
 import productUpload from '@/components/Board/ProductUpload'; 
 import productUpdate from '@/components/Board/ProductUpdate';
-import producDetail from '@/components/Board/ProductDetail'; 
+import productDetail from '@/components/Board/ProductDetail'; 
 import productByCategory from '@/components/Board/ProductByCategory';
 
 /* 마이페이지 관련 */
@@ -40,9 +40,9 @@ export default new Router({ //라우터 연결
 			,component:productUpdate,
 		}
 		,{
-			path:'/product/:id'  // 상품 상세보기
-			,name:producDetail 
-			,component:producDetail
+			path:'/product/:no'  // 상품 상세보기
+			,name:"productDetail" 
+			,component:productDetail
 		}
 		,{
 			path:'/getcategory/:id'  // 카테고리별 상품리스트

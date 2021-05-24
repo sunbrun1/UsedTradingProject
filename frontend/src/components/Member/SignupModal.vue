@@ -4,27 +4,35 @@
             <div class="modal-wrapper">
                 <div class="modal-container">
                     <form>
+                        <!-- 닫기 버튼 -->
                         <div class="signup_close">
                             <button @click="$emit('close')">x</button>
                         </div>
+                        <!-- 회원가입 타이틀 -->
                         <div class="signup_title">
                             회원가입
                         </div>
+                        <!-- ID input -->
                         <div class="signup_id">
                             <input type="text" id="id" name="id" v-model="id" placeholder="ID"/>
                         </div>
+                        <!-- PW input -->
                         <div class="signup_pw">
                             <input type="password" id="pw" name="pw" v-model="pw" placeholder="PassWord"/>
                         </div>
+                        <!-- PW check input -->
                         <div class="signup_pwCheck">
                             <input type="password" id="pwcheck" name="pwcheck" v-model="pwcheck" placeholder="PassWord Check"/>
                         </div>
+                        <!-- Email input -->
                         <div class="signup_email">
                             <input type="text" id="email" name="email" v-model="email" placeholder="Email"/>
                         </div>
+                        <!-- 회원가입 버튼 -->
                         <button class="signup_btn" type="button" @click="signup">
                             회원가입
                         </button>
+                        <!-- 취소 버튼 -->
                         <button class="signup_cancle" @click="$emit('close')" type="button">
                             취소
                         </button>

@@ -22,7 +22,7 @@
                     <!-- 이미지추가 -->
                     <div v-if="!files.length" class="productimage-item preview" >
                         <label for='files' >
-                            +<input type="file" name='files' id='files' ref="files" @change="imageUpload" accept="image/jpeg,image/png"/>
+                            +<input type="file"  name='files'  id='files' ref="files"  @change="imageUpload" accept="image/jpeg,image/png"/>
                         </label>
                     </div>
                     <!-- 이미지 출력 -->
@@ -164,7 +164,7 @@
 export default {
     data(){
         return{
-            product:'',
+            product:'', //상품 데이터
             files:[],  //파일
             title:'',  //제목
             price:'',  //가격
@@ -185,23 +185,32 @@ export default {
 	methods:{
         /* 상품 기존 데이터 불러오기 */
         getProductDate(){
-            this.$axios.get("http://localhost:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
-			.then((res)=>{
-                this.product = res.data.product;
-                this.title = this.product[0].title;
-                this.price = this.product[0].price;
-                this.state = this.product[0].state;
-                this.content = this.product[0].content;
-                this.selectLargeName = this.product[0].category_large_name;
-                this.selectMediumName = this.product[0].category_medium_name;
-                this.test = this.product[0].image_name.split(',')
-                for(let i=0; i<this.test.length; i++){
-                    this.files.push({preview : "http://localhost:3000/" + this.test[i], image_name : this.test[i]})
-                }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            // 로그인여부 확인
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                let productNo = this.$route.params.id;
+                // 상품데이터 조회
+                this.$axios.get("http://localhost:3000/api/board/product/" + productNo,{withCredentials: true})
+                .then((res)=>{
+                    this.product = res.data.product[0];
+                    this.title = this.product.title;
+                    this.price = this.product.price;
+                    this.state = this.product.state;
+                    this.content = this.product.content;
+                    this.selectLargeName = this.product.category_large_name;
+                    this.selectMediumName = this.product.category_medium_name;
+                    this.test = this.product.image_name.split(',')
+                    for(let i=0; i<this.test.length; i++){
+                        this.files.push({preview : "http://localhost:3000/" + this.test[i], image_name : this.test[i]})
+                    }
+                })
+                .catch((err)=>{
+                    console.log(err);
+                })
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
         },
         /* 상품 이미지 관련 */
         imageUpload(){  //이미지 업로드 
@@ -221,7 +230,8 @@ export default {
                 alert("이미지는 최대 12개 까지 업로드 할 수 있습니다.");
             }
         },
-        fileDeleteButton(index) { // 이미지 삭제
+        /* 이미지삭제 */
+        fileDeleteButton(index) { 
             this.deleteImage.push(this.test[index])
             this.files.splice(index, 1);
             this.test.splice(index, 1);
@@ -257,40 +267,64 @@ export default {
             console.log(this.selectMediumName)
         },
 
-        /* 업로드 관련 */
-        update(){  //상품 업로드
-            var frm = new FormData()
-            for(var i=0; i<this.files.length; i++){
-                frm.append('files',  this.files[i].file);
-            }
-            frm.append('title', this.title);
-            frm.append('price', this.price);
-            frm.append('select_category_large', this.selectLargeName);
-            frm.append('select_category_medium', this.selectMediumName);
-            frm.append('state', this.state);
-            frm.append('content', this.content);
-            frm.append('image_name', this.test);
-            frm.append('deleteImage', this.deleteImage);
-
-            const config = {
-                header: { 'content-type': 'multipart/form-data'},
-                'withCredentials': true
-            };
-
-            this.$axios.post("http://localhost:3000/api/board/update/" + this.$route.params.id ,frm, config)
-			.then((res)=>{
-                if(res.data.success){
-                    alert("수정완료");
-                    this.$router.push({path:'/mypage/myproduct/list'});
+        /* 업로드 */
+        update(){  
+            /* 로그인여부 확인 */
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                let frm = new FormData()
+                for(let i=0; i<this.files.length; i++){
+                    frm.append('files',  this.files[i].file);
                 }
-                else{
-                    alert("등록실패");
-                }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
-        }
+                frm.append('title', this.title);
+                frm.append('price', this.price);
+                frm.append('select_category_large', this.selectLargeName);
+                frm.append('select_category_medium', this.selectMediumName);
+                frm.append('state', this.state);
+                frm.append('content', this.content);
+                frm.append('image_name', this.test);
+                frm.append('deleteImage', this.deleteImage);
+
+                const config = {
+                    header: { 'content-type': 'multipart/form-data'},
+                    'withCredentials': true
+                };
+                /* 업로드 POST */
+                this.$axios.post("http://localhost:3000/api/board/update/" + this.$route.params.id ,frm, config)
+                .then((res)=>{
+                    if(res.data.success){
+                        alert("등록완료");
+                        this.$router.push({path:'/mypage/myproduct/list'});
+                    }
+                    else if(res.data == "imageCheckError"){
+                        alert("상품 사진을 등록해주세요.")
+                    }
+                    else if(res.data == "titleCheckError"){
+                        alert("상품명을 2자 이상 입력해주세요.")
+                        this.$refs.title.focus();
+                    }
+                    else if(res.data == "categoryCheckError"){
+                        alert("카테고리를 선택해주세요.")
+                    }
+                    else if(res.data == "priceCheckError"){
+                        alert("상품 가격을 입력해주세요.")
+                        this.$refs.price.focus();
+                    }
+                    else if(res.data == "stateCheckError"){
+                        alert("상품 상태를 선택해주세요.")
+                    }
+                    else{
+                        alert("등록실패");
+                    }
+                })
+                .catch((err)=>{
+                    console.log(err);
+                })
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
+        },
 	}
 }
 

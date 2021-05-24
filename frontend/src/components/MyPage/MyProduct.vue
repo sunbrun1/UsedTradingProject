@@ -135,30 +135,46 @@ export default {
         },
         // 내 게시물 불러오기(초기화면)
 		getList() {
-			this.$axios.get("http://localhost:3000/api/mypage/myproduct/list",{
+            /* 로그인 여부 확인 */
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                /* 게시물 조회 */
+                this.$axios.get("http://localhost:3000/api/mypage/myproduct/list",{
                 withCredentials: true,
                 params: {
                     limit : this.pageLimit,
                     offset : this.pageOffset
                 }
-             })
-			.then((res)=>{
-                this.myProduct = res.data.myProduct; 
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+                })
+                .then((res)=>{
+                    this.myProduct = res.data.myProduct; 
+                })
+                .catch((err)=>{
+                    console.log(err);
+                }) 
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
 		},
         // 초기 페이징 화면
         myProductCount(){
-            this.$axios.get("http://localhost:3000/api/mypage/myproduct/myProductCount",{withCredentials: true})
-            .then((res)=>{
-                this.totalListItemCount = res.data.count[0].count; 
-                this.initUI();
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            /* 로그인 여부 확인 */
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                // 초기 페이징 화면
+                this.$axios.get("http://localhost:3000/api/mypage/myproduct/myProductCount",{withCredentials: true})
+                .then((res)=>{
+                    this.totalListItemCount = res.data.count[0].count; 
+                    this.initUI();
+                })
+                .catch((err)=>{
+                    console.log(err);
+                })
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
         },
         // 초기 페이징 UI
         initUI(){
@@ -223,33 +239,44 @@ export default {
         },
         // 페이지별 게시물 불러오기
         getListByPage() {
-			this.$axios.get("http://localhost:3000/api/mypage/myproduct/list",{
-                withCredentials: true,
-                params: {
-                    no : this.$route.query.no,
-                    limit : this.pageLimit,
-                    offset : (this.$route.query.no - 1) * this.pageLimit
-                }
-             })
-			.then((res)=>{
-                this.myProduct = res.data.myProduct; 
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            /* 로그인 여부 확인 */
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                // 페이지별 게시물 불러오기
+                this.$axios.get("http://localhost:3000/api/mypage/myproduct/list",{
+                    withCredentials: true,
+                    params: {
+                        no : this.$route.query.no,
+                        limit : this.pageLimit,
+                        offset : (this.$route.query.no - 1) * this.pageLimit
+                    }
+                })
+                .then((res)=>{
+                    this.myProduct = res.data.myProduct; 
+                })
+                .catch((err)=>{
+                    console.log(err);
+                })
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
 		},
         // 게시물 삭제
         productDelete(product) {
-			this.$axios.post("http://localhost:3000/api/mypage/myproduct/delete",product)
-			.then((res)=>{
-                if(res.data.success){
-                    alert("삭제되었습니다.")
-                    this.$router.go({path:'/mypage/myproduct'});
-                }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            if (confirm("정말 삭제하시겠습니까?") == true){ // 확인
+                this.$axios.post("http://localhost:3000/api/mypage/myproduct/delete",product)
+                .then((res)=>{
+                    if(res.data.success){
+                        this.$router.go({path:'/mypage/myproduct'});
+                    }
+                })
+                .catch((err)=>{
+                    console.log(err);
+                })
+            }else{ // 취소
+                return false;
+            }
 		},
 	}
 }
@@ -350,6 +377,7 @@ export default {
     }
     .paging > ul{
         display: inline-block;
+        cursor: pointer;
     }
     .page-item{
         float: left;

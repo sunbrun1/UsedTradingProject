@@ -33,14 +33,10 @@ export default {
             socket : io('http://localhost:3000')
         }
     },
-    mounted(){
-        this.test();
-      
-    },
+
     created(){
-        this.socket.on('update', (data) =>{
-                this.testData.push({send_id:"상대방",text:data.message}); 
-            })
+        this.test();
+        this.chatList(); 
     },
 	methods:{
         test(){
@@ -59,8 +55,7 @@ export default {
 			.then((res)=>{
                 if(res.data.success){
                     this.testData = res.data.msgData
-                    console.log(this.text);
-
+                    console.log(this.testData);
                 }
 			})
 			.catch((err)=>{

@@ -1,25 +1,31 @@
 <template>
     <body>
         <!-- 신규 상품 -->
-        <div class="newproduct-title">
-            <h2><span>NEW ARRIVAL</span> 신규 상품 </h2>
+        <div class="newproduct_h2">
+            <h2>신규 상품</h2>
         </div>
-        
-        <div class="newproduct">
-            <div class="newproduct-item" v-for="(item) in new_product" :key="item.id">
-                <router-link :to="`/product/` + item.id">
-                    <div class="newproduct-image">
+        <!-- 신규상품 리스트 -->
+        <div class="newproduct_wrap">
+            <div class="newproduct" v-for="(item) in newProduct" :key="item.id">
+                <!-- 라우터 이동 -->
+                <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
+                    <!-- 상품이미지 -->
+                    <div class="image">
                         <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
                     </div>
-                    <div class="newproduct_info">
-                        <div class="newproduct-name">
+                    <!-- 상품 정보(상품이름,가격,날짜) -->
+                    <div class="info">
+                        <!-- 상품이름 -->
+                        <div class="info_name">
                             {{item.title}}
                         </div>
-                        <div class="newproduct_item_div">
-                            <div class="newproduct_item3 newproduct-price">
+                        <div class="bottom_info">
+                            <!-- 가격 -->
+                            <div class="item info_price">
                                 <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
                             </div>
-                            <div class="newproduct_item3 newproduct-date" >
+                            <!-- 날짜 -->
+                            <div class="item info_date" >
                                 {{item.date}}
                             </div>
                         </div>
@@ -27,29 +33,39 @@
                 </router-link>
             </div>
         </div> 
+        <!-- 신규 상품 더보기 -->
+        <div class="more_wrap">
+            <div class="more">
+                <b>신규 상품</b> 더보기 >
+            </div>
+        </div>
         
         <!-- 인기상품 -->
-        <div class="popular_product-title">
+        <div class="bestproduct_h2">
             <h2>인기 상품 </h2>
         </div>
-
-        <div class="popular_product">
-            <div class="popular_product-item" v-for="(item) in popular_product" :key="item.id">
-                <router-link :to="`/product/` + item.id">
-                    <div class="popular_product-image">
-                        
-                            <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
-                        
+        <!-- 인기상품 리스트 -->
+        <div class="bestproduct_wrap">
+            <div class="bestproduct" v-for="(item) in bestProduct" :key="item.id">
+                <!-- 라우터 이동 -->
+                <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
+                    <!-- 상품이미지 -->
+                    <div class="image">            
+                        <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>              
                     </div>
-                    <div class="popular_product_info">
-                        <div class="popular_product-name">
+                    <!-- 상품 정보(상품이름,가격,날짜) -->
+                    <div class="info">
+                        <!-- 상품이름 -->
+                        <div class="info_name">
                             {{item.title}}
                         </div>
-                        <div class="popular_product_item_div">
-                            <div class="popular_product_item3 popular_product-price">
+                        <div class="bottom_info">
+                            <!-- 가격 -->
+                            <div class="item info_price">
                                 <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
                             </div>
-                            <div class="popular_product_item3 popular_product-date" >
+                            <!-- 날짜 -->
+                            <div class="item info_date" >
                                 {{item.date}}
                             </div>
                         </div>
@@ -57,30 +73,51 @@
                 </router-link>
             </div>
         </div> 
-
-     
+        <!-- 인기 상품 더보기 -->
+        <div class="more_wrap">
+            <div class="more">
+                <b>인기 상품</b> 더보기 >
+            </div>
+        </div>
     </body>
 </template>
 <script>
 export default {
     data(){
         return{
-            new_product:'',
-            popular_product:'',
-            thumbnail:'',
-            title:'',
-            price:'',
-            date:''
+            newProduct:'', // 신규상품 데이터
+            bestProduct:'', // 인기상품 데이터
         }
     },
     mounted() {
 		this.getList();
 	},
 	methods:{
+        /* 상품 데이터 조회 */
+        getList() {
+			this.$axios.get("http://localhost:3000/api/board/")
+			.then((res)=>{
+                this.newProduct = res.data.newProduct; // 신규상품
+                this.bestProduct = res.data.bestProduct; // 인기상품
+
+                // 신규상품 등록 시간
+                for(let i=0;  i<this.newProduct.length; i++){
+                    this.newProduct[i].date = this.timeForToday(this.newProduct[i].date)
+                }
+                // 인기상품 등록 시간
+                for(let i=0;  i<this.bestProduct.length; i++){
+                    this.bestProduct[i].date = this.timeForToday(this.bestProduct[i].date)
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+		},
+        /* 시간 계산 */
         timeForToday(value){
             const todayTime = new Date();
-            const product_Time = new Date(value);
-            const betweenTime = Math.floor((todayTime.getTime() - product_Time.getTime()) / 1000 / 60);
+            const productTime = new Date(value);
+            const betweenTime = Math.floor((todayTime.getTime() - productTime.getTime()) / 1000 / 60);
             if(betweenTime < 1) return '방금전';
             if(betweenTime < 60){
                 return betweenTime + '분전';
@@ -94,29 +131,7 @@ export default {
                 return betweenTimeDay + '일전';
             } 
         },
-		getList() {
-			this.$axios.get("http://localhost:3000/api/board/")
-			.then((res)=>{
-                this.new_product = res.data.new_product; //신규상품
-                this.popular_product = res.data.popular_product; //인기상품
-                this.thumbnail = this.new_product.thumbnail; //썸네일
-                this.title = this.new_product.title; //상품 이름
-                this.price = this.new_product.price; //상품 가격
-                // 신규 상품등록 시간
-                for(let i=0;  i<this.new_product.length; i++){
-                    this.new_product[i].date = this.timeForToday(this.new_product[i].date)
-                }
-                // 인기 상품등록 시간
-                for(let i=0;  i<this.popular_product.length; i++){
-                    this.popular_product[i].date = this.timeForToday(this.popular_product[i].date)
-                }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
-            
-		},
-        
+		
 	}
 }
 </script>
@@ -127,33 +142,37 @@ body{
     padding-top: 186px;
     background: #ffffff;
 }
-/* 신규상품 타이틀 */
-.newproduct-title{
+/* 신규상품 */
+/* 신규상품 h2 */
+.newproduct_h2{
     width: 1180px;
     margin: auto;
     text-align: left;
-   padding-top: 40px; 
+    padding-top: 40px; 
     padding-bottom: 20px;
 }
-.newproduct{
+/* 신규상품 wrap */
+.newproduct_wrap{
     width: 1180px;
-    height: 595px;
+    height: 575px;
     margin: auto;
 }
 /* 상품 가로정렬 */
-.newproduct-item{
+.newproduct{
     float: left;
     border:1px solid #DADCE0;
     margin-bottom: 20px;
 }
-.newproduct-item:not(:nth-child(5n)){
+.newproduct:not(:nth-child(5n)){
     margin-right: 25px;
 }
-.newproduct_info{
+/* 상품정보 */
+.info{
     width: 214px;
     height: 70px;
 }
-.newproduct-name{
+/* 상품이름 */
+.info_name{
     width: 194px;
     text-align: left;
     padding: 8px 10px 8px 10px;
@@ -162,50 +181,69 @@ body{
     text-overflow:ellipsis; 
     white-space:nowrap;
 }
-.newproduct_item_div{
+/* 가격,날짜 info */
+.bottom_info{
     width: 194px;
     height: 15px;
     line-height: 15px;
     padding: 8px 10px 0px 10px;
 }
 /* price date 가로정렬 */
-.newproduct_item3{
+.item{
     float: left;
 }
-.newproduct-price{
+/* 가격 */
+.info_price{
     float: left;
 }
-.newproduct-date{
+/* 날짜 */
+.info_date{
     float: right;
     font-size: 12px;
 }
+.more_wrap{
+    width: 1180px;
+    height: 50px;
+    margin: auto;
+    padding: 30px 0px 30px 0px;
+
+    
+}
+.more{
+    width: 320px;
+    height: 50px;
+    margin: auto;
+    line-height: 50px;
+    border: solid 1px #cfd0d4;;
+    cursor: pointer;
+}
+
 /* 인기상품 */
-/* 인기상품 타이틀 */
-.popular_product-title{
+/* 인기상품 h2 */
+.bestproduct_h2{
     width: 1180px;
     margin: auto;
     text-align: left;
-    padding-top: 40px;
     padding-bottom: 20px;
 }
-.popular_product{
+.bestproduct_wrap{
     width: 1180px;
-    height: 500px;
+    height: 575px;
     margin: auto;
 }
-.popular_product-item{
+.bestproduct{
     float: left;
     border:1px solid #DADCE0;
     margin-bottom: 20px;
 }
-.popular_product-item:not(:nth-child(5n)){
+.bestproduct:not(:nth-child(5n)){
     margin-right: 25px;
 }
-.popular_product_info{
+.info{
     width: 214px;
     height: 70px;
 }
-.popular_product-name{
+.info_name{
     width: 194px;
     text-align: left;
     padding: 8px 10px 8px 10px;
@@ -214,20 +252,20 @@ body{
     text-overflow:ellipsis; 
     white-space:nowrap;
 }
-.popular_product_item_div{
+.bottom_info{
     width: 194px;
     height: 15px;
     line-height: 15px;
     padding: 8px 10px 0px 10px;
 }
 /* price date 가로정렬 */
-.popular_product_item3{
+.item{
     float: left;
 }
-.popular_product-price{
+.info_price{
     float: left;
 }
-.popular_product-date{
+.info_date{
     float: right;
     font-size: 12px;
 }

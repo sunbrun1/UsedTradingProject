@@ -44,10 +44,8 @@ app.get("/talk", (req,res) =>{ //채팅 리스트 조회
 })
 
 
-/* 전역변수 */
+
 let currentLoginId; // 로그인한 ID
-let productId; //판매글 ID
-let isDirect; //상품페이지에서 바로 채팅
 let sellerId; //상품 판매자
 let roomId; //채팅방 넘버
 
@@ -59,16 +57,17 @@ app.get("/talk/user/:memberNum",(req,res) => {
   currentLoginId = Decode.member_id; // 현재 로그인 ID
 
   /* req.query */
-  productId = req.query.product_no; // 상품 ID
-  isDirect = req.query.isDirect; // 상품페이지에서 바로 채팅했는지 유무
+  let productId = req.query.product_no; // 상품 ID
+  let isDirect = req.query.isDirect; // 상품페이지에서 바로 채팅했는지 유무
+  
+ 
+  /* 판매자 ID 조회 쿼리 */
+  conn.query("SELECT member_id FROM product WHERE id = ?;", productId, (err,data) =>{
+    if(err) throw err;
+    sellerId = data[0].member_id; // 판매자 ID
 
-  if(isDirect == 'true'){ // 상품페이지에서 판매자에게 채팅한 경우
-    console.log("===상품 페이지에서 채팅===")
-
-    /* 상품 판매자 ID 조회 쿼리 */
-    conn.query("SELECT member_id FROM product WHERE id = ?;" , productId, (err,data) =>{ 
-      if(err) throw err;
-      sellerId = data[0].member_id; // 판매자 ID
+    if(isDirect == 'true'){ // 상품페이지에서 판매자에게 채팅한 경우
+      console.log("===상품 페이지에서 채팅===")
 
       /* 채팅내역(채팅방) 조회 쿼리 */
       conn.query("SELECT id FROM chat_room WHERE host = ? and guest = ? and product_id = ?",[sellerId,currentLoginId,productId], (err,data) =>{
@@ -95,57 +94,56 @@ app.get("/talk/user/:memberNum",(req,res) => {
           })
         } 
       })
-    })
-  }
-  else{ // 채팅리스트에서 채팅한 경우
-    console.log("===채팅 페이지에서 채팅===")
-    /* req.query */
-    roomId = req.query.room_no; // 채팅방 ID
+    }
+    else{ // 채팅리스트에서 채팅한 경우
+      /* req.query */
+      roomId = req.query.room_no; // 채팅방 ID
+      console.log(roomId)
+      /* 구매자 ID 조회 쿼리 */
+      conn.query("SELECT guest,host FROM chat_room WHERE id = ?;" , roomId, (err,data) =>{
+        if(err) throw err;
+        console.log("===채팅 페이지에서 채팅===")
 
-    /* 판매자 ID 조회 쿼리 */
-    conn.query("SELECT member_id FROM product WHERE id = ?;", productId, (err,data) =>{
-      if(err) throw err;
-      sellerId = data[0].member_id; // 판매자 ID
-      if(currentLoginId == sellerId){ // 현재 로그인 유저가 판매자인 경우
-        console.log("로그인한 유저는 판매자입니다")
-        console.log("판매자 ID : " + sellerId)
-        console.log("로그인 ID : " + currentLoginId)
-        /* 구매자 ID 조회 쿼리 */
-        conn.query("SELECT guest FROM chat_room WHERE id = ?;" , roomId, (err,data) =>{
-          if(err) throw err;
+        if(currentLoginId == sellerId){ // 현재 로그인 유저가 판매자인 경우
+          console.log("로그인한 유저는 판매자입니다")
+          console.log("판매자 ID : " + sellerId)
+          console.log("로그인 ID : " + currentLoginId)
           sellerId = data[0].guest; // 구매자 ID
-        })
-      }
-      else{
-        console.log("로그인한 유저는 구매자입니다.")
-        console.log("판매자 ID : " + sellerId)
-        console.log("로그인 ID : " + currentLoginId)
-        
-      }
-    })
-
-    /* 채팅 내역 조회 쿼리 */
-    conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomId, (err,data) => {
-      if(err) throw err;
-      res.send({
-        msgData:data,
-        success:true
+        }
+        else{
+          console.log("로그인한 유저는 구매자입니다.")
+          console.log("판매자 ID : " + sellerId)
+          console.log("로그인 ID : " + currentLoginId)
+          sellerId = data[0].host; // 판매자 ID
+        }
       })
-    })
-  }
+      
+
+      /* 채팅 내역 조회 쿼리 */
+      conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomId, (err,data) => {
+        if(err) throw err;
+        res.send({
+          msgData:data,
+          success:true
+        })
+      })
+    }
+  })
 })
 
 
 /* 소켓 */
 app.io.on('connection',(socket) => {
-  console.log("socket connect!");
+  console.log("===socket connect!===");
   socket.join(roomId);
+
 
   socket.sendId = currentLoginId; // 메시지 보낸 ID
   socket.recevieId = sellerId; // 메시지 받는 ID
 
   console.log("socket.sendId : " + socket.sendId)
   console.log("socket.recevieId : " + socket.recevieId)
+  console.log("room_id : " + roomId)
 
   /* 새로운 유저가 접속했을 경우 다른 소켓에게도 알려줌 */
   app.io.to(roomId).emit('update', {type: 'connect', name: "SERVER", message: socket.sendId  + "님이 접속하였습니다."})

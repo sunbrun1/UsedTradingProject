@@ -4,26 +4,33 @@
             <div class="modal-wrapper">
                 <div class="modal-container">
                     <form>
+                        <!-- 닫기 버튼 -->
                         <div class="login_close">
                             <button type="button" @click="$emit('close')">x</button>
                         </div>
+                        <!-- 로그인 타이틀 -->
                         <div class="login_title">
                             로그인
                         </div>
+                        <!-- ID input -->
                         <div class="login_id">
                             <input type="text" v-model="id" placeholder="ID"/>
                         </div>
+                        <!-- PW input -->
                         <div class="login_pw">
-                            <input type="text" v-model="pw" placeholder="PassWord"/>
+                            <input type="password" v-model="pw" placeholder="PassWord"/>
                         </div>
+                        <!-- 로그인 버튼 -->
                         <button class="login_btn" type="button" @click="login" >
                             로그인
                         </button>
+                        <!-- 비밀번호 찾기/회원가입 -->
                         <div class="login_item">
                             <span class="span" @click="$emit('loginstate')">비밀번호 찾기</span>
                             <span>/</span>
                             <span class="span" @click="openModal">회원가입</span>
                         </div>
+                        <!-- 회원가입 모달 -->
                         <SignUpModal @close="closeModal" v-if="modal"></SignUpModal>
                     </form>
                 </div>
@@ -61,11 +68,11 @@ export default {
 			} 
             this.$axios.post("http://localhost:3000/api/member/login",this.form,{withCredentials: true})
 			.then((res)=>{
-                if(res.data.success){
-                    this.$emit('close');
-                    this.$emit('loginCheck');
+                if(res.data.success){ // 로그인 성공시
+                    this.$emit('close'); // 로그인 모달 닫기
+                    this.$emit('loginCheck'); // 로그인 유무에따른 렌더링
                 }
-                else{
+                else{ // 로그인 실패시
                     alert("등록되지 않은 아이디이거나, 아이디 또는 비밀번호를 잘못 입력하셨습니다.");
                 }
 			})

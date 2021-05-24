@@ -1,70 +1,84 @@
 <template>
     <body>
-        <div class="product_info">
+        <div class="product_info_wrap">
             <!-- 사진 슬라이드 -->
-            <div class="product_info_item images">
+            <div class="wrap_item images">
                 <div>
+                    <!-- 이미지 -->
                     <img :src="`http://localhost:3000/`+image[currentNumber]" width="400" height="400"/>
-                    <div class="previous" v-if='currentNumber>0' @click="previous">
+                    <!-- 이전버튼 -->
+                    <div class="previous" v-if='currentNumber > 0' @click="previous">
                         <font-awesome-icon icon="arrow-alt-circle-left"/>
                     </div>
-                    <div class="next" v-if='currentNumber<image.length-1' @click="next">
+                    <!-- 다음버튼 -->
+                    <div class="next" v-if='currentNumber < image.length-1' @click="next">
                         <font-awesome-icon icon="arrow-alt-circle-right"/>
                     </div>
                 </div>
             </div>
             <!-- 카테고리,제목,가격,상태,지역... -->
-            <div class="product_info_item info">
-                <div class="product_category">
+            <div class="wrap_item info">
+                <!-- 카테고리 -->
+                <div class="category">
                     {{category_large_name}}<span>></span>{{category_medium_name}}
                 </div>
 
                 <!-- 얇은 구분선 -->
-                <div class="short_thin-line"></div>
+                <div class="short_thin_line"></div>
 
-                <div class="product_name">
+                <!-- 상품이름 -->
+                <div class="name">
                     {{title}}
                 </div>
-                <div class="product_price">
+                <!-- 상품 가격 -->
+                <div class="price">
                     {{price.toLocaleString('ko-KR')}} 원
                 </div>
 
                 <!-- 얇은 구분선 -->
-                <div class="short_thin-line"></div>
+                <div class="short_thin_line"></div>
 
-                <div class="product_state">
-                    상품 상태 {{state}}
-                </div>
-                <div class="product_area">
-                    거래 지역 경기도 / 수원시 / 권선구
+                <!-- 찜/조회수/날짜/신고하기 -->
+                <div class="views">
+                    <font-awesome-icon icon="heart" class="font"/><span>0</span>
+                    <font-awesome-icon icon="eye" class="font"/><span>{{views}}</span>
+                    <font-awesome-icon icon="clock" class="font"/><span>{{date}}</span>
                 </div>
 
-                <!-- 얇은 구분선 -->
-                <div class="short_thin-line"></div>
+                <!-- 상품상태 -->
+                <div class="state">
+                    <span>상품 상태</span> {{state}}
+                </div>
+                <!-- 거래지역 -->
+                <div class="area">
+                    <span>거래 지역</span> 경기도 / 수원시 / 권선구
+                </div>
 
-                <div class="product_btn" v-if="myProductCheck">
-                    <div>
-                        <button class='product_btn_item buy'>구매하기</button>
+                <!-- 바로구매,연락하기,찜 버튼  -->
+                <!-- 다른 유저 게시물인 경우 -->
+                <div class="button_wrap" v-if="myProductCheck">
+                    <!-- 바로구매 -->
+                    <div class='button_wrap_item buy'>
+                        <button>바로구매</button>
                     </div>
-                    <div>
-                        <button class='product_btn_item chat' @click="newPage">연락하기 </button>
+                    <!-- 연락하기 -->
+                    <div class='button_wrap_item talk'>
+                        <button @click="newPage">연락하기 </button>
                     </div>
-                    <div>
-                        <button class='product_btn_item wish'>관심목록 추가 </button>
+                    <!-- 찜 -->
+                    <div class='button_wrap_item wish'>
+                        <button><font-awesome-icon icon="heart" class="font"/></button>
                     </div>
                 </div>
-                <div class="product_btn" v-else>
+                <!-- 내 게시물인 경우  -->
+                <div class="button_wrap" v-else>
+                    <!-- 라우터 이동 -->
                     <router-link to="/mypage/myproduct/list">
-                    <div>
-                        <button>수정/삭제</button>
-                    </div>
+                        <div class="mypage">
+                            <button>마이페이지 이동</button>
+                        </div>
                     </router-link>
                 </div>
-            </div>
-        </div>
-        <div class="image_slide">
-            <div class="image_slide_item" v-for="(item) in image" :key="item.id">
-                <button></button>
             </div>
         </div>
 
@@ -73,19 +87,12 @@
             <h2>상품 정보</h2>
         </div>
 
-
         <!-- 얇은 구분선 -->
-        <div class="long_thin-line"></div>
-
+        <div class="long_thin_line"></div>
 
         <div class="product_content_content">
             {{content}}
         </div>
-        
-
-        
-        
-
     </body>
 </template>
 
@@ -94,61 +101,95 @@
 export default {
     data(){
         return{
-            product:'',
-            image:'',
-            title:'',
-            category_large_name:'',
-            category_medium_name:'',
-            state:'',
-            price:'',
-            content:'',
-            currentNumber: 0,
-            myProductCheck:true ,
-            memberNum:''
+            product:'', // 상품 데이터
+            title:'',  // 상품 제목
+            price:'', // 상품 가격
+            content:'', // 상품 내용
+            category_large_name:'', // 상품 대분류 이름
+            category_medium_name:'', // 상품 중분류 이름
+            state:'', // 상품 상태 
+            views:'', // 상품 조회수
+            date:'', // 상품 등록 시간
+            image:'', //상품 이미지
+            currentNumber: 0, // 이미지 인덱스 값
+            myProductCheck:true, // 내 게시물인지 확인하는 변수
+            memberNum:'' //유저 ID 넘버
         }
     },
     mounted() {
-		this.getList();
+        this.loginCheck();
 	},
 	methods:{
-        previous(){
-            this.currentNumber -= 1
-        },
-        next(){
-            this.currentNumber += 1
-        }
-        ,
+        /* 상품 데이터 조회 */
 		getList() {
-			this.$axios.get("http://localhost:3000/api/board/product/" + this.$route.params.id,{withCredentials: true})
+            let productNo = this.$route.params.no; // 상품 넘버
+			this.$axios.get("http://localhost:3000/api/board/product/" + productNo, {withCredentials: true})
 			.then((res)=>{
-                this.product = res.data.product;
-                this.memberNum = res.data.memberNum;
-                this.title = this.product[0].title;
-                this.price = this.product[0].price;
-                this.category = this.product[0].category;
-                this.content = this.product[0].content;
-                this.category_large_name = this.product[0].category_large_name;
-                this.category_medium_name = this.product[0].category_medium_name;
-                this.state = this.product[0].state;
-                this.image = this.product[0].image_name.split(',');
-                console.log(res.data.memberNum)
+                this.product = res.data.product[0]; // 상품 데이터
+                this.title = this.product.title; // 상품 제목
+                this.price = this.product.price; // 상품 가격
+                this.content = this.product.content; // 상품 내용
+                this.category_large_name = this.product.category_large_name; // 상품 대분류 이름
+                this.category_medium_name = this.product.category_medium_name; // 상품 중분류 이름
+                this.state = this.product.state; // 상품 상태 
+                this.views = this.product.views; // 상품 조회수
+                this.date = this.timeForToday(this.product.date)
+                this.image = this.product.image_name.split(','); //상품 이미지
+                this.memberNo = res.data.memberNo; //유저 ID 넘버
 
-                if(res.data.myProduct){
-                    this.myProductCheck = false;
+                if(res.data.myProduct){ // 내 게시물인 경우
+                    this.myProductCheck = false;  
                 }
-                else{
-                    this.myProductCheck = true;
+                else{ // 다른 유저 게시물인 경우 
+                    this.myProductCheck = true; 
                 }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
 		},
+        /* 이미지 이전 */ 
+        previous(){
+            this.currentNumber -= 1
+        },
+        /* 이미지 다음 */
+        next(){
+            this.currentNumber += 1
+        },
+        /* 연락하기  */
         newPage(){
             let memberNum = this.memberNum;
             let productId = this.product[0].id
             window.open('http://localhost:8081/talk/user/' + memberNum + "?isDirect=true&product_no=" + productId);
-        }
+        },
+        // 로그인여부 확인
+        loginCheck(){
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                this.getList(); // 로그인 여부 확인후 getList
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        },
+        /* 시간 계산 */
+        timeForToday(value){
+            const todayTime = new Date();
+            const productTime = new Date(value);
+            const betweenTime = Math.floor((todayTime.getTime() - productTime.getTime()) / 1000 / 60);
+            if(betweenTime < 1) return '방금전';
+            if(betweenTime < 60){
+                return betweenTime + '분전';
+            }
+            const betweenTimeHour = Math.floor((betweenTime / 60));
+            if(betweenTimeHour < 24){
+                return betweenTimeHour + '시간전';
+            } 
+            const betweenTimeDay = Math.floor((betweenTime / 60 / 24));
+            if(betweenTimeDay < 365){
+                return betweenTimeDay + '일전';
+            } 
+        },
 	}
 }
 </script>
@@ -159,42 +200,38 @@ body{
     padding-top: 186px;
     background: #ffffff;
 }
-.product_info{
-    width: 960px;
+/* 짧얇은 구분선 */
+.short_thin_line{
+    width: 700px;
+    height: 1px;
+    margin: auto;
+    background-color: #DADCE0;
+}
+/* 길얇은 구분선 */
+.long_thin_line{
+    width: 1180px;
+    height: 1px;
+    margin: auto;
+    background-color: #DADCE0;
+}
+/* ===상품 틀=== */
+.product_info_wrap{
+    width: 1180px;
     height: 400px;
     margin: auto;
     text-align: left;
-    padding-top: 30px;
+    padding-top: 40px;
 }
-.product_info_item{
+/* 가로정렬 */
+.wrap_item{
     float: left;
 }
-.product_info_item.images{
+/* ====이미지==== */
+.wrap_item.images{
     width: 400px;
     height: 400px;
 }
-.product_info_item.info{
-    width: 500px;
-    height: 400px;
-    float: right;
-}
-.product_category{
-    font-size: 15px;
-    padding-bottom: 12px;
-}
-.product_category span{
-    padding: 0px 10px 0px 10px;
-}
-.product_name{
-    font-size: 25px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-}
-.product_price{
-    font-size: 30px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-}
+/* 이미지 이전버튼 */
 .previous{
     padding-left: 10px;
     font-size: 50px;
@@ -204,6 +241,7 @@ body{
     opacity: 60%;
     cursor: pointer;
 }
+/* 이미지 다음버튼 */
 .next{
     padding-right: 10px;
     font-size: 50px;
@@ -213,77 +251,115 @@ body{
     opacity: 60%;
     cursor: pointer;
 }
-/* 짧얇은 구분선 */
-    .short_thin-line{
-        width: 500px;
-        height: 1px;
-        margin: auto;
-        background-color: #DADCE0;
+/* ====상품 정보==== */
+.wrap_item.info{
+    width: 700px;
+    height: 400px;
+    float: right;
+}
+/* 카테고리 */
+.category{
+    font-size: 16px;
+    padding-bottom: 20px;
+}
+.category span{
+    padding: 0px 10px 0px 10px;
+}
+/* 상품 이름 */
+.name{
+    font-size: 26px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    color: #212121;
+}
+/* 상품 가격 */
+.price{
+    font-size: 40px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    color: #212121;
+}
+/* 찜/조회수/날짜/신고하기 */
+.views{
+    padding: 12px 0px 12px 0px;
+    color: #cccccc;
+}
+ /* 찜/조회수/날짜/신고하기 */
+.views span{
+    padding: 0px 20px 0px 5px;
+}
+/* 상품 상태 */
+.state{
+    padding: 12px 0px 12px 0px;
+}
+.state span{
+    color: #cccccc;
+}
+/* 거래지역 */
+.area{
+    padding: 12px 0px 12px 0px;
+}
+.area span{
+    color: #cccccc;
+}
+/* 바로구매,연락하기,찜 버튼  */
+.button_wrap{
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+/* 버튼 */
+.button_wrap_item{
+    width: 175px;
+    height: 53px;
+    line-height: 53px;
+    border: solid 1px black;
+    text-align: center;
+    float: left;
+    margin-right: 10px;
+    cursor: pointer;
+}
+/* 버튼 테두리 제거 */
+.button_wrap_item button{
+    outline: 0;
+    border: 0;
+    background: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+/* 마이페이지 이동 버튼 */
+.mypage button{
+    outline: 0;
+    border: 0;
+    background: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+.mypage{
+    width: 400px;
+    height: 53px;
+    line-height: 53px;
+    border: solid 1px black;
+    text-align: center;
+    float: left;
+    margin-right: 10px;
+    cursor: pointer;
+}
+/* ============ 상품 정보 =============== */
+.product_content_title{
+    width: 1180px;
+    margin: auto;
+    text-align: left;
+    padding-top: 30px;
+}
+/* 상품정보 */
+    .product_content_title h2{
+        padding-bottom: 30px;
     }
-    /* 길얇은 구분선 */
-    .long_thin-line{
-        width: 960px;
-        height: 1px;
-        margin: auto;
-        background-color: #DADCE0;
-    }
-    .product_state{
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .product_area{
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .product_btn{
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .product_btn_item{
-        float: left;
-        padding: 10px;
-        margin-right: 5px;
-        
-    }
-    /* 이미지 슬라이드 */
-    .image_slide{
-        width: 400px;
-        height: 30px;
-        margin: auto;
-
-    }
-    .image_slide_item{
-        float: left;
-      
-
-    }
-    .image_slide button{
-        width: 10px;
-        height: 10px;
-        cursor: pointer;
-        outline: none;
-        border: 1px solid rgb(136, 136, 136);
-        border-radius: 50%;
-        margin-right: 10px;
-        
-
-    }
-    /* ============ 상품 정보 =============== */
-    .product_content_title{
-        width: 960px;
+    /* 내용 */
+    .product_content_content{
+        width: 1180px;
         margin: auto;
         text-align: left;
         padding-top: 30px;
     }
-    /* 상품정보 */
-     .product_content_title h2{
-         padding-bottom: 30px;
-     }
-     /* 내용 */
-     .product_content_content{
-        width: 960px;
-        margin: auto;
-        text-align: left;
-        padding-top: 30px;
-     }
 </style>

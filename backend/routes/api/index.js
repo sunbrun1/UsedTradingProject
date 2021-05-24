@@ -14,7 +14,7 @@ router.get('/zz', function(req, res, next) {
 router.get("/board",dao.list,); // 메인 상품리스트 출력 모듈(GET) 
 router.get("/board/getcategory/:id",dao.byCategory); //카테고리별 상품리스트 출력(GET)
 router.get("/board/getcategory",dao.getCategory); //카테고리 데이터(GET)
-router.get("/board/product/:id",dao.product); // 상품 데이터 불러오기 모듈(GET)
+router.get("/board/product/:no",dao.product); // 상품 데이터 불러오기 모듈(GET)
 router.post("/board/upload",dao.upload); // 상품 업로드 모듈(POST)
 router.post("/board/update/:id",dao.update); // 상품 수정 모듈(POST)
 

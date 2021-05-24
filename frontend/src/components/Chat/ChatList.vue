@@ -5,7 +5,7 @@
             <div class="chatList">
                 <ul v-for="(item) in chatList" :key="item.id">
                     <router-link :to="`/talk/user/` + item.host_member_num + '?isDirect=false&product_no=' + item.product_id + '&room_no=' + item.id">
-                        <li>
+                        <li @click="newPage(item.host_member_num,item.product_id,item.id)">
                             {{item.id}}
                         </li>
                     </router-link>
@@ -42,6 +42,9 @@ export default {
 				console.log(err);
 			})
         },
+        newPage(member_num,product_id,id){
+            window.open("/talk/user/" + member_num + "?isDirect=false&product_no=" + product_id + '&room_no=' + id);
+        }
 	}
 }
 </script>
