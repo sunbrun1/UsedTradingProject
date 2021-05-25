@@ -12,6 +12,7 @@ import productByCategory from '@/components/Board/ProductByCategory';
 /* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
 import myProdcut from '@/components/MyPage/MyProduct';
+import memberInfo from '@/components/MyPage/MemberInfo';
 
 /* 채팅 관련 */
 import chat from '@/components/Chat/Chat';
@@ -45,8 +46,8 @@ export default new Router({ //라우터 연결
 			,component:productDetail
 		}
 		,{
-			path:'/getcategory/:id'  // 카테고리별 상품리스트
-			,name:productByCategory
+			path:'/bycategory/list'  // 카테고리별 상품리스트
+			,name:"productByCategory"
 			,component:productByCategory,
 			props:true 
 		}
@@ -63,6 +64,11 @@ export default new Router({ //라우터 연결
 			,name:myProdcut
 			,component:myProdcut,
 			props:true 
+		}
+		,{
+			path:'/mypage/memberinfo' // 개인정보 수정
+			,name:memberInfo
+			,component:memberInfo,
 		}
 		/* 채팅 관련 */
 		,{

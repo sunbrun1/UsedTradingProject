@@ -13,12 +13,14 @@
                         <li class="home">마이페이지 홈</li>
                     </router-link>
                     <router-link to="/mypage/myproduct/list">
-                        <li class="myproduct">내게시물</li>
+                        <li class="myproduct">내 상품</li>
                     </router-link>
                     <li>거래상태</li>
                     <li>관심목록</li>
                     <li>포인트</li>
-                    <li>개인정보</li>
+                    <router-link to="/mypage/memberinfo">
+                        <li>개인정보</li>
+                    </router-link>
                     <li>회원탈퇴</li>
                 </ul>
             </div>

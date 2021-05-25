@@ -11,11 +11,8 @@ exports.myProduct = (req,res) => {
 	let accessToken_decoded = jwt.verify(accessToken, secretObj.secret); //복호화
 	let limit = parseInt(req.query.limit);
 	let offset = parseInt(req.query.offset);
-	console.log(req.query)
 	if(req.query.no == null){
-		conn.query("SELECT * FROM product WHERE member_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;",
-		[accessToken_decoded.member_id, limit, offset],
-		(err,myProduct) => {
+		conn.query("SELECT * FROM product WHERE member_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[accessToken_decoded.member_id, limit, offset],(err,myProduct) => {
 			if(err) throw err;
 			res.send({
 				success:true,
@@ -24,9 +21,7 @@ exports.myProduct = (req,res) => {
 		})
 	}
 	else{
-		conn.query("SELECT * FROM product WHERE member_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;",
-		[accessToken_decoded.member_id, limit, offset],
-		(err,myProduct) => {
+		conn.query("SELECT * FROM product WHERE member_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[accessToken_decoded.member_id, limit, offset],(err,myProduct) => {
 			if(err) throw err;
 			res.send({
 				success:true,
@@ -68,6 +63,26 @@ exports.myProductDelete = (req,res) => {
 				})
 			})
 		})
-
 	})
+}
+
+/* 마이페이지-개인정보-비밀번호 재확인 */
+exports.pwCheck = (req,res) => {
+	console.log(req.body)
+	let inputPw = req.body.pw;
+	let accessToken = req.cookies.accessToken;
+	let decode = jwt.verify(accessToken, secretObj.secret);
+	let memberId = decode.member_id
+	
+	conn.query("SELECT member_pw FROM member WHERE member_id = ?", memberId, (err,data) =>{
+		if(err) throw err;
+		let memberPw = data[0].member_pw;
+		if(inputPw == memberPw){
+			res.send({success:true})
+		}
+		else{
+			res.send({success:false})
+		}
+	})
+
 }

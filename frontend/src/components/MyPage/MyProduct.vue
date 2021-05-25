@@ -13,12 +13,14 @@
                         <li class="home">마이페이지 홈</li>
                     </router-link>
                     <router-link to="/mypage/myproduct/list">
-                        <li class="myproduct">내게시물</li>
+                        <li class="myproduct">내 상품 </li>
                     </router-link>
                     <li>거래상태</li>
                     <li>관심목록</li>
                     <li>포인트</li>
-                    <li>개인정보</li>
+                    <router-link to="/mypage/memberinfo">
+                        <li>개인정보</li>
+                    </router-link>
                     <li>회원탈퇴</li>
                 </ul>
             </div>
@@ -73,6 +75,7 @@
                                 </router-link>
                             </li>
                             <!-- 페이징 -->
+                            
                             <li class="page-item" v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
                                 <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex+index) -1 }`" @click.native="movePage(startPageIndex + index - 1)">
                                     {{startPageIndex+ index -1 }}
@@ -333,7 +336,6 @@ export default {
         margin-top: 30px;
         margin-left: 30px;
     }
-
     .tbList{
         padding: 5px 0px 5px 0px;
         border-top: 1px solid #DADCE0;

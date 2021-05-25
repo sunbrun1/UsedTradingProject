@@ -20,7 +20,7 @@
            <!-- 로고 -->
             <div class="logobar_item logo">
                 <router-link to="/">
-                    <img alt='logo' src="" width="225px" height="46px">
+                    <img alt='logo' src="@/assets/근본거래11.jpg">
                 </router-link>
             </div>
             <!-- 검색창 -->
@@ -79,13 +79,14 @@
                             <font-awesome-icon icon="list-ul" class="list-ul"/><span>전체 카테고리 </span>
                             <div class="subcategory">
                                 <ul class="category_large" v-for="(largeitem,index) in categoryList" :key="index">
-                                    <router-link :to="`/getcategory/` + largeitem.large[0][0]">
+                                    <router-link :to="{ name: 'productByCategory', query: {no: 1, categoryLargeId: largeitem.large[0][0] }}">
                                         <li class="category_large_item">
                                             {{largeitem.large[0][1]}}                                        
                                         </li>
                                     </router-link>
                                     <ul class="category_medium" v-for="(mediumitem,index1) in largeitem.medium" :key="index1">
-                                        <router-link :to="`/getcategory/` +mediumitem[0]">
+                                  
+                                        <router-link :to="{ name: 'productByCategory', query: {no: 1, categoryLargeId: largeitem.large[0][0], categoryMediumId: mediumitem[0] }}">
                                             <li class="category_medium_item">
                                                 {{mediumitem[1]}}
                                             </li>    

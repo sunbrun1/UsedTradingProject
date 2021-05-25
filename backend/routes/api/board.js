@@ -94,31 +94,40 @@ exports.list = (req,res) => { //리스트 모듈 router 에서 호출
 }
 /* 카테고리별 상품 리스트 출력 */
 exports.byCategory = (req,res) => { 
-	const categoryId = req.params.id; // 카테고리 분류 id
+	let categoryLargeId = req.query.categoryLargeId; // 대분류 ID
+	let categoryMediumId = req.query.categoryMediumId; // 중분류 ID
+	let limit = parseInt(req.query.limit);
+	let offset = parseInt(req.query.offset);
 	//대분류 클릭시
-	if(categoryId < 20000){ 
-		conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?",categoryId,(err,data) => { 
+	if(categoryMediumId == null){ 
+		console.log("대분류선택")
+		conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?;", categoryLargeId, (err,data) => { 
 			if(err) throw err;
 			const categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
-			conn.query("SELECT * FROM product  WHERE category_large_name = ? ORDER BY id DESC LIMIT 30;",categoryLargeName,(err,data) => {
+			conn.query("SELECT * FROM product  WHERE category_large_name = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, limit, offset],(err,data) => {
 				if(err) throw err;
 				res.send({
 					success:true,
-					product:data
+					product:data,
+					categoryLargeName:categoryLargeName
 				})
 			})
 		})
 	}
 	//중분류 클릭시
-	else if(categoryId < 30000){
-		conn.query("SELECT category_medium_name FROM category_medium WHERE category_medium_id = ?",categoryId,(err,data) => { 
+	else{
+		console.log("중분류선택")
+		conn.query("SELECT category_large_name, category_medium_name FROM category_medium WHERE category_medium_id = ?",categoryMediumId,(err,data) => { 
 			if(err) throw err;
+			const categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
 			const categoryMediumName = data[0].category_medium_name; //카테고리 중분류 name
-			conn.query("SELECT * FROM product  WHERE category_medium_name = ? ORDER BY id DESC LIMIT 30;",categoryMediumName,(err,data) => { 
+			conn.query("SELECT * FROM product WHERE category_large_name = ? AND category_medium_name = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName,categoryMediumName, limit, offset],(err,data) => { 
 				if(err) throw err;
 				res.send({
-					success:true,
-					product:data
+					success:false,
+					product:data,
+					categoryLargeName:categoryLargeName,
+					categoryMediumName:categoryMediumName
 				})
 			})
 		})
@@ -225,7 +234,7 @@ exports.update = (req,res) => {
 		console.log(image_name);
 		console.log(deleteImage);
 
-		if(files.length > 0){ // 이미지공백 체크
+		if(files.length > 0 || image_name.length > 0){ // 이미지공백 체크
 			if(body.title.length > 2){ // 제목 2글자 이하 체크 
 				if(body.select_category_large.length > 0 && body.select_category_medium.length > 0){ // 카테고리 선택 공백 체크
 					if(body.price.length > 0 ){ // 가격 공백 체크
@@ -257,7 +266,6 @@ exports.update = (req,res) => {
 										success:true
 									})
 								})
-								
 							}
 							else{ // 기존 이미지가 남아있지 않은경우
 								conn.query("UPDATE product SET thumbnail = ?,title = ?,price = ?,state = ?,content = ?,category_large_name = ?, category_medium_name = ? WHERE id = ?;",
