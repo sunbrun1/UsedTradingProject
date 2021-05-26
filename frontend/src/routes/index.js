@@ -12,6 +12,7 @@ import productByCategory from '@/components/Board/ProductByCategory';
 /* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
 import myProdcut from '@/components/MyPage/MyProduct';
+import pwcheck from '@/components/MyPage/PwCheck';
 import memberInfo from '@/components/MyPage/MemberInfo';
 
 /* 채팅 관련 */
@@ -66,7 +67,12 @@ export default new Router({ //라우터 연결
 			props:true 
 		}
 		,{
-			path:'/mypage/memberinfo' // 개인정보 수정
+			path:'/mypage/memberinfo/pwcheck' // 개인정보 비밀번호 재확인
+			,name:pwcheck
+			,component:pwcheck,
+		}
+		,{
+			path:'/mypage/memberinfo' // 개인정보 확인/수정
 			,name:memberInfo
 			,component:memberInfo,
 		}

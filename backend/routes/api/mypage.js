@@ -50,7 +50,7 @@ exports.myProductDelete = (req,res) => {
 	conn.query("SELECT image_name FROM product_image WHERE id = ?", req.body.id,(err,data) => {
 		if(err) throw err;
 		for(let i=0; i<data.length; i++){
-			fs.unlink("./public/images/" + data[i].image_name, (err) => {
+			fs.unlink("./public/img/" + data[i].image_name, (err) => {
 				if(err) throw err;
 			})
 		}
@@ -84,5 +84,68 @@ exports.pwCheck = (req,res) => {
 			res.send({success:false})
 		}
 	})
-
 }
+
+/* 개인정보 조회 */
+exports.getMemberInfo = (req,res) => {
+	let accessToken = req.cookies.accessToken;
+	let decode = jwt.verify(accessToken, secretObj.secret);
+	let memberId = decode.member_id
+
+	conn.query("SELECT member_email FROM member WHERE member_id = ?", memberId, (err,data) =>{
+		if(err) throw err;
+		let memberInfo = data[0];
+		res.send({memberInfo:memberInfo})
+	})
+}
+
+/* 개인정보 수정 */
+exports.MemberInfoUpdate = (req,res) => {
+	let body = req.body;
+	console.log(body)
+	let accessToken = req.cookies.accessToken;
+	let decode = jwt.verify(accessToken, secretObj.secret);
+	let memberId = decode.member_id
+
+	if(body.currentPw != "" || body.newPw != "" || body.newPwCheck != ""){ // 비밀번호 변경 칸에 값이 들어온 경우
+		console.log("비밀번호 수정 O")
+		conn.query("SELECT member_pw FROM member WHERE member_id = ?", memberId, (err,data) => {
+			if(err) throw err;
+			let memberPw = data[0].member_pw;
+			console.log("현재비밀번호: " + body.currentPw)
+			console.log("현재비밀번호: " + memberPw)
+			if(body.currentPw == memberPw){ // 현재 비밀번호 체크
+				if(body.newPw.length > 5){ // 새로운 비밀번호 길이 체크
+					if(body.newPw == body.newPwCheck){ // 새로운 비밀번호 재확인 체크
+						conn.query("UPDATE member SET member_pw = ? WHERE member_id = ?;", [body.newPw, memberId], (err,data) => {
+							if(err) throw err;
+							conn.query("UPDATE member SET member_email = ? WHERE member_id = ?;", [body.email, memberId], (err,data) => {
+								if(err) throw err;
+								res.send({changePw:true})
+								
+							})
+						})
+					}
+					else{
+						res.send("newPwCheckError") // 새로운 비밀번호 체크 에러
+					}
+				}
+				else{
+					res.send("newPwLengthError") // 새로운 비밀번호 길이 에러
+				}
+			}
+			else{
+				res.send("currentPwCheckError") // 현재 비밀번호 체크 에러
+			}
+		})
+	}
+	else{ // 비밀번호를 수정하지않고 개인정보만 수정한 경우
+		console.log("비밀번호 수정 x")
+		conn.query("UPDATE member SET member_email = ? WHERE member_id = ?;", [body.email, memberId], (err,data) => {
+			if(err) throw err;
+			res.send({changePw:false})
+		})
+	}
+}
+
+

@@ -26,7 +26,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, './public/images')));
+app.use(express.static(path.join(__dirname, './public/img')));
 
 app.use('/api', index);
 

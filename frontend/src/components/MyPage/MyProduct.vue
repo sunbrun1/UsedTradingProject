@@ -18,7 +18,7 @@
                     <li>거래상태</li>
                     <li>관심목록</li>
                     <li>포인트</li>
-                    <router-link to="/mypage/memberinfo">
+                    <router-link to="/mypage/memberinfo/pwcheck">
                         <li>개인정보</li>
                     </router-link>
                     <li>회원탈퇴</li>

@@ -32,6 +32,8 @@ router.get("/mypage/myproduct/list",mypage.myProduct); // 내게시물 모듈(GE
 router.get("/mypage/myproduct/myProductCount",mypage.myProductCount); // 게시물 카운트(get)
 router.post("/mypage/myproduct/delete",mypage.myProductDelete); // 내게시물 삭제(post)
 router.post("/mypage/memberinfo/pwcheck",mypage.pwCheck); // 마이페이지-개인정보-비밀번호 재확인
+router.get("/mypage/memberinfo",mypage.getMemberInfo); // 마이페이지-개인정보-조회
+router.post("/mypage/memberinfo/update",mypage.MemberInfoUpdate); // 마이페이지-개인정보-수정
 
 /* 페이징 관련 */
 router.get("/paging/bycategory",paging.byCategoryCount); // 게시물 카운트(get)

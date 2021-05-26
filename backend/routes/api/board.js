@@ -4,12 +4,11 @@ const multer = require('multer');
 const jwt = require("jsonwebtoken");
 const secretObj = require("../../config/jwt");
 let fs = require('fs');
-const { brotliDecompress } = require('zlib');
 
 /* Create */
 const storage = multer.diskStorage({  // 업로드를위한 multer 모듈
 	destination: (req, res, cb) => {
-		cb(null, "./public/images/");
+		cb(null, "./public/img/");
 	},
 	filename: (req, file, cb) => {
 		cb(null, `${Date.now()}_${file.originalname}`);
@@ -33,6 +32,8 @@ exports.upload = (req,res)  =>{ /* 업로드 모듈 */
 		let date = new Date();
 		let accessToken = req.cookies.accessToken;
 		let accessTokenDecoded = jwt.verify(accessToken, secretObj.secret);
+		console.log(body)
+		console.log(files)
 
 		if(files.length > 0){ // 이미지공백 체크
 			if(body.title.length > 2){ // 제목 2글자 이하 체크 
@@ -254,7 +255,7 @@ exports.update = (req,res) => {
 									/* 이미지 삭제관련 */
 									if(deleteImage != ''){
 										for(let i=0; i<deleteImage.length; i++){
-											fs.unlink("./public/images/" + deleteImage[i], (err) => { //실제파일 삭제
+											fs.unlink("./public/img/" + deleteImage[i], (err) => { //실제파일 삭제
 												if(err) throw err;
 											})			
 											conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
@@ -280,7 +281,7 @@ exports.update = (req,res) => {
 									/* 이미지 삭제관련 */
 									if(deleteImage != ''){
 										for(let i=0; i<deleteImage.length; i++){
-											fs.unlink("./public/images/" + deleteImage[i], (err) => { //실제파일 삭제
+											fs.unlink("./public/img/" + deleteImage[i], (err) => { //실제파일 삭제
 												if(err) throw err;
 											})			
 											conn.query("Delete FROM product_image WHERE image_name = ?;", deleteImage[i] ,(err) => {  //DB에있는 이미지 데이터 삭제
