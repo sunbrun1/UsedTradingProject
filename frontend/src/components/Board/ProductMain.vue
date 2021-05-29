@@ -1,88 +1,94 @@
 <template>
-    <body>
+    <section>
+        <Header></Header>
         <!-- 신규 상품 -->
-        <div class="newproduct_h2">
-            <h2>신규 상품</h2>
-        </div>
-        <!-- 신규상품 리스트 -->
-        <div class="newproduct_wrap">
-            <div class="newproduct" v-for="(item) in newProduct" :key="item.id">
-                <!-- 라우터 이동 -->
-                <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
-                    <!-- 상품이미지 -->
-                    <div class="image">
-                        <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
-                    </div>
-                    <!-- 상품 정보(상품이름,가격,날짜) -->
-                    <div class="info">
-                        <!-- 상품이름 -->
-                        <div class="info_name">
-                            {{item.title}}
-                        </div>
-                        <div class="bottom_info">
-                            <!-- 가격 -->
-                            <div class="item info_price">
-                                <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
-                            </div>
-                            <!-- 날짜 -->
-                            <div class="item info_date" >
-                                {{item.date}}
-                            </div>
-                        </div>
-                    </div>
-                </router-link>
+        <body>
+            <div class="newproduct_h2">
+                <h2>신규 상품</h2>
             </div>
-        </div> 
-        <!-- 신규 상품 더보기 -->
-        <div class="more_wrap">
-            <div class="more">
-                <b>신규 상품</b> 더보기 >
-            </div>
-        </div>
-        
-        <!-- 인기상품 -->
-        <div class="bestproduct_h2">
-            <h2>인기 상품 </h2>
-        </div>
-        <!-- 인기상품 리스트 -->
-        <div class="bestproduct_wrap">
-            <div class="bestproduct" v-for="(item) in bestProduct" :key="item.id">
-                <!-- 라우터 이동 -->
-                <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
-                    <!-- 상품이미지 -->
-                    <div class="image">            
-                        <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>              
-                    </div>
-                    <!-- 상품 정보(상품이름,가격,날짜) -->
-                    <div class="info">
-                        <!-- 상품이름 -->
-                        <div class="info_name">
-                            {{item.title}}
+            <!-- 신규상품 리스트 -->
+            <div class="newproduct_wrap">
+                <div class="newproduct" v-for="(item) in newProduct" :key="item.id">
+                    <!-- 라우터 이동 -->
+                    <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
+                        <!-- 상품이미지 -->
+                        <div class="image">
+                            <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
                         </div>
-                        <div class="bottom_info">
-                            <!-- 가격 -->
-                            <div class="item info_price">
-                                <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                        <!-- 상품 정보(상품이름,가격,날짜) -->
+                        <div class="info">
+                            <!-- 상품이름 -->
+                            <div class="info_name">
+                                {{item.title}}
                             </div>
-                            <!-- 날짜 -->
-                            <div class="item info_date" >
-                                {{item.date}}
+                            <div class="bottom_info">
+                                <!-- 가격 -->
+                                <div class="item info_price">
+                                    <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                                </div>
+                                <!-- 날짜 -->
+                                <div class="item info_date" >
+                                    {{item.date}}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </router-link>
+                    </router-link>
+                </div>
+            </div> 
+            <!-- 신규 상품 더보기 -->
+            <div class="more_wrap">
+                <div class="more">
+                    <b>신규 상품</b> 더보기 >
+                </div>
             </div>
-        </div> 
-        <!-- 인기 상품 더보기 -->
-        <div class="more_wrap">
-            <div class="more">
-                <b>인기 상품</b> 더보기 >
+            
+            <!-- 인기상품 -->
+            <div class="bestproduct_h2">
+                <h2>인기 상품 </h2>
             </div>
-        </div>
-    </body>
+            <!-- 인기상품 리스트 -->
+            <div class="bestproduct_wrap">
+                <div class="bestproduct" v-for="(item) in bestProduct" :key="item.id">
+                    <!-- 라우터 이동 -->
+                    <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
+                        <!-- 상품이미지 -->
+                        <div class="image">            
+                            <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>              
+                        </div>
+                        <!-- 상품 정보(상품이름,가격,날짜) -->
+                        <div class="info">
+                            <!-- 상품이름 -->
+                            <div class="info_name">
+                                {{item.title}}
+                            </div>
+                            <div class="bottom_info">
+                                <!-- 가격 -->
+                                <div class="item info_price">
+                                    <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                                </div>
+                                <!-- 날짜 -->
+                                <div class="item info_date" >
+                                    {{item.date}}
+                                </div>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+            </div> 
+            <!-- 인기 상품 더보기 -->
+            <div class="more_wrap">
+                <div class="more">
+                    <b>인기 상품</b> 더보기 >
+                </div>
+            </div>
+        </body>
+    </section>
 </template>
 <script>
+import Header from '@/components/Header.vue'
+
 export default {
+    components: {Header},
     data(){
         return{
             newProduct:'', // 신규상품 데이터
@@ -139,8 +145,8 @@ export default {
 
 <style scoped>
 body{
-    padding-top: 186px;
     background: #ffffff;
+    padding-top: 196px;
 }
 /* 신규상품 */
 /* 신규상품 h2 */

@@ -1,71 +1,59 @@
 <template>
-    <body>
-        <form>
-            <div class="mypage">
-                <!-- 사이드바 -->
-                <div class="mypage_item sidebar">
-                    <!-- 마이페이지 제목 -->
-                    <h3 class="sidebar_title">
-                        마이페이지
-                    </h3>
-                    <!-- 마이페이지 메뉴 -->
-                    <ul class="sidebar_item">
-                        <router-link to="/mypage">
-                            <li>마이페이지 홈</li>
-                        </router-link>
-                        <router-link to="/mypage/myproduct/list">
-                            <li class="myproduct">내 상품</li>
-                        </router-link>
-                        <li>거래상태</li>
-                        <li>관심목록</li>
-                        <li>포인트</li>
-                        <router-link to="/mypage/memberinfo/pwcheck">
-                            <li class="member_info">개인정보</li>
-                        </router-link>
-                        <li>회원탈퇴</li>
-                    </ul>
+    <section>
+        <Header></Header>
+        <body>
+            <form>
+                <div class="mypage">
+                    <!-- 사이드바 -->
+                    <div class="mypage_item sidebar">
+                        <MyPageSidebar></MyPageSidebar>
+                    </div>
+                    <div class="mypage_item main">
+                        <div class="pwupdate_wrap">
+                            <h2><font-awesome-icon icon="lock" class="font"/> 비밀번호 변경</h2>
+                            <div class="pw_wrap title">
+                                비밀번호
+                            </div>
+                            <div class="pw_wrap input">
+                                <div class="currentPw">
+                                    <input type="password" v-model="currentPw" placeholder="현재 비밀번호">
+                                </div>
+                                <div class="newPw">
+                                    <input type="password" v-model="newPw" placeholder="새 비밀번호">
+                                </div>
+                                <div class="newPwCheck">
+                                    <input type="password" v-model="newPwCheck" placeholder="새 비밀번호 확인">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="memberinfo_wrap">
+                            <h2><font-awesome-icon icon="user" class="font"/> 개인정보 수정</h2>
+                            <div class="email_wrap title">
+                                이메일
+                            </div>
+                            <div class="email_wrap input">
+                                <div class="email">
+                                    <input type="text" v-model="email" placeholder="이메일">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="submit" @click="update">
+                            <button type="button">확인</button>
+                        </div>
+                    </div>
+                
                 </div>
-                <div class="mypage_item main">
-                    <div class="pwupdate_wrap">
-                        <h2><font-awesome-icon icon="lock" class="font"/> 비밀번호 변경</h2>
-                        <div class="pw_wrap title">
-                            비밀번호
-                        </div>
-                        <div class="pw_wrap input">
-                            <div class="currentPw">
-                                <input type="password" v-model="currentPw" placeholder="현재 비밀번호">
-                            </div>
-                            <div class="newPw">
-                                <input type="password" v-model="newPw" placeholder="새 비밀번호">
-                            </div>
-                            <div class="newPwCheck">
-                                <input type="password" v-model="newPwCheck" placeholder="새 비밀번호 확인">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="memberinfo_wrap">
-                        <h2><font-awesome-icon icon="user" class="font"/> 개인정보 수정</h2>
-                        <div class="email_wrap title">
-                            이메일
-                        </div>
-                        <div class="email_wrap input">
-                            <div class="email">
-                                <input type="text" v-model="email" placeholder="이메일">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="submit" @click="update">
-                        <button type="button">확인</button>
-                    </div>
-                </div>
-              
-            </div>
-        </form>
-    </body>
+            </form>
+        </body>
+    </section>
 </template>
 
 <script>
+import Header from '@/components/Header.vue'
+import MyPageSidebar from '@/components/MyPage/MyPageSidebar.vue'
+
 export default {
+    components: {Header,MyPageSidebar},
     data(){
         return{
             memberInfo:'',
@@ -146,9 +134,6 @@ export default {
 </script>
 
 <style scoped>
-    body{
-        padding-top: 196px;
-    }
     .mypage{
         width: 1180px;
         height: 800px;
@@ -158,41 +143,11 @@ export default {
     .mypage_item{
         float: left;
     }
-    /* 사이드바 */
-    .sidebar{
-        width: 179px;
-        height: 400px;
-        padding: 19px;
-        border: solid 2px #DADCE0;
-        margin-top: 30px;
-    }
-    /* 사이드바 제목 */
-    .sidebar_title{
-        width: 179px;
-        height: 40px;
-        line-height: 40px;
-        text-align: left;
-        padding: 0px 0px 20px 0px;
-        border-bottom: 1px #666 solid;
-        font-size: 20px;
-    }
-    /* 사이드바 메뉴 */
-    .sidebar_item{
-        text-align: left;
-        padding: 10px 0px 0px 0px;
-    }
-    .sidebar_item li{
-        padding: 10px 0px 10px 0px;
-        border-bottom: 1px solid #DADCE0;
-        cursor: pointer;
-    }
-    .member_info{
-        color: #19b2f5;
-    }
     /* 메인 */
     .main{
         margin-top: 30px;
         margin-left: 30px;
+        padding-top: 196px;
     }
     .pwupdate_wrap{
         width: 929px;

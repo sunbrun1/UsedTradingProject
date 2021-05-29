@@ -34,11 +34,33 @@ app.get("/talk", (req,res) =>{ //채팅 리스트 조회
   let accessToken = req.cookies.accessToken; //엑세스토큰
   let Decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
   let loginId = Decode.member_id; // 로그인한 아이디
-  conn.query("SELECT a.*, b.member_num AS host_member_num FROM chat_room AS a, member AS b WHERE (host = ? OR guest = ?) AND a.host = b.member_id ;",[loginId,loginId],(err,data) =>{ //로그인한 ID 채팅 리스트
+  let talkUser = [];
+  conn.query("SELECT a.*, b.member_no AS seller_no FROM talk_room AS a, member AS b WHERE (seller_id = ? OR buyer_id = ?) AND a.seller_id = b.member_id ;",[loginId,loginId],(err,data) =>{ //로그인한 ID 채팅 리스트
     if(err) throw err;
+    for(let i=0; i<data.length; i++){
+      let productNo = data[i].product_no;
+      let talkSellerId = data[i].seller_id; 
+      let talkBuyerId = data[i].buyer_id;
+      conn.query("SELECT member_id FROM product WHERE id = ?", productNo, (err,data) => {
+        if(err) throw err;
+        let productSellerId = data[0].member_id; //
+        if(loginId == productSellerId){  // 로그인한 ID가 판매자인 경우
+          console.log("판매자")
+          talkUser.push(talkBuyerId);
+          console.log(talkUser)
+        }
+        else{ // 로그인한 ID가 구매자인 경우
+          console.log("구매자")
+          talkUser.push(talkSellerId);
+          console.log(talkUser)
+        }
+      })
+    }
+    console.log(talkUser)
     res.send({
       success:true,
       chatList:data,
+      talkUser:talkUser
     })
   })
 })
@@ -47,7 +69,7 @@ app.get("/talk", (req,res) =>{ //채팅 리스트 조회
 
 let currentLoginId; // 로그인한 ID
 let sellerId; //상품 판매자
-let roomId; //채팅방 넘버
+let roomNo; //채팅방 넘버
 
 /*        채팅관련             */
 app.get("/talk/user/:memberNum",(req,res) => {
@@ -57,12 +79,11 @@ app.get("/talk/user/:memberNum",(req,res) => {
   currentLoginId = Decode.member_id; // 현재 로그인 ID
 
   /* req.query */
-  let productId = req.query.product_no; // 상품 ID
+  let productNo = req.query.product_no; // 상품 ID
   let isDirect = req.query.isDirect; // 상품페이지에서 바로 채팅했는지 유무
-  
- 
+
   /* 판매자 ID 조회 쿼리 */
-  conn.query("SELECT member_id FROM product WHERE id = ?;", productId, (err,data) =>{
+  conn.query("SELECT member_id FROM product WHERE id = ?;", productNo, (err,data) =>{
     if(err) throw err;
     sellerId = data[0].member_id; // 판매자 ID
 
@@ -70,14 +91,14 @@ app.get("/talk/user/:memberNum",(req,res) => {
       console.log("===상품 페이지에서 채팅===")
 
       /* 채팅내역(채팅방) 조회 쿼리 */
-      conn.query("SELECT id FROM chat_room WHERE host = ? and guest = ? and product_id = ?",[sellerId,currentLoginId,productId], (err,data) =>{
+      conn.query("SELECT talk_no FROM talk_room WHERE seller_id = ? and buyer_id = ? and product_no = ?",[sellerId, currentLoginId, productNo], (err,data) =>{
         if(err) throw err;
         if(data[0] != null){ // 기존 채팅방이 있다면 채팅방으로 이동
           console.log("채팅방 이동");
-          roomId = data[0].id; // 채팅방 ID
+          roomNo = data[0].talk_no; // 채팅방 ID
 
           /* 채팅 내역 조회 쿼리*/
-          conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomId, (err,data) => { 
+          conn.query("SELECT * FROM talk_message WHERE talk_no = ?", roomNo, (err,data) => { 
             if(err) throw err;
             res.send({
               msgData:data,
@@ -89,7 +110,7 @@ app.get("/talk/user/:memberNum",(req,res) => {
           console.log("===새로운 채팅방 생성후 이동===");
 
           /* 채팅방 생성 쿼리 */
-          conn.query("INSERT INTO chat_room (host, guest, title, product_id) value(?, ?, ?, ?);",[sellerId, currentLoginId, "방입니다", productId], (err) => {
+          conn.query("INSERT INTO talk_room (seller_id, buyer_id, product_no) value(?, ?, ?);",[sellerId, currentLoginId, productNo], (err) => {
             if(err) throw err;
           })
         } 
@@ -97,10 +118,10 @@ app.get("/talk/user/:memberNum",(req,res) => {
     }
     else{ // 채팅리스트에서 채팅한 경우
       /* req.query */
-      roomId = req.query.room_no; // 채팅방 ID
-      console.log(roomId)
+      roomNo = req.query.room_no; // 채팅방 ID
+      console.log(roomNo)
       /* 구매자 ID 조회 쿼리 */
-      conn.query("SELECT guest,host FROM chat_room WHERE id = ?;" , roomId, (err,data) =>{
+      conn.query("SELECT guest,host FROM chat_room WHERE id = ?;" , roomNo, (err,data) =>{
         if(err) throw err;
         console.log("===채팅 페이지에서 채팅===")
 
@@ -120,7 +141,7 @@ app.get("/talk/user/:memberNum",(req,res) => {
       
 
       /* 채팅 내역 조회 쿼리 */
-      conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomId, (err,data) => {
+      conn.query("SELECT * FROM chat_message WHERE room_id = ?", roomNo, (err,data) => {
         if(err) throw err;
         res.send({
           msgData:data,
@@ -135,7 +156,7 @@ app.get("/talk/user/:memberNum",(req,res) => {
 /* 소켓 */
 app.io.on('connection',(socket) => {
   console.log("===socket connect!===");
-  socket.join(roomId);
+  socket.join(roomNo);
 
 
   socket.sendId = currentLoginId; // 메시지 보낸 ID
@@ -143,10 +164,10 @@ app.io.on('connection',(socket) => {
 
   console.log("socket.sendId : " + socket.sendId)
   console.log("socket.recevieId : " + socket.recevieId)
-  console.log("room_id : " + roomId)
+  console.log("room_no : " + roomNo)
 
   /* 새로운 유저가 접속했을 경우 다른 소켓에게도 알려줌 */
-  app.io.to(roomId).emit('update', {type: 'connect', name: "SERVER", message: socket.sendId  + "님이 접속하였습니다."})
+  app.io.to(roomNo).emit('update', {type: 'connect', name: "SERVER", message: socket.sendId  + "님이 접속하였습니다."})
 
   /* 전송한 메세지 받기 */
   socket.on('message', (data) => {
@@ -156,9 +177,9 @@ app.io.on('connection',(socket) => {
     console.log(data);
 
     /* 보낸 사람을 제외한 나머지 유저에게 메시지 전송 */
-    socket.broadcast.to(roomId).emit('update', data)
+    socket.broadcast.to(roomNo).emit('update', data)
 
-    conn.query("INSERT INTO chat_message (send_id, send_time, text, room_id, unidentified_id) values(?, ?, ?, ?, ?)",[socket.sendId, "gd", data.message ,roomId, socket.recevieId],(err) => { //메세지 내용 DB 저장
+    conn.query("INSERT INTO chat_message (send_id, send_time, text, room_id, unidentified_id) values(?, ?, ?, ?, ?)",[socket.sendId, "gd", data.message ,roomNo, socket.recevieId],(err) => { //메세지 내용 DB 저장
       if(err) throw err;
     })
   });

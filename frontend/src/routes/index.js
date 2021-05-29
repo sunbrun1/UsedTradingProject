@@ -8,6 +8,7 @@ import productUpload from '@/components/Board/ProductUpload';
 import productUpdate from '@/components/Board/ProductUpdate';
 import productDetail from '@/components/Board/ProductDetail'; 
 import productByCategory from '@/components/Board/ProductByCategory';
+import productBySearch from '@/components/Board/ProductBySearch';
 
 /* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
@@ -50,7 +51,11 @@ export default new Router({ //라우터 연결
 			path:'/bycategory/list'  // 카테고리별 상품리스트
 			,name:"productByCategory"
 			,component:productByCategory,
-			props:true 
+		}
+		,{
+			path:'/bySearch/list'  // 검색별 상품리스트
+			,name:"productBySearch"
+			,component:productBySearch,
 		}
 
 		/* 마이페이지 관련 */

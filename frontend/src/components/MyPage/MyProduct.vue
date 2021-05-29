@@ -1,105 +1,93 @@
 <template>
-    <body>
-        <div class="mypage">
-            <!-- 사이드바 -->
-            <div class="mypage_item sidebar">
-                <!-- 마이페이지 제목 -->
-                <h3 class="sidebar_title">
-                    마이페이지
-                </h3>
-                <!-- 마이페이지 메뉴 -->
-                <ul class="sidebar_item">
-                    <router-link to="/mypage">
-                        <li class="home">마이페이지 홈</li>
-                    </router-link>
-                    <router-link to="/mypage/myproduct/list">
-                        <li class="myproduct">내 상품 </li>
-                    </router-link>
-                    <li>거래상태</li>
-                    <li>관심목록</li>
-                    <li>포인트</li>
-                    <router-link to="/mypage/memberinfo/pwcheck">
-                        <li>개인정보</li>
-                    </router-link>
-                    <li>회원탈퇴</li>
-                </ul>
-            </div>
-            <!-- 메인 -->
-            <div class="mypage_item main">
-                <div class="list_wrap">
-                    <table class="tbList">
-                        <colgroup>
-                            <col width="214px" />
-                            <col width="248px" />
-                            <col width="160px" />
-                            <col width="72px" />
-                            <col width="160px" />
-                            <col width="100px" />
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>사진</th>
-                                <th>상품명</th>
-                                <th>가격</th>
-                                <th>찜</th>
-                                <th>등록일</th>
-                                <th>수정/삭제</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(item, index) in myProduct" :key="index">
-                                <td><img :src="`http://localhost:3000/`+item.thumbnail" width="150" height="100"/></td>
-                                <td class="title">{{item.title}}</td>
-                                <td>{{item.price.toLocaleString('ko-KR')}} 원</td>
-                                <td>{{item.zzim}}</td>
-                                <td>{{new Date(item.date).toLocaleString('ko-KR')}}</td>
-                                <td class="option">
-                                    <router-link :to="`/update/` + item.id">
-                                        <div class="button">
-                                            <button @click="myProductCount">수정</button>
-                                        </div>
-                                    </router-link>
-                                    <div class="button" @click="productDelete(item)">
-                                        <button>삭제</button>
-                                    </div>                           
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="paging">
-                        <ul>
-                            <!-- 이전 버튼 -->
-                            <li class="page-item" v-if="prev">
-                                <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex - 1) * listRowCount }`" @click.native="movePage(startPageIndex - 1)">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </router-link>
-                            </li>
-                            <!-- 페이징 -->
-                            
-                            <li class="page-item" v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
-                                <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex+index) -1 }`" @click.native="movePage(startPageIndex + index - 1)">
-                                    {{startPageIndex+ index -1 }}
-                                </router-link>
-                            </li>
-
-                            <!-- 다음버튼 -->
-                            <li class="page-item" v-if="next">
-                                <router-link :to="`/mypage/myproduct/list?no=${ (endPageIndex + 1) * listRowCount }`" @click.native="movePage(endPageIndex + 1)">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </router-link>
-                            </li>
-                        </ul>
-                    </div>
+    <section>
+        <Header></Header>
+        <body>
+            <div class="mypage">
+                <!-- 사이드바 -->
+                <div class="mypage_item sidebar">
+                    <MyPageSidebar></MyPageSidebar>
                 </div>
+                <!-- 메인 -->
+                <div class="mypage_item main">
+                    <div class="list_wrap">
+                        <table class="tbList">
+                            <colgroup>
+                                <col width="214px" />
+                                <col width="248px" />
+                                <col width="160px" />
+                                <col width="72px" />
+                                <col width="160px" />
+                                <col width="100px" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>사진</th>
+                                    <th>상품명</th>
+                                    <th>가격</th>
+                                    <th>찜</th>
+                                    <th>등록일</th>
+                                    <th>수정/삭제</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in myProduct" :key="index">
+                                    <td><img :src="`http://localhost:3000/`+item.thumbnail" width="150" height="100"/></td>
+                                    <td class="title">{{item.title}}</td>
+                                    <td>{{item.price.toLocaleString('ko-KR')}} 원</td>
+                                    <td>{{item.zzim}}</td>
+                                    <td>{{new Date(item.date).toLocaleString('ko-KR')}}</td>
+                                    <td class="option">
+                                        <router-link :to="`/update/` + item.id">
+                                            <div class="button">
+                                                <button @click="myProductCount">수정</button>
+                                            </div>
+                                        </router-link>
+                                        <div class="button" @click="productDelete(item)">
+                                            <button>삭제</button>
+                                        </div>                           
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="paging">
+                            <ul>
+                                <!-- 이전 버튼 -->
+                                <li class="page-item" v-if="prev">
+                                    <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex - 1) * listRowCount }`" @click.native="movePage(startPageIndex - 1)">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </router-link>
+                                </li>
+                                <!-- 페이징 -->
+                                
+                                <li class="page-item" v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
+                                    <router-link :to="`/mypage/myproduct/list?no=${ (startPageIndex+index) -1 }`" @click.native="movePage(startPageIndex + index - 1)">
+                                        {{startPageIndex+ index -1 }}
+                                    </router-link>
+                                </li>
 
+                                <!-- 다음버튼 -->
+                                <li class="page-item" v-if="next">
+                                    <router-link :to="`/mypage/myproduct/list?no=${ (endPageIndex + 1) * listRowCount }`" @click.native="movePage(endPageIndex + 1)">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </router-link>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+        
             </div>
-    
-        </div>
-    </body>
+        </body>
+    </section>
 </template>
 
 <script>
+import Header from '@/components/Header.vue'
+import MyPageSidebar from '@/components/MyPage/MyPageSidebar.vue'
+
 export default {
+    components: {Header,MyPageSidebar},
     watch: {
         '$route' (to, from) {
             if(to.query != from.query){
@@ -128,6 +116,7 @@ export default {
     mounted() {
 		this.getList();
         this.myProductCount();
+        
 	},
 	methods:{
         // 페이지 이동 
@@ -286,9 +275,6 @@ export default {
 </script>
 
 <style scoped>
-    body{
-        padding-top: 196px;
-    }
     .mypage{
         width: 1180px;
         height: 800px;
@@ -298,43 +284,13 @@ export default {
     .mypage_item{
         float: left;
     }
-    /* 사이드바 */
-    .sidebar{
-        width: 179px;
-        height: 400px;
-        padding: 19px;
-        border: solid 2px #DADCE0;
-        margin-top: 30px;
-    }
-    /* 사이드바 제목 */
-    .sidebar_title{
-        width: 179px;
-        height: 40px;
-        line-height: 40px;
-        text-align: left;
-        padding: 0px 0px 20px 0px;
-        border-bottom: 1px #666 solid;
-        font-size: 20px;
-    }
-    /* 사이드바 메뉴 */
-    .sidebar_item{
-        text-align: left;
-        padding: 10px 0px 0px 0px;
-    }
-    .sidebar_item li{
-        padding: 10px 0px 10px 0px;
-        border-bottom: 1px solid #DADCE0;
-        cursor: pointer;
-    }
-    .myproduct{
-        color: #19b2f5;
-    }
     /* 메인 */
     .main{
         width: 929px;
         height: 140px;
         margin-top: 30px;
         margin-left: 30px;
+        padding-top: 196px;
     }
     .tbList{
         padding: 5px 0px 5px 0px;

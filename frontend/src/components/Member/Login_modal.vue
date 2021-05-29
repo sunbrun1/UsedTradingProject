@@ -71,6 +71,7 @@ export default {
                 if(res.data.success){ // 로그인 성공시
                     this.$emit('close'); // 로그인 모달 닫기
                     this.$emit('loginCheck'); // 로그인 유무에따른 렌더링
+                    this.$router.go();
                 }
                 else{ // 로그인 실패시
                     alert("등록되지 않은 아이디이거나, 아이디 또는 비밀번호를 잘못 입력하셨습니다.");
@@ -116,6 +117,7 @@ export default {
     }
     .modal-container {
         width: 500px;
+        height: 260px;
         margin: auto;
         background-color: #fff;
         box-shadow: 0 2px 8px rgba(0, 0, 0, .33);

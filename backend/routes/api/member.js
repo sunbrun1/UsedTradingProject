@@ -91,8 +91,8 @@ exports.login = (req,res) =>{
 
 /* 로그아웃 모듈 */
 exports.logout = (req,res) =>{
-	res.cookie("accessToken", '', {httpOnly: true,maxAge: 1000});
-	res.cookie("refreshToken", '', {httpOnly: true,maxAge: 1000});
+	res.cookie("accessToken", '', {httpOnly: true,maxAge: 10});
+	res.cookie("refreshToken", '', {httpOnly: true,maxAge: 10});
 	res.send({success:true})
 }
 

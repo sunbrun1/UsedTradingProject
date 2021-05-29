@@ -1,167 +1,173 @@
 <template>
-    <body>
-        <form id="zz">
-            <div class="basicinfo">
-                <div class="basicinfo_item title1">
-                    <h2>기본정보</h2>
-                </div>
-                <div class="basicinfo_item title2">
-                    *필수항목
-                </div>
-            </div>
-
-            <!-- 굵은 구분선 -->
-            <div class="thick-line"></div>
-
-            <!-- 상품이미지 -->
-            <div class="prouctimage">
-                <div class="productimage-item title">
-                    상품이미지<span>*</span>
-                </div>
-                <div class="productimage-item file" >
-                    <!-- 이미지추가 -->
-                    <div v-if="!files.length" class="productimage-item preview" >
-                        <label for='files' >
-                            +<input type="file"  name='files'  id='files' ref="files"  @change="imageUpload" accept="image/jpeg,image/png"/>
-                        </label>
+    <section>
+        <Header></Header>
+        <body>
+            <form id="zz">
+                <div class="basicinfo">
+                    <div class="basicinfo_item title1">
+                        <h2>기본정보</h2>
                     </div>
-                    <!-- 이미지 출력 -->
-                    <div v-else class="productimage-item addpreview" >
-                        <div class="productimage-addimage" v-for="(item,index) in files" :key="index">
-                            <!-- 대표이미지 -->
-                            <div v-if="index=='0'" class="mainimage">
-                                대표이미지
-                            </div>
-                            <!-- 이미지 삭제 버튼 -->
-                            <div class="file-close-button">
-                                <button type="button" @click="fileDeleteButton(index)">x</button>
-                            </div>
-                            <img :src="item.preview" width="239" height="239"/> <!-- 이미지-->
-                        </div>
-                        <div class="productimage-addimage2">
-                            <label for="files">+</label>
-                            <input type="file" name='files' id="files" ref="files" @change="imageUpload" accept="image/jpeg,image/png"/>
-                        </div>
+                    <div class="basicinfo_item title2">
+                        *필수항목
                     </div>
                 </div>
-            </div>
 
-            <!-- 얇은 구분선 -->
-            <div class="thin-line"></div>
+                <!-- 굵은 구분선 -->
+                <div class="thick-line"></div>
 
-            <!-- 제목 -->
-            <div class="productname">
-                <div class="productname-item title" >
-                    제목<span>*</span>
-                </div>
-                <div class="productname-item input">
-                    <input type="text" v-on:input="textLengthCheck" v-model="title" ref="title" placeholder="제목을 입력해주세요." maxlength='20' spellcheck="false">
-                </div>
-                <div class="productname-item limit" >
-                    {{title_length}}/20
-                </div>
-            </div>
-
-            <!-- 얇은 구분선 -->
-            <div class="thin-line"></div>
-
-            <!-- 카테고리 -->
-            <div class="category">
-                <!-- 카테고리 타이틀 -->
-                <div class="category-item title">
-                    카테고리<span>*</span>
-                </div>
-                <!-- 대분류 -->
-                <div class="category-item category_large" >
-                    <ul class="category_large_ul">
-                        <li class="category_large_li" v-for="(largeitem,index) in categoryList" :key="index"
-                        @click="[categoryList.medium = largeitem.medium, selectCategoryLarge(index)]">
-                            {{largeitem.large[0][1]}}
-                            
-                        </li>
-                    </ul>
-                </div>
-                <!-- 중분류 -->
-                <div class="category-item category_medium">
-                    <ul class="category_medium_ul">
-                        <li v-for="(mediumitem,index) in categoryList.medium" :key="index" 
-                        class="category_medium_li" @click="selectCategoryMedium(index)">
-                            {{mediumitem[1]}}
-                        </li>
-                    </ul>
+                <!-- 상품이미지 -->
+                <div class="prouctimage">
+                    <div class="productimage-item title">
+                        상품이미지<span>*</span>
+                    </div>
+                    <div class="productimage-item file" >
+                        <!-- 이미지추가 -->
+                        <div v-if="!files.length" class="productimage-item preview" >
+                            <label for='files' >
+                                +<input type="file"  name='files'  id='files' ref="files"  @change="imageUpload" accept="image/jpeg,image/png"/>
+                            </label>
+                        </div>
+                        <!-- 이미지 출력 -->
+                        <div v-else class="productimage-item addpreview" >
+                            <div class="productimage-addimage" v-for="(item,index) in files" :key="index">
+                                <!-- 대표이미지 -->
+                                <div v-if="index=='0'" class="mainimage">
+                                    대표이미지
+                                </div>
+                                <!-- 이미지 삭제 버튼 -->
+                                <div class="file-close-button">
+                                    <button type="button" @click="fileDeleteButton(index)">x</button>
+                                </div>
+                                <img :src="item.preview" width="239" height="239"/> <!-- 이미지-->
+                            </div>
+                            <div class="productimage-addimage2">
+                                <label for="files">+</label>
+                                <input type="file" name='files' id="files" ref="files" @change="imageUpload" accept="image/jpeg,image/png"/>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- 얇은 구분선 -->
+                <div class="thin-line"></div>
 
-            </div>
-            <!-- 선택한 카테고리 -->
-            <div class="select-category">
-                <div class="select-category-item">
-                    선택한 카테고리: <b>{{selectLargeName}}</b><span v-if="selectLargeName">></span><b>{{selectMediumName}}</b>
-                </div>
-            </div>
-
-            <!-- 얇은 구분선 -->
-            <div class="thin-line"></div>
-
-            <!-- 가격 -->
-            <div class="productprice">
-                <div class="productprice-item title" >
-                    가격<span>*</span>
-                </div>
-                <div class="productprice-item input">
-                    <input type="text" v-model="price" ref="price" placeholder="숫자만 입력해주세요." maxlength="9">
-                </div>
-                <div class="productprice-item won">
-                    원
-                </div>
-            </div>
-
-            <!-- 얇은 구분선 -->
-            <div class="thin-line"></div>
-
-            <!-- 상품상태 -->
-            <div class="productstate">
-                <div class="productstate-item title" >
-                    상태<span>*</span>
-                </div>
-                <div class="productstate-item input">
-                    <input type="radio" name="radio" v-model="state" value="새상품" id="radio1" />
-                    <label  for="radio1" >새상품</label>
-                </div>
-                <div class="productstate-item input">
-                    <input type="radio" name="radio" v-model="state" value="중고상품" id="radio2" />
-                    <label for="radio2">중고상품</label>
-                </div>
-            </div>
-
-            <!-- 얇은 구분선 -->
-            <div class="thin-line"></div>
-
-            <div class="product_content">
-                <div class="product_content_item title">
-                    내용
-                </div>
-                <div class="product_content_item content">
-                    <textarea v-model="content" spellcheck = "false" placeholder="상품 설명을 입력해주세요.">         
-                    </textarea>
-
+                <!-- 제목 -->
+                <div class="productname">
+                    <div class="productname-item title" >
+                        제목<span>*</span>
+                    </div>
+                    <div class="productname-item input">
+                        <input type="text" v-on:input="textLengthCheck" v-model="title" ref="title" placeholder="제목을 입력해주세요." maxlength='20' spellcheck="false">
+                    </div>
+                    <div class="productname-item limit" >
+                        {{title_length}}/20
+                    </div>
                 </div>
 
-            </div>
+                <!-- 얇은 구분선 -->
+                <div class="thin-line"></div>
 
-            <!-- 등록 -->
-            <div class="product-upload">
-                <button type="button" @click="update">등록</button>
-            </div>
-            
-            
-        </form>
-    </body>
+                <!-- 카테고리 -->
+                <div class="category">
+                    <!-- 카테고리 타이틀 -->
+                    <div class="category-item title">
+                        카테고리<span>*</span>
+                    </div>
+                    <!-- 대분류 -->
+                    <div class="category-item category_large" >
+                        <ul class="category_large_ul">
+                            <li class="category_large_li" v-for="(largeitem,index) in categoryList" :key="index"
+                            @click="[categoryList.medium = largeitem.medium, selectCategoryLarge(index)]">
+                                {{largeitem.large[0][1]}}
+                                
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- 중분류 -->
+                    <div class="category-item category_medium">
+                        <ul class="category_medium_ul">
+                            <li v-for="(mediumitem,index) in categoryList.medium" :key="index" 
+                            class="category_medium_li" @click="selectCategoryMedium(index)">
+                                {{mediumitem[1]}}
+                            </li>
+                        </ul>
+                    </div>
+
+
+                </div>
+                <!-- 선택한 카테고리 -->
+                <div class="select-category">
+                    <div class="select-category-item">
+                        선택한 카테고리: <b>{{selectLargeName}}</b><span v-if="selectLargeName">></span><b>{{selectMediumName}}</b>
+                    </div>
+                </div>
+
+                <!-- 얇은 구분선 -->
+                <div class="thin-line"></div>
+
+                <!-- 가격 -->
+                <div class="productprice">
+                    <div class="productprice-item title" >
+                        가격<span>*</span>
+                    </div>
+                    <div class="productprice-item input">
+                        <input type="text" v-model="price" ref="price" placeholder="숫자만 입력해주세요." maxlength="9">
+                    </div>
+                    <div class="productprice-item won">
+                        원
+                    </div>
+                </div>
+
+                <!-- 얇은 구분선 -->
+                <div class="thin-line"></div>
+
+                <!-- 상품상태 -->
+                <div class="productstate">
+                    <div class="productstate-item title" >
+                        상태<span>*</span>
+                    </div>
+                    <div class="productstate-item input">
+                        <input type="radio" name="radio" v-model="state" value="새상품" id="radio1" />
+                        <label  for="radio1" >새상품</label>
+                    </div>
+                    <div class="productstate-item input">
+                        <input type="radio" name="radio" v-model="state" value="중고상품" id="radio2" />
+                        <label for="radio2">중고상품</label>
+                    </div>
+                </div>
+
+                <!-- 얇은 구분선 -->
+                <div class="thin-line"></div>
+
+                <div class="product_content">
+                    <div class="product_content_item title">
+                        내용
+                    </div>
+                    <div class="product_content_item content">
+                        <textarea v-model="content" spellcheck = "false" placeholder="상품 설명을 입력해주세요.">         
+                        </textarea>
+
+                    </div>
+
+                </div>
+
+                <!-- 등록 -->
+                <div class="product-upload">
+                    <button type="button" @click="update">등록</button>
+                </div>
+                
+                
+            </form>
+        </body>
+    </section>
 </template>
 
 
 <script>
+import Header from '@/components/Header.vue'
+
 export default {
+    components: {Header},
     data(){
         return{
             product:'', //상품 데이터

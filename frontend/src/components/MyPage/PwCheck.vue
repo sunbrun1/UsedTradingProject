@@ -1,53 +1,41 @@
 <template>
-    <body>
-        <form>
-            <div class="mypage">
-                <!-- 사이드바 -->
-                <div class="mypage_item sidebar">
-                    <!-- 마이페이지 제목 -->
-                    <h3 class="sidebar_title">
-                        마이페이지
-                    </h3>
-                    <!-- 마이페이지 메뉴 -->
-                    <ul class="sidebar_item">
-                        <router-link to="/mypage">
-                            <li>마이페이지 홈</li>
-                        </router-link>
-                        <router-link to="/mypage/myproduct/list">
-                            <li class="myproduct">내 상품</li>
-                        </router-link>
-                        <li>거래상태</li>
-                        <li>관심목록</li>
-                        <li>포인트</li>
-                        <router-link to="/mypage/memberinfo/pwcheck">
-                            <li class="member_info">개인정보</li>
-                        </router-link>
-                        <li>회원탈퇴</li>
-                    </ul>
+    <section>
+        <Header></Header>
+        <body>
+            <form>
+                <div class="mypage">
+                    <!-- 사이드바 -->
+                    <div class="mypage_item sidebar">
+                        <MyPageSidebar></MyPageSidebar>
+                    </div>
+                    <div class="mypage_item main">
+                        <h1>비밀번호 재확인</h1>
+                        <p>고객님의 개인정보 보호를 위해 본인확인을 진행합니다.</p>
+                        <p>비밀번호를 다시한번 입력해주세요.</p>
+                        <div class="input_wrap">
+                            <div class="input title">
+                                비밀번호 확인
+                            </div>
+                            <div class="input pw">
+                                <input type="password" v-model="pw"  ref="pw" placeholder="비밀번호">
+                            </div>
+                            <div class="input ok_btn"  @click="pwCheck">
+                                <button type="button">확인</button>
+                            </div>
+                        </div>   
+                    </div>
                 </div>
-                <div class="mypage_item main">
-                    <h1>비밀번호 재확인</h1>
-                    <p>고객님의 개인정보 보호를 위해 본인확인을 진행합니다.</p>
-                    <p>비밀번호를 다시한번 입력해주세요.</p>
-                    <div class="input_wrap">
-                        <div class="input title">
-                            비밀번호 확인
-                        </div>
-                        <div class="input pw">
-                            <input type="password" v-model="pw"  ref="pw" placeholder="비밀번호">
-                        </div>
-                        <div class="input ok_btn"  @click="pwCheck">
-                            <button type="button">확인</button>
-                        </div>
-                    </div>   
-                </div>
-            </div>
-        </form>
-    </body>
+            </form>
+        </body>
+    </section>
 </template>
 
 <script>
+import Header from '@/components/Header.vue'
+import MyPageSidebar from '@/components/MyPage/MyPageSidebar.vue'
+
 export default {
+    components: {Header,MyPageSidebar},
     data(){
         return{
             form:'',
@@ -88,9 +76,6 @@ export default {
 </script>
 
 <style scoped>
-    body{
-        padding-top: 196px;
-    }
     .mypage{
         width: 1180px;
         height: 800px;
@@ -100,43 +85,13 @@ export default {
     .mypage_item{
         float: left;
     }
-    /* 사이드바 */
-    .sidebar{
-        width: 179px;
-        height: 400px;
-        padding: 19px;
-        border: solid 2px #DADCE0;
-        margin-top: 30px;
-    }
-    /* 사이드바 제목 */
-    .sidebar_title{
-        width: 179px;
-        height: 40px;
-        line-height: 40px;
-        text-align: left;
-        padding: 0px 0px 20px 0px;
-        border-bottom: 1px #666 solid;
-        font-size: 20px;
-    }
-    /* 사이드바 메뉴 */
-    .sidebar_item{
-        text-align: left;
-        padding: 10px 0px 0px 0px;
-    }
-    .sidebar_item li{
-        padding: 10px 0px 10px 0px;
-        border-bottom: 1px solid #DADCE0;
-        cursor: pointer;
-    }
-    .member_info{
-        color: #19b2f5;
-    }
     /* 메인 */
     .main{
         width: 929px;
         height: 140px;
         margin-top: 30px;
         margin-left: 30px;
+        padding-top: 196px;
     }
     .main h1{
         padding: 0px 0px 20px 0px;

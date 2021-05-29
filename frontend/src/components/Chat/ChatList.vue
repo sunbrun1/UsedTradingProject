@@ -1,16 +1,26 @@
 <template>
     <body>
         <div class="chatListWrap">
-            <h2>채팅 리스트</h2>
-            <div class="chatList">
-                <ul v-for="(item) in chatList" :key="item.id">
-                    <router-link :to="`/talk/user/` + item.host_member_num + '?isDirect=false&product_no=' + item.product_id + '&room_no=' + item.id">
-                        <li @click="newPage(item.host_member_num,item.product_id,item.id)">
-                            {{item.id}}
-                        </li>
-                    </router-link>
-                </ul>
-
+            <h4>채팅 리스트</h4>
+            <div class="chatList" v-for="(item) in chatList" :key="item.id">
+                <div class="horizontal">
+                    <div class="member_id">
+                        {{talkUser}}
+                    </div>
+                    <div class="last_message">
+                        판매중이 상품에 관심있어요!
+                    </div>
+                </div>
+                <div class="horizontal">
+                    <div class="time">
+                        2021.5.19 수요일
+                    </div>
+                </div>
+                <div class="horizontal">
+                    <div class="ellipsis">
+                        <font-awesome-icon icon="ellipsis-v" class="font"/>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -23,6 +33,7 @@ export default {
     data(){
         return{
             chatList:"",
+            talkUser:"",
             memberNum:""
         }
     },
@@ -35,7 +46,9 @@ export default {
 			.then((res)=>{
                 if(res.data.success){
                     this.chatList = res.data.chatList;
+                    this.talkUser = res.data.talkUser;
                     this.memberNum = res.data.hostMemberNum;
+                    console.log(this.talkUser)
                 }
 			})
 			.catch((err)=>{
@@ -50,23 +63,52 @@ export default {
 </script>
 
 <style scoped>
-    body{
-        padding-top: 200px;
-    }
     .chatListWrap{
-        width: 400px;
-        height: 600px;
-        margin: auto;
-        border: solid 1px black;
+        width: 380px;
+        height: 650px;
+        background: rgb(244, 244, 250);
     }
-    .chatListWrap h2{
-        width: 400px;
-        border-bottom: solid 1px black;
+    .chatListWrap h4{
+        width: 380px;
+        height: 50px;
+        line-height: 50px;
+        background: white;
+        border-bottom: solid 1px #DADCE0;
     }
-    .chatList li{
-        width: 400px;
-        height: 30px;
-        line-height: 30px;
-        border: solid 1px black;
+    .chatList{
+        width: 360px;
+        height: 50px;
+        padding: 10px;
+        border-bottom: solid 1px #DADCE0;
+        background: white;
+    }
+    .horizontal{
+        float: left;
+    }
+    .member_id{
+        width: 166px;
+        height: 24px;
+        text-align: left;
+        color: #212121;
+        font-size: 16px;
+    }
+    .last_message{
+        color: #666666;
+        font-size: 14px;
+    }
+    .time{
+        width: 166px;
+        height: 24px;
+        text-align: right;
+        color: #999999;
+        font-size: 12px;
+    }
+    .ellipsis{
+        position: relative;
+        left: 20px;
+        top: 15px;
+        font-size: 20px;
+        color: #999999;
+        cursor: pointer;
     }
 </style>

@@ -1,11 +1,11 @@
 <template>
     <header>
+        <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
         <!-- =======상단바======= -->
         <div class="topbar">
             <ul class="topbar_item">
                 <li @click="openModal" v-if="loginStatus">로그인/회원가입</li>
                 <li @click="logout" v-else>로그아웃</li>
-                <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
                 <router-link to="/Test">
                 <li><a href="#">앱 다운로드</a></li>
                 </router-link>
@@ -25,16 +25,23 @@
             </div>
             <!-- 검색창 -->
             <div class="logobar_item searchbar">                
-                <select name="job">
-                    <option value="">카테고리 전체</option>
-                    <option value="학생">학생</option>
-                    <option value="회사원">회사원</option>
-                    <option value="기타">기타</option>
+                <select name="categoryLargeId" v-model="categoryLargeId">
+                    <option value="all">카테고리 전체</option>
+                    <option value="10001">디지털/가전</option>
+                    <option value="10002">여성의류</option>
+                    <option value="10003">남성의류</option>
+                    <option value="10004">패션잡화</option>
+                    <option value="10005">뷰티미용</option>
+                    <option value="10006">취미애완</option>
+                    <option value="10007">스포츠레저</option>
+                    <option value="10008">생활문구가구식품</option>
                 </select>
-                <input type="text">
-                <button type="submit">
-                    <font-awesome-icon icon="search" />
-                </button>
+                <input type="text" v-model="search">
+                <router-link :to="{ name: 'productBySearch', query: {no: 1, categoryLargeId: categoryLargeId, search: search}}">
+                    <button type="submit">
+                        <font-awesome-icon icon="search" />
+                    </button>
+                </router-link>
             </div>
             <!-- 판매하기,마이페이지,채팅 -->
             <div class='logobar_item_menu'>
@@ -116,6 +123,8 @@ export default {
             modal:false,
             loginStatus:'',
             categoryList:[],
+            search:'',
+            categoryLargeId:'all'
         }
     },
     mounted() {
@@ -131,8 +140,9 @@ export default {
         closeModal() {
             this.modal = false;
         },
+        // 로그인시 (로그인상태 false) => 로그아웃 렌더링
         login(){
-            this.loginStatus = false;
+            this.loginStatusCheck();
         },
         // 판매하기 로그인여부 확인
         loginCheckSell(){
@@ -169,7 +179,7 @@ export default {
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    this.$router.push({path:'/talk'});
+                    window.open('http://localhost:8081/talk', "PopupWin", "width=380,height=670");
                 }
                 else{
                     this.openModal();
@@ -193,9 +203,9 @@ export default {
             this.$axios.get("http://localhost:3000/api/member/logout",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    alert("로그아웃 되었습니다")
-                    this.loginStatus = true;
+                    alert("로그아웃 되었습니다")               
                     this.$router.push({path:'/'}).catch(()=>{});
+                    this.loginStatusCheck();
                 }
 			})
 			.catch((err)=>{
@@ -206,12 +216,11 @@ export default {
             this.$axios.get("http://localhost:3000/api/member/loginstatuscheck",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    this.loginStatus = false; 
+                    this.loginStatus = false;      
                 }
                 else{
                     this.loginStatus = true;
-                }
-                
+                }               
 			})
 			.catch((err)=>{
 				console.log(err);
@@ -232,7 +241,6 @@ export default {
        .topbar{
             width: 1180px;
             height: 40px;
-            line-height: 40px;
             margin: auto;
             font-size: 12px; 
         }
@@ -244,6 +252,7 @@ export default {
         .topbar_item li{
             float: left;
             padding-left: 15px;
+            padding-top: 10px;
             cursor: pointer;
         }
 

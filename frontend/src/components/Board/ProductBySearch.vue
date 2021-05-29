@@ -3,11 +3,10 @@
         <Header></Header>
         <body>
             <div class="category">
-                {{categoryLargeName}} <span v-if="categoryMediumName.length > 0">></span> {{categoryMediumName}}
+                {{categoryLargeName}}
             </div>
             <div class="category_title">
-                <h2 v-if="categoryMediumName == ''">{{categoryLargeName}}의 전체상품 <span class="totalListItemCount">{{totalListItemCount}}개</span></h2>
-                <h2 v-else>{{categoryMediumName}}의 전체상품 <span class="totalListItemCount">{{totalListItemCount}}개</span></h2>
+                <h2>{{search}}의 검색결과 <span class="totalListItemCount">{{totalListItemCount}}개</span></h2>
             </div>
             <div class="newproduct">
                 <div class="newproduct-item" v-for="(item) in product" :key="item.id">
@@ -80,7 +79,7 @@ export default {
                 this.getCategoryList();
                 this.myProductCount();
             }
-            else if(to.query.categoryMediumId != from.query.categoryMediumId){
+            else if(to.query.search != from.query.search){
                 this.getCategoryList();
                 this.myProductCount();
             }
@@ -90,7 +89,7 @@ export default {
         return{
             product:'', // 상품데이터
             categoryLargeName:'', // 대분류 이름
-            categoryMediumName:'', // 중분류 이름
+            search:'',
 
             /* 페이징 */
             totalListItemCount: 0, //내 게시물 개수
@@ -123,18 +122,19 @@ export default {
             this.myProductCount();
             this.initUI();
         },
-        /* 초기 상품리스트 조회 */
+        /* 상품리스트 조회 */
         getCategoryList() {
-			this.$axios.get("http://localhost:3000/api/board/bycategory/list",{
+			this.$axios.get("http://localhost:3000/api/board/bysearch/list",{
                 params: {
                     categoryLargeId : this.$route.query.categoryLargeId,
-                    categoryMediumId : this.$route.query.categoryMediumId,
+                    search : this.$route.query.search,
                     limit : this.pageLimit,
                     offset : (this.$route.query.no - 1) * this.pageLimit
                 }
             })
 			.then((res)=>{
                 this.product = res.data.product; //대분류 상품데이터
+                this.search = this.$route.query.search;
                 for(let i=0;  i<this.product.length; i++){ // 신규 상품등록 시간
                     this.product[i].date = this.timeForToday(this.product[i].date)
                 }
@@ -155,10 +155,10 @@ export default {
         /* 초기 페이징 화면 */
         myProductCount(){
             this.currentPageIndex = this.$route.query.no;
-            this.$axios.get("http://localhost:3000/api/paging/bycategory",{
+            this.$axios.get("http://localhost:3000/api/paging/bysearch",{
                 params: {
                     categoryLargeId : this.$route.query.categoryLargeId,
-                    categoryMediumId : this.$route.query.categoryMediumId
+                    search : this.$route.query.search,
                 }
             })
             .then((res)=>{

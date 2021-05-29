@@ -6,12 +6,12 @@ import axios from 'axios'; //axios 호출
 
 import { library as faLibrary } from '@fortawesome/fontawesome-svg-core'
 import { faHome, faSearch, faPlus,faWonSign, faAddressCard,faAlignJustify,faArrowAltCircleRight,faArrowAltCircleLeft,
-       faUser,faComments,faListUl,faCog,faHeart,faEye,faClock,faLock } from '@fortawesome/free-solid-svg-icons' 
+       faUser,faComments,faListUl,faCog,faHeart,faEye,faClock,faLock,faSignOutAlt,faPaperPlane,faEllipsisV } from '@fortawesome/free-solid-svg-icons' 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome' 
 // Set up FontAwesome 
 faLibrary.add(faHome, faSearch, faPlus, faWonSign, 
   faAddressCard,faAlignJustify,faArrowAltCircleRight,
-  faArrowAltCircleLeft,faUser,faComments,faListUl,faCog,faHeart,faEye,faClock,faLock) 
+  faArrowAltCircleLeft,faUser,faComments,faListUl,faCog,faHeart,faEye,faClock,faLock,faSignOutAlt,faPaperPlane,faEllipsisV) 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 
