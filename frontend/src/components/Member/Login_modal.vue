@@ -14,11 +14,11 @@
                         </div>
                         <!-- ID input -->
                         <div class="login_id">
-                            <input type="text" v-model="id" placeholder="ID"/>
+                            <input type="text" v-model="id" maxlength="13" placeholder="ID"/>
                         </div>
                         <!-- PW input -->
                         <div class="login_pw">
-                            <input type="password" v-model="pw" placeholder="PassWord"/>
+                            <input type="password" v-model="pw" maxlength="13" placeholder="PassWord"/>
                         </div>
                         <!-- 로그인 버튼 -->
                         <button class="login_btn" type="button" @click="login" >

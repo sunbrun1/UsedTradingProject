@@ -1,4 +1,4 @@
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
 
 const dbInfo = {    //db정보 객체로 설정
     host:'localhost'
@@ -7,20 +7,6 @@ const dbInfo = {    //db정보 객체로 설정
     ,database:'testdb'
   }
 
-  let dbcon = {
-	init:function() {
-		return mysql.createConnection(dbInfo);
-	},
-	conn:function(con) {
-		con.connect(function(err){
-			if(err) {
-				console.log("mysql connection error :"+err);
-				setTimeout(init, 2000);
-
-			} else {
-				console.log("mysql connection sucessfully");
-			}
-		})
-	}
-}
-module.exports = dbcon; //모듈 등록
+const pool = mysql.createPool(dbInfo)
+  
+module.exports = pool

@@ -175,6 +175,8 @@ export default {
                 else{ // 찜하기 안한 상태
                     this.dibsState = false;
                 }
+
+                this.views = this.views + 1;
 			})
 			.catch((err)=>{
 				console.log(err);

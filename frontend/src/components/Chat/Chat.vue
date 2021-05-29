@@ -18,9 +18,9 @@
                 </div>
             </div>
             <div class="talk">
-                <ul v-for="(item) in testData" :key="item.id">
+                <ul v-for="(item) in msgData" :key="item.id">
                     <li>
-                        {{item.send_id}} : {{item.text}}
+                        {{item.send_id}} : {{item.message_text}}
                     </li>
                 </ul>
             </div>
@@ -42,18 +42,22 @@ export default {
         return{
             text:'',
             name:'',
-            testData:[],
-            tttt:'',
+            msgData:[],
             socket : io('http://localhost:3000')
         }
     },
-
+    mounted() {
+		this.loginCheck();
+        this.getMsg();
+	},
     created(){
-        this.test();
-        this.chatList(); 
+        this.socket.on('update', (data) => {
+            console.log(data.message);
+            this.msgData.push({send_id:"판매자",message_text:data.message}); 
+        })
     },
 	methods:{
-        test(){
+        getMsg(){
             let memberNum = this.$route.params.memberId;
             let productId = this.$route.query.product_no;
             let isDirect = this.$route.query.isDirect;
@@ -68,8 +72,7 @@ export default {
              })
 			.then((res)=>{
                 if(res.data.success){
-                    this.testData = res.data.msgData
-                    console.log(this.testData);
+                    this.msgData = res.data.msgData
                 }
 			})
 			.catch((err)=>{
@@ -78,16 +81,23 @@ export default {
         },
         chatList(){
             this.socket.on('update', (data) =>{
-                this.testData.push({send_id:"상대방",text:data.message}); 
+                this.msgData.push({send_id:"판매자",message_text:data.message}); 
             })
         },
         send(){
-            console.log(this.text)
-            this.socket.emit('message', {type: 'message', message: this.text})
-            this.testData.push({send_id:"나",text:this.text}); 
-            console.log("나: " + this.text)
+            this.socket.emit('message', {message: this.text})
+            this.msgData.push({send_id:"나",message_text:this.text}); 
             this.text = '';
-        }
+        },
+        // 로그인여부 확인
+        loginCheck(){
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        },
 	}
 }
 </script>

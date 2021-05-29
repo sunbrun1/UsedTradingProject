@@ -2,10 +2,10 @@
     <body>
         <div class="chatListWrap">
             <h4>채팅 리스트</h4>
-            <div class="chatList" v-for="(item) in chatList" :key="item.id">
+            <div class="chatList" v-for="(item, index) in chatList" :key="index" @click="talk(item.seller_id, item.product_no, item.talk_no)">
                 <div class="horizontal">
                     <div class="member_id">
-                        {{talkUser}}
+                        {{talkUser[index]}}
                     </div>
                     <div class="last_message">
                         판매중이 상품에 관심있어요!
@@ -38,26 +38,34 @@ export default {
         }
     },
     mounted(){
-        this.test();
+        this.loginCheck();
+        this.getTalkList();
     },
 	methods:{
-        test(){
+        getTalkList(){
             this.$axios.get("http://localhost:3000/talk", {withCredentials: true})
 			.then((res)=>{
                 if(res.data.success){
                     this.chatList = res.data.chatList;
                     this.talkUser = res.data.talkUser;
-                    this.memberNum = res.data.hostMemberNum;
-                    console.log(this.talkUser)
                 }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
         },
-        newPage(member_num,product_id,id){
-            window.open("/talk/user/" + member_num + "?isDirect=false&product_no=" + product_id + '&room_no=' + id);
-        }
+        talk(member_num,product_id,id){
+            window.open("/talk/user/" + member_num + "?isDirect=false&product_no=" + product_id + '&room_no=' + id, "PopupWin", "width=380,height=670");
+        },
+        // 로그인여부 확인
+        loginCheck(){
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        },
 	}
 }
 </script>
@@ -81,6 +89,7 @@ export default {
         padding: 10px;
         border-bottom: solid 1px #DADCE0;
         background: white;
+        cursor: pointer;
     }
     .horizontal{
         float: left;

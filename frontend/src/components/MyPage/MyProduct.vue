@@ -155,7 +155,7 @@ export default {
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then(()=>{
                 // 초기 페이징 화면
-                this.$axios.get("http://localhost:3000/api/mypage/myproduct/myProductCount",{withCredentials: true})
+                this.$axios.get("http://localhost:3000/api/paging/myProductCount",{withCredentials: true})
                 .then((res)=>{
                     this.totalListItemCount = res.data.count[0].count; 
                     this.initUI();
