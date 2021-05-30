@@ -43,18 +43,13 @@ export default {
             text:'',
             name:'',
             msgData:[],
-            socket : io('http://localhost:3000')
+            socket : io("http://localhost:3000")
         }
     },
     mounted() {
 		this.loginCheck();
-        this.getMsg();
 	},
     created(){
-        this.socket.on('update', (data) => {
-            console.log(data.message);
-            this.msgData.push({send_id:"판매자",message_text:data.message}); 
-        })
     },
 	methods:{
         getMsg(){
@@ -73,16 +68,16 @@ export default {
 			.then((res)=>{
                 if(res.data.success){
                     this.msgData = res.data.msgData
+                    this.socket = io("http://localhost:3000");
+                    this.socket.on('update', (data) => {
+                        console.log(data.message);
+                        this.msgData.push({send_id:"판매자",message_text:data.message}); 
+                    })
                 }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
-        },
-        chatList(){
-            this.socket.on('update', (data) =>{
-                this.msgData.push({send_id:"판매자",message_text:data.message}); 
-            })
         },
         send(){
             this.socket.emit('message', {message: this.text})
@@ -93,6 +88,7 @@ export default {
         loginCheck(){
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then(()=>{
+                this.getMsg();
 			})
 			.catch((err)=>{
 				console.log(err);

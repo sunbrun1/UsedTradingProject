@@ -8,12 +8,12 @@
                         {{talkUser[index]}}
                     </div>
                     <div class="last_message">
-                        판매중이 상품에 관심있어요!
+                        {{msgText[index]}}
                     </div>
                 </div>
                 <div class="horizontal">
                     <div class="time">
-                        2021.5.19 수요일
+                        {{msgTime[index]}}
                     </div>
                 </div>
                 <div class="horizontal">
@@ -33,13 +33,15 @@ export default {
     data(){
         return{
             chatList:"",
+            talkMsgInfo:"",
+            msgText:"",
+            msgTime:"",
             talkUser:"",
             memberNum:""
         }
     },
     mounted(){
         this.loginCheck();
-        this.getTalkList();
     },
 	methods:{
         getTalkList(){
@@ -47,6 +49,8 @@ export default {
 			.then((res)=>{
                 if(res.data.success){
                     this.chatList = res.data.chatList;
+                    this.msgText = res.data.msgText;
+                    this.msgTime = res.data.msgTime;
                     this.talkUser = res.data.talkUser;
                 }
 			})
@@ -61,6 +65,7 @@ export default {
         loginCheck(){
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then(()=>{
+                this.getTalkList();
 			})
 			.catch((err)=>{
 				console.log(err);
@@ -100,10 +105,15 @@ export default {
         text-align: left;
         color: #212121;
         font-size: 16px;
+        padding-bottom: 3px;
+        
     }
     .last_message{
         color: #666666;
         font-size: 14px;
+        text-align: left;
+        padding-top: 3px;
+    
     }
     .time{
         width: 166px;
