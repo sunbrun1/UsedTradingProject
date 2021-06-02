@@ -1,46 +1,42 @@
 <template>
     <section>
         <Header></Header>
+        <AreaModal @close="closeModal" @areaSelect="areaSelect" v-if="modal"></AreaModal>
         <body>
-            <form id="zz">
-                <div class="basicinfo">
-                    <div class="basicinfo_item title1">
-                        <h2>기본정보</h2>
-                    </div>
-                    <div class="basicinfo_item title2">
-                        *필수항목
-                    </div>
+            <form>
+                <!-- 기본정보 -->
+                <div class="basicinfo_container">        
+                    <h2>기본정보</h2>
+                    <span>*필수항목</span>
                 </div>
 
-                <!-- 굵은 구분선 -->
-                <div class="thick-line"></div>
-
                 <!-- 상품이미지 -->
-                <div class="prouctimage">
-                    <div class="productimage-item title">
+                <div class="addimage_container">
+                    <div class="addimage_title">
                         상품이미지<span>*</span>
                     </div>
-                    <div class="productimage-item file" >
+                    <div class="file">
                         <!-- 이미지추가 -->
-                        <div v-if="!files.length" class="productimage-item preview" >
+                        <div class="addimage" v-if="!files.length">
                             <label for='files' >
-                                +<input type="file"  name='files'  id='files' ref="files"  @change="imageUpload" accept="image/jpeg,image/png"/>
+                                +<input type="file" name='files' id='files' ref="files" @change="imageUpload" accept="image/jpeg,image/png"/>
                             </label>
                         </div>
                         <!-- 이미지 출력 -->
-                        <div v-else class="productimage-item addpreview" >
-                            <div class="productimage-addimage" v-for="(item,index) in files" :key="index">
+                        <div class="image" v-else >
+                            <div class="image_item" v-for="(item,index) in files" :key="index">
+                                <!-- 이미지 -->
+                                <img :src="item.preview" width="239" height="239"/>
                                 <!-- 대표이미지 -->
-                                <div v-if="index=='0'" class="mainimage">
-                                    대표이미지
+                                <div class="mainimage" v-if="index == '0'">
+                                    대표이미지 
                                 </div>
                                 <!-- 이미지 삭제 버튼 -->
-                                <div class="file-close-button">
+                                <div class="close_button">
                                     <button type="button" @click="fileDeleteButton(index)">x</button>
                                 </div>
-                                <img :src="item.preview" width="239" height="239"/> <!-- 이미지-->
                             </div>
-                            <div class="productimage-addimage2">
+                            <div class="addimage2">
                                 <label for="files">+</label>
                                 <input type="file" name='files' id="files" ref="files" @change="imageUpload" accept="image/jpeg,image/png"/>
                             </div>
@@ -48,107 +44,118 @@
                     </div>
                 </div>
 
-                <!-- 얇은 구분선 -->
-                <div class="thin-line"></div>
-
                 <!-- 제목 -->
                 <div class="productname">
-                    <div class="productname-item title" >
+                    <div class="productname_title" >
                         제목<span>*</span>
                     </div>
-                    <div class="productname-item input">
+                    <div class="productname_input">
                         <input type="text" v-on:input="textLengthCheck" v-model="title" ref="title" placeholder="제목을 입력해주세요." maxlength='20' spellcheck="false">
                     </div>
-                    <div class="productname-item limit" >
+                    <div class="productname_limit" >
                         {{title_length}}/20
                     </div>
                 </div>
 
-                <!-- 얇은 구분선 -->
-                <div class="thin-line"></div>
-
                 <!-- 카테고리 -->
-                <div class="category">
+                <div class="category_wrap">
                     <!-- 카테고리 타이틀 -->
-                    <div class="category-item title">
+                    <div class="category_title">
                         카테고리<span>*</span>
                     </div>
                     <!-- 대분류 -->
-                    <div class="category-item category_large" >
-                        <ul class="category_large_ul">
-                            <li class="category_large_li" v-for="(largeitem,index) in categoryList" :key="index"
-                            @click="[categoryList.medium = largeitem.medium, selectCategoryLarge(index)]">
+                    <div class="category_large" >
+                        <ul>
+                            <li v-for="(largeitem,index) in categoryList" :key="index" @click="[categoryList.medium = largeitem.medium, selectCategoryLarge(index)]">
                                 {{largeitem.large[0][1]}}
-                                
                             </li>
                         </ul>
                     </div>
                     <!-- 중분류 -->
-                    <div class="category-item category_medium">
-                        <ul class="category_medium_ul">
-                            <li v-for="(mediumitem,index) in categoryList.medium" :key="index" 
-                            class="category_medium_li" @click="selectCategoryMedium(index)">
+                    <div class="category_medium">
+                        <ul>
+                            <li v-for="(mediumitem,index) in categoryList.medium" :key="index" class="category_medium_li" @click="selectCategoryMedium(index)">
                                 {{mediumitem[1]}}
                             </li>
                         </ul>
                     </div>
-
-
                 </div>
                 <!-- 선택한 카테고리 -->
-                <div class="select-category">
+                <div class="select_category_wrap">
                     <div class="select-category-item">
                         선택한 카테고리: <b>{{selectLargeName}}</b><span v-if="selectLargeName">></span><b>{{selectMediumName}}</b>
                     </div>
                 </div>
 
-                <!-- 얇은 구분선 -->
-                <div class="thin-line"></div>
+                <div class="area_wrap">
+                    <div class="area_container">
+                        <div class="area_title">
+                            거래지역<span>*</span>
+                        </div>
+                        <div class="area_select" @click="openModal">
+                            주소 검색
+                        </div>
+                    </div>
+                    <div class="area_input">
+                        <input type="text" v-model="area" placeholder="지역을 선택해주세요" readonly >
+                    </div>
+
+                </div>
 
                 <!-- 가격 -->
-                <div class="productprice">
-                    <div class="productprice-item title" >
+                <div class="productprice_wrap">
+                    <div class="productprice_title" >
                         가격<span>*</span>
                     </div>
-                    <div class="productprice-item input">
+                    <div class="productprice_input">
                         <input type="text" v-model="price" ref="price" placeholder="숫자만 입력해주세요." maxlength="9">
                     </div>
-                    <div class="productprice-item won">
+                    <div class="productprice_won">
                         원
                     </div>
                 </div>
 
-                <!-- 얇은 구분선 -->
-                <div class="thin-line"></div>
-
                 <!-- 상품상태 -->
-                <div class="productstate">
-                    <div class="productstate-item title" >
+                <div class="productstate_wrap">
+                    <div class="productstate_title" >
                         상태<span>*</span>
                     </div>
-                    <div class="productstate-item input">
+                    <div class="productstate_input">
                         <input type="radio" name="radio" v-model="state" value="새상품" id="radio1" />
                         <label  for="radio1" >새상품</label>
                     </div>
-                    <div class="productstate-item input">
+                    <div class="productstate_input">
                         <input type="radio" name="radio" v-model="state" value="중고상품" id="radio2" />
                         <label for="radio2">중고상품</label>
                     </div>
                 </div>
 
-                <!-- 얇은 구분선 -->
-                <div class="thin-line"></div>
-
-                <div class="product_content">
-                    <div class="product_content_item title">
-                        내용
+                <!-- 상품 내용 -->
+                <div class="product_content_wrap">
+                    <div class="product_content_container">
+                        <div class="content_title">
+                            내용
+                        </div>
+                        <div class="content">
+                            <textarea v-model="content" v-on:input="contentLengthCheck" spellcheck = "false" placeholder="상품 설명을 입력해주세요."></textarea>
+                        </div>
                     </div>
-                    <div class="product_content_item content">
-                        <textarea v-model="content" spellcheck = "false" placeholder="상품 설명을 입력해주세요.">         
-                        </textarea>
-
+                     <div class="content_limit" >
+                        {{content_length}}/1000
                     </div>
+                </div>
 
+                <!-- 상품 개수 -->
+                <div class="product_EA_wrap">
+                    <div class="product_EA_title" >
+                        수량
+                    </div>
+                    <div class="product_EA_input">
+                        <input type="text" v-model="ea">
+                    </div>
+                    <div class="product_EA">
+                        개
+                    </div>
                 </div>
 
                 <!-- 등록 -->
@@ -165,9 +172,10 @@
 
 <script>
 import Header from '@/components/Header.vue'
+import AreaModal from '@/components/Board/AreaModal.vue'
 
 export default {
-    components: {Header},
+    components: {Header, AreaModal},
     data(){
         return{
             product:'', //상품 데이터
@@ -179,9 +187,13 @@ export default {
             categoryList:[], //카테고리 데이터
             selectLargeName:'',  //선택한 카테고리 대분류
             selectMediumName:'', //선택한 카테고리 중분류
+            area:'',
+            ea:1,
+            imageName:"",
             title_length:0, //제목 글자수
+            content_length:0, //내용 글자수
             deleteImage:[], //삭제된 이미지
-            test:''
+            modal:false, // 거래지역 검색 모달 상태 
         }
     },
     mounted() {
@@ -199,15 +211,18 @@ export default {
                 this.$axios.get("http://localhost:3000/api/board/product/" + productNo,{withCredentials: true})
                 .then((res)=>{
                     this.product = res.data.product[0];
+                    console.log(this.product)
                     this.title = this.product.title;
                     this.price = this.product.price;
                     this.state = this.product.state;
                     this.content = this.product.content;
                     this.selectLargeName = this.product.category_large_name;
                     this.selectMediumName = this.product.category_medium_name;
-                    this.test = this.product.image_name.split(',')
-                    for(let i=0; i<this.test.length; i++){
-                        this.files.push({preview : "http://localhost:3000/" + this.test[i], image_name : this.test[i]})
+                    this.area = this.product.area;
+                    this.ea = this.product.ea;
+                    this.imageName = this.product.image_name.split(',');
+                    for(let i=0; i<this.imageName.length; i++){
+                        this.files.push({preview : "http://localhost:3000/" + this.imageName[i], image_name : this.imageName[i]})
                     }
                 })
                 .catch((err)=>{
@@ -253,6 +268,16 @@ export default {
                 this.title_length = e.target.value.length;
             }
         },
+        /* 상품 내용 길이체크 */
+        contentLengthCheck(e){ // 제목 글자수 체크(v-model 한글 처리)
+            if(e.target.value.length > 1000){
+                e.target.value = e.target.value.substr(0, 1000);
+                this.content_length = e.target.value.length;
+            }
+            else if(e.target.value.length <= 1000){
+                this.content_length = e.target.value.length;
+            }
+        },
 
         /* 상품 카테고리 관련 */
         getCategory() { // 카테고리 데이터 불러오기
@@ -271,6 +296,17 @@ export default {
         selectCategoryMedium(index){ // 중분류 카테고리 선택 함수
             this.selectMediumName=this.categoryList.medium[index][1];
             console.log(this.selectMediumName)
+        },
+        // 주소 검색 모달창 열기
+        openModal() {
+            this.modal = true;
+        },
+        // 주소 검색 모달창 닫기
+        closeModal() {
+            this.modal = false;
+        },
+        areaSelect(area_sido, area_sigugun, area_dongeupmyeon){
+            this.area = area_sido + " " + area_sigugun + " " +area_dongeupmyeon
         },
 
         /* 업로드 */
@@ -338,36 +374,29 @@ export default {
 
 <style scoped>
     body{
-        padding-top: 196px;
+        padding-top: 189px;
+        
     }
-    /* 기본정보 h2*/
-    .basicinfo{
+    /* === 기본정보 h2 ===*/
+    .basicinfo_container{
         width: 1180px;
         height: 30px;
+        margin: auto;
+        padding: 30px 0px 30px 0px;
+        border-bottom: solid 2px #696969;
+        display: flex;
+    }
+    /* 기본정보 h2 */
+    .basicinfo_container h2{
         line-height: 30px;
-        margin: auto;
-        padding-top: 30px;
-        padding-bottom: 30px;
     }
-    /* 가로정렬 */
-    .basicinfo_item{
-        float: left;
-    }
-    /* 기본정보 */
-    .title1{
-        padding-right: 30px;
-    }
-    /* 필수항목 */
-    .title2{
+    /* *필수항목 */
+    .basicinfo_container span{
+        line-height: 30px;
         color: red;
+        padding-left: 30px;
     }
-    /* 굵은구분선 */
-    .thick-line{
-        width: 1180px;
-        height: 2px;
-        margin: auto;
-        background-color: black;
-    }
+
     /* 얇은 구분선 */
     .thin-line{
         width: 1180px;
@@ -376,47 +405,54 @@ export default {
         background-color: #DADCE0;
     }
     /*=================  상품이미지  =========================*/
-    .prouctimage{
-        overflow:hidden;
+    .addimage_container{
         width: 1180px;
 		height:auto;
         margin: auto;
-        padding-top: 30px;
-        padding-bottom: 30px;
+        overflow:hidden;
+        padding: 30px 0px 30px 0px;
+        display: flex;
+        border-bottom: solid 1px #DADCE0;
     }
-    /* 가로정렬 */
-    .productimage-item{
-        float: left;
-    }
+
     /* 상품이미지 타이틀 */
-    .productimage-item.title{
+    .addimage_title{
+        width: 145px;
+        text-align: left;
         font-size: 18px;
-        padding-right: 54px;
-        margin-top: 6px;
     }
     /* 별표 */
-    .productimage-item.title span{
+    .addimage_title span{
         color: red;
     }
-    /* 이미지추가1 */
-    .productimage-item.preview input{
+    /* file input 숨기기 */
+    .addimage input{
         display: none;
     }
-    .productimage-item.preview label{
+    /* 이미지추가 label */
+    .addimage label{
         padding: 107px 115px;
         cursor: pointer;
         line-height: 238px;
         background: #DADCE0;
     }
     /* 이미지 */
-    .productimage-item.addpreview{
-        width: 1034px;
+    .image{
+        width: 1050px;
+        height: auto;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-flow: wrap;
+    }
+    .image_item{
+        width: 239px;
+        height: 239px;
         position: relative;
     }
-    .productimage-addimage{
-        float: left;
-        margin-bottom: 20px;
-        position: relative;
+    .image_item:not(:nth-child(4n)){
+        padding: 0px 31px 31px 0px;
+
     }
     /* 대표이미지 */
     .mainimage{
@@ -431,11 +467,13 @@ export default {
         color: #ffffff;
     }
     /* 이미지 삭제버튼 오른쪽 정렬 */
-    .file-close-button{
+    .close_button{
         text-align: right;
+        position: absolute;
+        top: 0;
     }
     /* 이미지삭제버튼 */
-    .file-close-button button{
+    .close_button button{
         width: 20px;
         height: 20px;
         border: 0px;
@@ -443,17 +481,14 @@ export default {
         position: absolute;
         left: 219px;
     }
-    .productimage-addimage:not(:nth-child(4n)){
+    .image_add:not(:nth-child(4n)){
         margin-right: 25px;
     }
     /* 이미지추가 */
-    .productimage-addimage2{
-        float: left;
-    }
-    .productimage-addimage2 input{
+    .addimage2 input{
         display: none;
     }
-    .productimage-addimage2 label{
+    .addimage2 label{
         padding: 107px 115px;
         cursor: pointer;
         line-height: 238px;
@@ -464,67 +499,62 @@ export default {
         width: 1180px;
         height: 50px;
         margin: auto;
-        text-align: left;
-        padding-top: 30px;
-        padding-bottom: 30px;
+        padding: 30px 0px 30px 0px;
+        display: flex;
+        border-bottom: solid 1px #DADCE0;
     }
-    /* 가로 정렬 */
-    .productname-item{
-        float: left;
-    }
-    /* 제목  */
-    .productname-item.title{
-        font-size: 18px;
-        height: 50px;
+    /*  제목  */
+    .productname_title{
+        width: 145px;
         line-height: 50px;
-        padding-right: 103px;
+        text-align: left;
+        font-size: 18px;
     }
-    .productname-item.title span{
+    /* 별표 */
+    .productname_title span{
        color: red;
     }
-    /* 상품명 input  */
-    .productname-item.input{
+    /* 제목 input  */
+    .productname_input{
         width: 604px;
         height: 48px;
         border: 1px solid #DADCE0;
     }
-    .productname-item.input input{
+    /* 제목 input 테두리 제거 */
+    .productname_input input{
         width: 584px;
         height: 28px;
         padding: 10px;
         border: 0px;
         outline: 0px;
     }
-    .productname-item.input:hover{
+    /* 제목 input 호버시 강조 */
+    .productname_input:hover{
         border: 1px solid black;
     }
-    /* 글자수 제한 */
-    .productname-item.limit{
+    /* 제목 글자수 제한 */
+    .productname_limit{
         height: 50px;
         line-height: 50px;
         font-size: 20px;
         padding-left: 25px;
-
     }
-    /*=================  카테고리  =========================*/
-    .category{
+    /*=================  카테고리  ================*/
+    .category_wrap{
         width: 1180px;
         height: 302px;
         margin: auto;
         text-align: left;
         padding-top: 30px;
+        display: flex;
     }
-    /* 가로정렬 */
-    .category-item{
-        float: left;
-    }
-    /* 카테고리 */
-    .category-item.title{
-        height: 302px;
+    /* 카테고리 title*/
+    .category_title{
+        width: 145px;
         font-size: 18px;
-        padding-right: 70px;
     }
-    .category-item.title span{
+    /* 별표 */
+    .category_title span{
         color: red;
     }
     /* 카테고리 대분류 */
@@ -535,13 +565,15 @@ export default {
         overflow-x: hidden;
         overflow-y: scroll;
     }
-
+    /* 카테고리 대분류 ul */
     .category_large ul{
         cursor: pointer;
     }
+    /* 카테고리 대분류 li */
     .category_large li{
         padding: 10px;
     }
+    /* 카테고리 대분류 li 호버시 색변경 */
     .category_large li:hover{
         background: #DADCE0;
     }
@@ -552,30 +584,28 @@ export default {
         border: 1px solid #DADCE0;
         overflow-x: hidden;
         overflow-y: scroll; 
-
     }
+    /* 카테고리 중분류 ul */
     .category_medium ul{
         cursor: pointer;
     }
+    /* 카테고리 중분류 li */
     .category_medium li{
         padding: 10px;
     }
+    /* 카테고리 중분류 li 호버시 색변경 */
     .category_medium li:hover{
         background: #DADCE0;
     }
-    .category_large_li:hover > .category_medium li{
-        display: block;
-    }
-
     /* 선택한 카테고리: */
-    .select-category{
+    .select_category_wrap{
         width: 1180px;
         height: 30px;
         margin: auto;
-        padding-top: 30px;
-        padding-bottom: 30px;
+        padding: 30px 0px 30px 0px;
         text-align: left;
         font-size: 18px;
+        border-bottom: solid 1px #DADCE0;
     }
     .select-category-item{
         padding-left: 135px;
@@ -584,117 +614,161 @@ export default {
     .select-category-item span{
         padding: 0px 10px 0px 10px;
     }
-    
+    /* ==== 거래지역 ==== */
+    .area_wrap{
+        width: 1180px;
+        margin: auto;
+        padding: 30px 0px 30px 0px;
+        border-bottom: solid 1px #DADCE0;
+    }
+    .area_container{
+        display: flex;
+    }
+    /* 거래지역 title */
+    .area_title{
+        width: 145px;
+        height: 50px;
+        line-height: 50px;
+        font-size: 18px;
+        text-align: left;
+    }
+    /* 별표 */
+    .area_title span{
+        color: red;
+    }
+    /* 거래지역 선택버튼 */
+    .area_select{
+        width: 104px;
+        height: 50px;
+        line-height: 50px;
+        border: solid 1px #DADCE0;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+    /* 호버시 색변경 */
+    .area_select:hover{
+        background: #DADCE0;
+    }
+    /* 거래지역 input */
+    .area_input{
+        width: 604px;
+        height: 48px;
+        border: solid 1px #DADCE0;  
+        margin: 15px 0px 0px 145px;
+    }
+    .area_input input{
+        width: 584px;
+        height: 28px;
+        padding: 10px;
+        border: 0;
+        outline: 0;
+        background: rgb(244, 244, 250);
+    }
+
     /*=================  가격  =========================*/
-    .productprice{
+    .productprice_wrap{
         width: 1180px;
         height: 50px;
         margin: auto;
-        text-align: left;
-        padding-top: 30px;
-        padding-bottom: 30px;
+        padding: 30px 0px 30px 0px;
+        display: flex;
+        border-bottom: solid 1px #DADCE0;
     }
     /* 가로정렬 */
     .productprice-item{
         float: left;
     }
     /* 가격 */
-    .productprice-item.title{
+    .productprice_title{
+        width: 145px;
+        text-align: left;
         font-size: 18px;
-        height: 50px;
         line-height: 50px;
-        padding-right: 103px;
     }
     /* 별표 */
-    .productprice-item.title span{
+    .productprice_title span{
         color: red;
     }
     /* 상품가격 input창 */
-    .productprice-item.input{
+    .productprice_input{
         width: 300px;
         height: 48px;
         border: 1px solid #DADCE0;
     }
-    .productprice-item.input input{
+    .productprice_input input{
         width: 280px;
         height: 28px;
         padding: 10px;
         border: 0px;
         outline: 0px;
     }
-    .productprice-item.input:hover{
+    .productprice_input:hover{
         border: 1px solid black;
     }
     /* 원 */
-    .productprice-item.won{
+    .productprice_won{
         font-size: 18px;
         height: 50px;
         line-height: 50px;
         padding-left: 20px;
     }
     /*=================  상품 상태  =========================*/
-    .productstate{
+    .productstate_wrap{
         width: 1180px;
         height: 50px;
         margin: auto;
-        text-align: left;
-        padding-top: 30px;
-        padding-bottom: 30px;
+        padding: 30px 0px 30px 0px;
+        display: flex;
+        border-bottom: 1px solid #DADCE0;
     }
     /* 상태 */
-    .productstate-item.title{
+    .productstate_title{
         font-size: 18px;
         padding-right: 103px;
         height: 50px;
         line-height: 50px;
     }
     /* 별표 */
-    .productstate-item.title span{
+    .productstate_title span{
         color: red;
     }
-    /* 가로정렬 */
-    .productstate-item{
-        float: left;
-    }
     /* 상품 상태 input(radio)창 */
-    .productstate-item.input{
+    .productstate_input{
         font-size: 18px;
         margin-right: 50px;
         height: 50px;
         line-height: 50px;
     }
-    .productstate-item.input label{
+    .productstate_input label{
         padding-left: 10px;
     }
     /*=================  내용  =========================*/
-    .product_content{
+    .product_content_wrap{
         width: 1180px;
-        height: 300px;
         margin: auto;
-        text-align: left;
-        padding-top: 30px;
-        padding-bottom: 30px;
+        position: relative;
+    }
+    .product_content_container{
+        width: 1180px;
+        margin: auto;
+        padding: 30px 0px 30px 0px;
+        display: flex;
     }
     /* 내용 */
-    .product_content_item.title{
+    .content_title{
+        width: 145px;
         font-size: 18px;
-        padding-right: 103px;
-        height: 232px;
+        text-align: left;
     }
-    /* 가로정렬 */
-    .product_content_item{
-        float: left;
-    }
-    /* textarea 창 */
-    .product_content_item.content{
+    .content{
         width: 821px;
         height: 230px;
         border: solid 1px #DADCE0;
     }
-    .product_content_item.content:hover{
+    .content:hover{
         border: solid 1px black;
     }
-    .product_content_item.content textarea{
+    .content textarea{
         border: 0px;
         outline: 0px;
         width: 801px;
@@ -703,14 +777,51 @@ export default {
         font-size: 18px;
         display: inline;
         vertical-align: top;
-        resize: none;
-        font-family: 'Noto Sans KR', sans-serif;
+    }
+    .content_limit{
+        position: absolute;
+        bottom: -30px;
+        left: 910px;
+        padding: 0px 0px 30px 0px;
+    }
+    /* 상품 수량 */
+    .product_EA_wrap{
+        width: 1180px;
+        margin: auto;
+        padding: 30px 0px 30px 0px;
+        display: flex;
+        border-bottom: solid 1px #DADCE0;
+        border-top: solid 1px #DADCE0;
+    }
+    .product_EA_title{
+        width: 145px;
+        height: 48px;
+        line-height: 48px;
+        font-size: 18px;
+        text-align: left;
+    }
+    .product_EA_input{
+        width: 240px;
+        height: 48px;
+        border: solid 1px #DADCE0;
+    }
+    .product_EA_input input{
+        width: 220px;
+        height: 28px;
+        padding: 10px;
+        font-size: 18px;
+        border: 0;
+        outline: 0;
+    }
+    .product_EA{
+        line-height: 48px;
+        padding-left: 20px;
+        font-size: 20px;
     }
     /*=================  등록버튼  =========================*/
     .product-upload button{
         width: 960px;
         height: 200px;
+        margin-top: 30px;        
     }
-
-
 </style>

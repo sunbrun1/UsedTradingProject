@@ -1,3 +1,3 @@
 git add --all
-git commit -m "update UI Main,ByCategory,BySearch,Upload,Detail  "
+git commit -m "update UI Update.vue  "
 git push -u origin master
