@@ -2,30 +2,26 @@
     <header>
         <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
         <!-- =======상단바======= -->
-        <div class="topbar">
-            <ul class="topbar_item">
-                <li @click="openModal" v-if="loginStatus">로그인/회원가입</li>
-                <li @click="logout" v-else>로그아웃</li>
-                <router-link to="/Test">
-                <li><a href="#">앱 다운로드</a></li>
-                </router-link>
-            </ul>
-       </div>
-
-       <!-- 구분선 -->
-       <div class="line"></div>
+        <div class="topbar_wrap">
+            <div class="topbar_container">
+                <ul class="topbar_item">
+                    <li @click="openModal" v-if="loginStatus">로그인/회원가입</li>
+                    <li @click="logout" v-else>로그아웃</li>
+                    <li @click="homePage"><a href="#">앱 다운로드</a></li>
+                </ul>
+            </div>
+        </div>
 
        <!-- =========로고바======== -->
-       <div class="logobar">
+       <div class="logobar_wrap">
            <!-- 로고 -->
-            <div class="logobar_item logo">
-                <router-link to="/">
-                    <img alt='logo' src="@/assets/근본거래11.jpg">
-                </router-link>
+            <div class="logo_container" @click="homePage">
+                <img alt="logo" src="@/assets/근본거래11.jpg">
             </div>
             <!-- 검색창 -->
-            <div class="logobar_item searchbar">                
-                <select name="categoryLargeId" v-model="categoryLargeId">
+            <div class="search_container">
+                <!-- 카테고리 선택창 -->
+                <select name="category" v-model="categoryLargeId">
                     <option value="all">카테고리 전체</option>
                     <option value="10001">디지털/가전</option>
                     <option value="10002">여성의류</option>
@@ -36,17 +32,17 @@
                     <option value="10007">스포츠레저</option>
                     <option value="10008">생활문구가구식품</option>
                 </select>
-                <input type="text" v-model="search">
-                <router-link :to="{ name: 'productBySearch', query: {no: 1, categoryLargeId: categoryLargeId, search: search}}">
-                    <button type="submit">
-                        <font-awesome-icon icon="search" />
-                    </button>
-                </router-link>
+                <!-- 검색 input -->
+                <input type="text" v-model="search" @keyup.enter="searchPage">
+                <!-- 검색 button -->
+                <button type="submit" @click="searchPage">
+                    <font-awesome-icon icon="search" />
+                </button>
             </div>
             <!-- 판매하기,마이페이지,채팅 -->
-            <div class='logobar_item_menu'>
+            <div class="menu_container">
                 <!-- 판매하기 -->
-                <div class="logobar_item sell" @click="loginCheckSell">
+                <div class="sell" @click="sellPage">
                     <div>
                         <font-awesome-icon icon="won-sign" class="font"/> 
                     </div>
@@ -55,7 +51,7 @@
                     </div>
                 </div>
                 <!-- 마이페이지 -->
-                <div class="logobar_item mypage" @click="loginCheckMypage">
+                <div class="mypage" @click="myPage">
                     <div>
                         <font-awesome-icon icon="user" class="font"/> 
                     </div>
@@ -64,7 +60,7 @@
                     </div>
                 </div>
                 <!-- 채팅 -->
-                <div class="logobar_item chat" @click="loginCheckChat">
+                <div class="chat" @click="talkPage">
                     <div>
                         <font-awesome-icon icon="comments" class="font"/> 
                     </div>
@@ -72,18 +68,19 @@
                         채팅
                     </div>
                 </div>
-
             </div>
-            
         </div>
          
         <!-- ======카테고리바======= -->
-        <div class="category">
-            <div class="categorybar">
-                <div class="categorybar_item category_all">
+        <div class="categorybar_wrap">
+            <div class="categorybar_container">
+                <!-- 전체 카테고리 메뉴 -->
+                <div class="category_all">
+                    <!-- 메인 카테고리 -->
                     <ul class="maincategory">
                         <li>
                             <font-awesome-icon icon="list-ul" class="list-ul"/><span>전체 카테고리 </span>
+                            <!-- 서브 카테고리 -->
                             <div class="subcategory">
                                 <ul class="category_large" v-for="(largeitem,index) in categoryList" :key="index">
                                     <router-link :to="{ name: 'productByCategory', query: {no: 1, categoryLargeId: largeitem.large[0][0] }}">
@@ -104,27 +101,26 @@
                         </li>
                     </ul>
                 </div>
-                <div class="categorybar_item home">
+                <!-- 홈 -->
+                <div class="home" @click="homePage">
                     HOME
                 </div>
             </div>
         </div>
-        <!-- 구분선 -->
-        <div class="line"></div>
     </header>
 </template>
 
 <script>
-import Loginmodal from '@/components/Member/Login_modal'; 
+import Loginmodal from "@/components/Member/Login_modal"; 
 export default {
     components:{Loginmodal},
     data(){
         return{
-            modal:false,
-            loginStatus:'',
-            categoryList:[],
-            search:'',
-            categoryLargeId:'all'
+            modal:false, // 로그인 모달 상태 
+            loginStatus:"", // 로그인 상태 (로그인/로그아웃)
+            categoryList:[], // 카테고리데이터
+            search:"", // 검색값
+            categoryLargeId:"all" // 검색 카테고리 값
         }
     },
     mounted() {
@@ -143,47 +139,31 @@ export default {
         // 로그인시 (로그인상태 false) => 로그아웃 렌더링
         login(){
             this.loginStatusCheck();
-        },
-        // 판매하기 로그인여부 확인
-        loginCheckSell(){
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+        }, 
+        // 로그아웃
+        logout(){
+            this.$axios.get("http://localhost:3000/api/member/logout",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    this.$router.push({path:'/upload'});
-                }
-                else{
-                    this.openModal();
+                    alert("로그아웃 되었습니다")               
+                    this.$router.push({path:"/"}).catch(()=>{});
+                    this.loginStatusCheck();
                 }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
         },
-        // 마이페이지 로그인여부 확인
-        loginCheckMypage(){
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+        // 로그인 상태 확인 렌더링
+        loginStatusCheck(){
+            this.$axios.get("http://localhost:3000/api/member/loginstatuscheck",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    this.$router.push({path:'/mypage'});
+                    this.loginStatus = false;      
                 }
                 else{
-                    this.openModal();
-                }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
-        },
-        // 채팅리스트 로그인여부 확인
-        loginCheckChat(){
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then((res)=>{
-                if(res.data.success){
-                    window.open('http://localhost:8081/talk', "PopupWin", "width=380,height=670");
-                }
-                else{
-                    this.openModal();
-                }
+                    this.loginStatus = true;
+                }               
 			})
 			.catch((err)=>{
 				console.log(err);
@@ -199,32 +179,61 @@ export default {
 				console.log(err);
 			})
 		},
-        logout(){
-            this.$axios.get("http://localhost:3000/api/member/logout",{withCredentials: true})
+        // 판매하기 라우터 이동
+        sellPage(){
+            // 로그인여부 확인, 리프레쉬 토큰 재발급
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    alert("로그아웃 되었습니다")               
-                    this.$router.push({path:'/'}).catch(()=>{});
-                    this.loginStatusCheck();
+                    this.$router.push({path:"/upload"});
+                }
+                else{
+                    this.openModal();
                 }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
         },
-        loginStatusCheck(){
-            this.$axios.get("http://localhost:3000/api/member/loginstatuscheck",{withCredentials: true})
+        // 마이페이지 라우터 이동
+        myPage(){
+            // 로그인여부 확인, 리프레쉬 토큰 재발급
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    this.loginStatus = false;      
+                    this.$router.push({path:"/mypage"});
                 }
                 else{
-                    this.loginStatus = true;
-                }               
+                    this.openModal();
+                }
 			})
 			.catch((err)=>{
 				console.log(err);
 			})
+        },
+        // 채팅 라우터 이동
+        talkPage(){
+            // 로그인여부 확인, 리프레쉬 토큰 재발급
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then((res)=>{
+                if(res.data.success){
+                    window.open("http://localhost:8081/talk", "PopupWin", "width=380,height=670");
+                }
+                else{
+                    this.openModal();
+                }
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
+        },
+        // 검색 라우터 이동 
+        searchPage(){
+           this.$router.push({ path: "/bySearch/list", query: {no: 1, categoryLargeId: this.categoryLargeId, search: this.search}});
+        },
+        // 홈 라우터 이동
+        homePage(){
+            this.$router.push({ path: "/"});
         }
 	}
 }
@@ -232,136 +241,134 @@ export default {
 
 <style scoped>      
        header{
-           width: 100%;
+            width: 100%;
             position: fixed;
             z-index: 999;
             background: #ffffff;
        }
-       /* ========상단바======= */
-       .topbar{
+       /* 상단바 wrap */
+       .topbar_wrap{
+            border-bottom: solid 1px #DADCE0;
+       }
+       /* 상단바 container  */
+       .topbar_container{
             width: 1180px;
-            height: 40px;
+            height: 39px;
+            line-height: 39px;
             margin: auto;
-            font-size: 12px; 
         }
-        /* 오른쪽정렬 */
+        /* 상단바 로그인/로그아웃, 앱다운로드 오른쪽정렬 */
         .topbar_item{
-            float: right;
+           float: right;
         }
-        /* 가로정렬 */
+        /* 상단바 가로정렬 */
         .topbar_item li{
             float: left;
             padding-left: 15px;
-            padding-top: 10px;
+            font-size: 12px;
             cursor: pointer;
         }
-
-        /* =======구분선====== */
-        .line{
-            width: 1920px;
-            height: 1px;
-            background-color: #DADCE0;
-        }
-
-        /*========로고바======== */
-        .logobar{
+        /* === 로고바-wrap === */
+        .logobar_wrap{
             width: 1180px;
-            height: 46px;
+            height: 49px;
             margin: auto;
-            padding-top: 30px;
-            padding-bottom: 30px;
+            padding: 25px 0px 25px 0px;
+            display: flex;
         }
-        /* 로고 */
-        .logo{
-            width: 225px;
-            height: 46px;
+        /* 로고바-로고 컨테이너 */
+        .logo_container{
+            width: 165px;
+            height: 49px;
+            padding: 0px 100px 0px 0px;
+            cursor: pointer;
         }
-        /* 가로정렬 */
-        .logobar_item{
-            float: left;
-        }
-        /* 검색창 */
-        .searchbar{
+        /* 로고바-검색 컨테이너 */
+        .search_container{
             width: 580px;
-            height: 40px;
+            height: 43px;
             border: 3px solid #19b2f5;
             border-radius: 5px;
-            margin-left: 60px;
-            margin-right: 40px;
         }
-        /* 검색창 셀렉트 */
-        .searchbar select{
+        /* 로고바-검색창-셀렉트 */
+        .search_container select{
+            width: 170px;
+            height: 43px;
+            padding: 10px;
             float: left;
-            width: 166px;
-            height: 40px;
+            font-size: 14px;
             border: 0px;
             outline: 0px;
-
         }
-        /* 검색창 input */
-        .searchbar input{
-            width: 345px;
-            height: 20px;
+        /* 로고바-검색창-input */
+        .search_container input{
+            width: 355px;
+            height: 23px;
             padding: 10px;
             border: 0px;
             outline: 0px;
-            float: left;
         }
-        /* 검색창 button */
-        .searchbar button{
+        /* 로고바-검색창-button */
+        .search_container button{
             float: right;
             width: 35px;
-            height: 40px;
+            height: 43px;
             border: 0px;
             outline: 0px;
             cursor: pointer;
             background: #19b2f5;
             color: #ffffff;
-            
         }
-        .logobar_item_menu{
-            float: right;
+        /* === 메뉴(판매하기/마이페이지/채팅) 컨테이너 === */
+        .menu_container{
+            width: 244px;
+            height: 49px;
+            padding: 0px 0px 0px 85px;
+            display: flex;
         }
+        /* 메뉴-판매하기 */
         .sell{
             padding-right: 20px;
             cursor: pointer;
         }
+        /* 메뉴-마이페이지 */
         .mypage{
+            padding: 0px 20px 0px 20px;
             border-left:1px solid #DADCE0;
-            padding-right: 20px;
-            padding-left: 20px;
             cursor: pointer;
         }
+        /* 메뉴-채팅 */
         .chat{
-            border-left:1px solid #DADCE0;
             padding-left: 20px;
+            border-left:1px solid #DADCE0;
             cursor: pointer;
         }
+        /* 메뉴-아이콘 */
         .font{
             color: #19b2f5;
         }
         
-        /* =========카테고리바========= */
-        .category{
+        /* === 카테고리바 wrap === */
+        .categorybar_wrap{
             height: 50px;
             background: #19b2f5;
             color: #ffffff;
         }
-        .categorybar{
+        /* 카테고리바 container  */
+        .categorybar_container{
             width: 1180px;
             height: 50px;
-            line-height: 50px;
             margin: auto;
+            line-height: 50px;
             text-align: left;
+            display: flex;
         }
-        .categorybar_item{
-            float: left;
-        }
-        /* 전체카테고리 */
+        /* 전체 카테고리 메뉴 */
         .category_all{
             width: 220px;
             height: 50px;
-            background: #009fe5;  
+            background: #009fe5;
+            cursor: pointer;  
         }
         .category_all span{
             padding-left: 12px;
@@ -393,9 +400,6 @@ export default {
         .category_large_item{
             padding-bottom: 15px;
         }
-        .category_medium_item{
-            color: #696969;
-        }
         /* 중분류 카테고리 */
         .category_medium{
             font-size: 15px;
@@ -405,9 +409,11 @@ export default {
         .category_all :hover >.subcategory{
             display: block;
         }
+        /* 호버시 대분류 색변경 */
         .category_large_item:hover{
             color: #19b2f5;
         }
+        /* 호버시 중분류 색변경 */
         .category_medium_item:hover{
             color: #19b2f5;
         }

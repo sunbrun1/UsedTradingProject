@@ -19,7 +19,7 @@ body,html,*{
 }
 /*a태그 파란색,밑줄 제거*/
 a:link{
-    color: black;    
+    color: #696969; 
     text-decoration: none; 
 }
 a:visited{
@@ -30,11 +30,12 @@ li,ul{
     list-style: none;
 }
 
+
 #app {
   font-family: 'Noto Sans KR', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #696969;
 }
 </style>

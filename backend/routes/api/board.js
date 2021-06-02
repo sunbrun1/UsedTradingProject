@@ -35,32 +35,37 @@ exports.upload = async (req,res)  =>{ /* 업로드 모듈 */
 		if(files.length > 0){ // 이미지공백 체크
 			if(body.title.length > 2){ // 제목 2글자 이하 체크 
 				if(body.select_category_large.length > 0 && body.select_category_medium.length > 0){ // 카테고리 선택 공백 체크
-					if(body.price.length > 0 ){ // 가격 공백 체크
-						if(body.state.length > 0){
-							try{
-								/* 상품 업로드 쿼리 */
-								let data = await conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, views, date, dibs) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-								[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, 0, date, 0]);
-								let productNo = data[0].insertId
-								for(let i=0; i<req.files.length; i++){
-									/* 상품 이미지 업로드 쿼리 */
-									await conn.query("INSERT INTO product_image (image_name,id) values(?, ?);",[req.files[i].filename, productNo]);
+					if(body.area.length > 0){ // 거래지역 선택 공백 체크
+						if(body.price.length > 0 ){ // 가격 공백 체크
+							if(body.state.length > 0){
+								try{
+									/* 상품 업로드 쿼리 */
+									let data = await conn.query("INSERT INTO product (member_id,thumbnail, title, price, state, content, category_large_name, category_medium_name, area, views, date, dibs, ea) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+									[accessTokenDecoded.member_id, req.files[0].filename ,body.title, body.price, body.state, body.content, body.select_category_large, body.select_category_medium, body.area, 0, date, 0, body.ea]);
+									let productNo = data[0].insertId
+									for(let i=0; i<req.files.length; i++){
+										/* 상품 이미지 업로드 쿼리 */
+										await conn.query("INSERT INTO product_image (image_name,id) values(?, ?);",[req.files[i].filename, productNo]);
+									}
+									res.send({
+										success:true
+									})
 								}
-								res.send({
-									success:true
-								})
+								catch(err){
+									console.log(err);
+								}
 							}
-							catch(err){
-								console.log(err);
+							else{
+								res.send("stateCheckError") 
 							}
-						}
+						} 
 						else{
-							res.send("stateCheckError") 
+							res.send("priceCheckError") 
 						}
-					} 
-					else{
-						res.send("priceCheckError") 
 					}
+					else{
+						res.send("areaCheckError") 
+					}	
 				}
 				else{
 					res.send("categoryCheckError");
@@ -76,12 +81,38 @@ exports.upload = async (req,res)  =>{ /* 업로드 모듈 */
 	})
 }
 
+/* 거래지역 조회 모듈 */
+exports.areaSelect = async (req,res)  =>{ 
+	let areaSearch = req.body.area;
+	try{
+		let [area] = await conn.query("SELECT * FROM area WHERE CONCAT(area_sido,area_sigugun,area_dongeupmyeon) REGEXP ?;", areaSearch)
+		if(area.length > 0){
+			res.send({
+				success:true,
+				area:area,
+			})
+		}
+		else{
+			res.send({
+				success:false,
+				area:area,
+			})
+		}
+	}
+	catch(err){
+		res.send({
+			success:false,
+		})
+	}
+
+}
+
 /* Read */
 /* 메인화면 출력 모듈 */
 exports.list = async (req,res) => { //리스트 모듈 router 에서 호출
 	try{
 		let [newProduct] = await conn.query("SELECT * FROM product ORDER BY id DESC LIMIT 10;");
-		let [bestProduct] = await conn.query("SELECT * FROM product ORDER BY views DESC LIMIT 10;");
+		let [bestProduct] = await conn.query("SELECT * FROM product ORDER BY dibs DESC LIMIT 10;");
 		return res.send({
 			   success:true,
 			   newProduct:newProduct,
@@ -112,7 +143,8 @@ exports.bySearch = async (req,res) => {
 	//카테고리 선택후 검색한 경우
 	else{
 		console.log("카테고리 분류 선택")
-		let [categoryLargeName] = await conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?",categoryLargeId);
+		let [category] = await conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?",categoryLargeId);
+		let categoryLargeName = category[0].category_large_name;
 		let [product] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND title LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "%"+search+"%", limit, offset]);
 		res.send({
 			success:false,
@@ -298,8 +330,11 @@ exports.update = async (req,res) => {
 		let files = req.files;
 		let image_name = req.body.image_name.split(","); //남아있는 기존 이미지
 		let deleteImage = req.body.deleteImage.split(","); //삭제된 기존 이미지
+		console.log(files.length)
+		console.log(image_name)
+		console.log(image_name.length)
 
-		if(files.length > 0 || image_name.length > 0){ // 이미지공백 체크
+		if(files.length > 0 || image_name[0].length != ''){ // 이미지공백 체크
 			if(body.title.length > 2){ // 제목 2글자 이하 체크 
 				if(body.select_category_large.length > 0 && body.select_category_medium.length > 0){ // 카테고리 선택 공백 체크
 					if(body.price.length > 0 ){ // 가격 공백 체크

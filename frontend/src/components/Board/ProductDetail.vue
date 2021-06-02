@@ -3,31 +3,35 @@
         <Header></Header>
         <body>
             <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
-            <div class="product_info_wrap">
+            <div class="product_wrap">
                 <!-- 사진 슬라이드 -->
-                <div class="wrap_item images">
+                <div class="images_container">
                     <div>
                         <!-- 이미지 -->
-                        <img :src="`http://localhost:3000/`+image[currentNumber]" width="400" height="400"/>
-                        <!-- 이전버튼 -->
-                        <div class="previous" v-if='currentNumber > 0' @click="previous">
-                            <font-awesome-icon icon="arrow-alt-circle-left"/>
+                        <img :src="`http://localhost:3000/`+ image[currentNumber]" width="500" height="500"/>
+                    </div>
+                    <!-- 이미지 슬라이드 -->
+                    <div class="image_slider_container">
+                        <div class="image_slider" v-for="(item,index) in imageSlider" :key="index" @click="imageClick(index)">
+                            <img :src="`http://localhost:3000/`+ item" width="100" height="100" />
                         </div>
-                        <!-- 다음버튼 -->
-                        <div class="next" v-if='currentNumber < image.length-1' @click="next">
-                            <font-awesome-icon icon="arrow-alt-circle-right"/>
-                        </div>
+                    </div>
+                    <!-- 이전버튼 -->
+                    <div class="previous" v-if="image.length > 4 && sliderStartIndex > 0" @click="previous">
+                        <font-awesome-icon icon="chevron-left"/>
+                    </div>
+                    <!-- 다음버튼 -->
+                    <div class="next" v-if="image.length > 4 && sliderEndIndex < image.length" @click="next">
+                        <font-awesome-icon icon="chevron-right"/>
                     </div>
                 </div>
                 <!-- 카테고리,제목,가격,상태,지역... -->
-                <div class="wrap_item info">
+                <div class="info_container">
                     <!-- 카테고리 -->
                     <div class="category">
                         {{category_large_name}}<span>></span>{{category_medium_name}}
                     </div>
 
-                    <!-- 얇은 구분선 -->
-                    <div class="short_thin_line"></div>
 
                     <!-- 상품이름 -->
                     <div class="name">
@@ -38,8 +42,6 @@
                         {{price.toLocaleString('ko-KR')}} 원
                     </div>
 
-                    <!-- 얇은 구분선 -->
-                    <div class="short_thin_line"></div>
 
                     <!-- 찜/조회수/날짜/신고하기 -->
                     <div class="views">
@@ -54,7 +56,22 @@
                     </div>
                     <!-- 거래지역 -->
                     <div class="area">
-                        <span>거래 지역</span> 경기도 / 수원시 / 권선구
+                        <span>거래 지역</span> {{area}}
+                    </div>
+                    <!-- 상품 수량 -->
+                    <div class="ea_container">
+                        <div class="title">
+                            수량
+                        </div>
+                        <div class="minus" @click="minus">
+                            <font-awesome-icon icon="minus" class="font"/>
+                        </div>
+                        <div class="ea">
+                            {{ea}} 
+                        </div>
+                        <div class="plus" @click="plus">
+                            <font-awesome-icon icon="plus" class="font"/>
+                        </div>
                     </div>
 
                     <!-- 바로구매,연락하기,찜 버튼  -->
@@ -67,7 +84,7 @@
                         </div>
                         <!-- 연락하기 -->
                         <div class='button_wrap_item talk' @click="talk">
-                        연락하기
+                            연락하기
                         </div>
                         <!-- 찜 -->
                         <div class='button_wrap_item wish' @click="dibsAdd" :class="{red:dibsState, blue: !dibsState}">
@@ -119,18 +136,22 @@ export default {
             category_large_name:'', // 상품 대분류 이름
             category_medium_name:'', // 상품 중분류 이름
             state:'', // 상품 상태 
+            area:'', // 거래지역
             views:'', // 상품 조회수
             date:'', // 상품 등록 시간
-            dibs:0,
+            dibs:0, // 찜 개수
+            ea:1, // 상품 개수
             image:'', //상품 이미지
+            imageSlider:0,
+            sliderStartIndex:0,
+            sliderEndIndex:4,
             currentNumber: 0, // 이미지 인덱스 값
             myProductCheck:true, // 내 게시물인지 확인하는 변수
             memberNum:'', //유저 ID 넘버
-            dibsState:false // 찜 상태
+            dibsState:false, // 찜 상태
+            productCount:0
     
         }
-    },
-    computed:{
     },
     mounted() {
         this.loginCheck();
@@ -156,10 +177,13 @@ export default {
                 this.category_large_name = this.product.category_large_name; // 상품 대분류 이름
                 this.category_medium_name = this.product.category_medium_name; // 상품 중분류 이름
                 this.state = this.product.state; // 상품 상태 
+                this.area = this.product.area; // 상품 거래지역 
+                this.productCount = this.product.ea
                 this.views = this.product.views; // 상품 조회수
                 this.date = this.timeForToday(this.product.date)
                 this.dibs = this.product.dibs; // 상품 찜 개수
                 this.image = this.product.image_name.split(','); //상품 이미지
+                this.imageSlider = this.image.slice(this.sliderStartIndex,this.sliderEndIndex); // 상품 이미지 슬라이드
                 this.memberNo = res.data.memberNo; //유저 ID 넘버
 
                 if(res.data.myProduct){ // 내 게시물인 경우
@@ -182,13 +206,33 @@ export default {
 				console.log(err);
 			})
 		},
+
         /* 이미지 이전 */ 
         previous(){
-            this.currentNumber -= 1
+            this.sliderStartIndex = this.sliderStartIndex - 1;
+            this.sliderEndIndex = this.sliderEndIndex - 1;
+            this.imageSlider = this.image.slice(this.sliderStartIndex,this.sliderEndIndex);
         },
         /* 이미지 다음 */
         next(){
-            this.currentNumber += 1
+            this.sliderStartIndex = this.sliderStartIndex + 1;
+            this.sliderEndIndex = this.sliderEndIndex + 1;
+            this.imageSlider = this.image.slice(this.sliderStartIndex,this.sliderEndIndex);
+        },
+        imageClick(index){
+            this.currentNumber = this.image.indexOf(this.imageSlider[index]);
+        },
+        /* 수량 - */
+        minus(){
+            if(this.ea > 1 ){
+                this.ea = this.ea - 1;
+            }
+        },
+        /* 수량 + */
+        plus(){
+            if(this.ea < this.productCount){
+                this.ea = this.ea + 1;
+            }
         },
         /* 연락하기  */
         talk(){
@@ -276,8 +320,9 @@ export default {
 
 <style scoped>
 body{
-    padding-top: 186px;
+    padding-top: 189px;
     background: #ffffff;
+    font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     
 }
 /* 짧얇은 구분선 */
@@ -294,54 +339,81 @@ body{
     margin: auto;
     background-color: #DADCE0;
 }
-/* ===상품 틀=== */
-.product_info_wrap{
+/* === 상품 wrap === */
+.product_wrap{
     width: 1180px;
-    height: 400px;
+    height: 630px;
     margin: auto;
     text-align: left;
     padding-top: 40px;
+    display: flex;
 }
-/* 가로정렬 */
-.wrap_item{
-    float: left;
+/* 이미지 컨테이너 */
+.images_container{
+    width: 500px;
+    height: 650px;
+    position: relative;
 }
-/* ====이미지==== */
-.wrap_item.images{
-    width: 400px;
-    height: 400px;
+/* 이미지 슬라이더 */
+.image_slider_container{
+    display: flex;
+}
+/* 이미지 슬라이더 img */
+.image_slider{
+    padding: 7px;
+    border: solid 1px #DADCE0;
+    cursor: pointer;
+}
+/* 이미지 슬라이더 img */
+.image_slider:not(:nth-child(4n)){
+    margin-right: 12px;
 }
 /* 이미지 이전버튼 */
 .previous{
-    padding-left: 10px;
-    font-size: 50px;
-    float: left;
-    position: relative;
-    bottom: 240px;
-    opacity: 60%;
+    width: 40px;
+    height: 40px;
+    background: white;
+    text-align: center;
+    font-size: 22px;
+    border-radius: 50px;
+    position: absolute;
+    bottom: 65px;
     cursor: pointer;
 }
 /* 이미지 다음버튼 */
 .next{
-    padding-right: 10px;
-    font-size: 50px;
-    float: right;
-    position: relative;
-    bottom: 240px;
-    opacity: 60%;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    background: white;
+    font-size: 22px;
+    border-radius: 50px;
+    position: absolute;
+    left: 460px;
+    bottom: 65px;
     cursor: pointer;
 }
-/* ====상품 정보==== */
-.wrap_item.info{
-    width: 700px;
-    height: 400px;
-    float: right;
+/* 이미지 이전버튼 */
+.previous:hover{
+    color: #009fe5;
 }
-/* 카테고리 */
+/* 이미지 다음버튼 */
+.next:hover{
+    color: #009fe5;
+}
+/* ==== 상품 정보 ==== */
+.info_container{
+    width: 580px;
+    height: 630px;
+    padding-left: 100px;
+}
+/* 메인 카테고리*/
 .category{
     font-size: 16px;
     padding-bottom: 20px;
+    border-bottom: solid 1px#DADCE0;
 }
+/* 서브 카테고리 */
 .category span{
     padding: 0px 10px 0px 10px;
 }
@@ -358,6 +430,7 @@ body{
     padding-top: 12px;
     padding-bottom: 12px;
     color: #212121;
+    border-bottom: solid 1px#DADCE0;
 }
 /* 찜/조회수/날짜/신고하기 */
 .views{
@@ -381,6 +454,41 @@ body{
 }
 .area span{
     color: #cccccc;
+}
+.ea_container{
+    padding: 12px 0px 12px 0px;
+    display: flex;
+}
+.title{
+    width: 75px;
+    font-size: 22px;
+}
+.minus{
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-left: solid 1px #DADCE0;
+    border-top: solid 1px #DADCE0;
+    border-bottom: solid 1px #DADCE0;
+    cursor: pointer;
+}
+.ea{
+    width: 50px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border: solid 1px #DADCE0;
+}
+.plus{
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-right: solid 1px #DADCE0;
+    border-top: solid 1px #DADCE0;
+    border-bottom: solid 1px #DADCE0;
+    cursor: pointer;
 }
 /* 바로구매,연락하기,찜 버튼  */
 .button_wrap{

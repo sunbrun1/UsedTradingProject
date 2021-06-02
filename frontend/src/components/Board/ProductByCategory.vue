@@ -2,64 +2,79 @@
     <section>
         <Header></Header>
         <body>
-            <div class="category">
-                {{categoryLargeName}} <span v-if="categoryMediumName.length > 0">></span> {{categoryMediumName}}
-            </div>
-            <div class="category_title">
-                <h2 v-if="categoryMediumName == ''">{{categoryLargeName}}의 전체상품 <span class="totalListItemCount">{{totalListItemCount}}개</span></h2>
-                <h2 v-else>{{categoryMediumName}}의 전체상품 <span class="totalListItemCount">{{totalListItemCount}}개</span></h2>
-            </div>
-            <div class="newproduct">
-                <div class="newproduct-item" v-for="(item) in product" :key="item.id">
-                    <router-link :to="`/product/` + item.id">
-                        <div class="newproduct-image">
-                            <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
-                        </div>
-                        <div class="newproduct_info">
-                            <div class="newproduct-name">
+            <!-- 상품 wrap -->
+            <div class="bycategory_wrap">
+                <div class="category_container">
+                    {{categoryLargeName}} <span v-if="categoryMediumName.length > 0">></span> {{categoryMediumName}}
+                </div>
+                <div class="searchcount_container">
+                    <h2 v-if="categoryMediumName == ''">{{categoryLargeName}}의 전체상품 <span class="totalListItemCount">{{totalListItemCount}}개</span></h2>
+                    <h2 v-else>{{categoryMediumName}}의 전체상품 <span class="totalListItemCount">{{totalListItemCount}}개</span></h2>
+                </div>
+                <!-- 상품 리스트 -->
+                <div class="product_container">
+                    <div class="product" v-for="(item) in product" :key="item.id">
+                        <!-- 라우터 이동 -->
+                        <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
+                            <!-- 상품이미지 -->
+                            <div class="image">
+                                <img :src="`http://localhost:3000/`+item.thumbnail" width="212" height="212"/>
+                            </div>
+                            <!-- 상품 이름 -->
+                            <div class="name">
                                 {{item.title}}
                             </div>
-                            <div class="newproduct_item_div">
-                                <div class="newproduct_item3 newproduct-price">
-                                    <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
-                                </div>
-                                <div class="newproduct_item3 newproduct-date" >
-                                    {{item.date}}
-                                </div>
+                            <!-- 상품 가격 -->
+                            <div class="price">
+                                <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
                             </div>
-                        </div>
-                    </router-link>
-                </div>
-            </div> 
-            <div class="paging">
-                <ul>
-                    <!-- 이전 버튼 -->
+                            <div class="area">
+                                {{item.area}}
+                            </div>
+                            <!-- 찜/날짜 -->
+                            <div class="info">
+                                <!-- 찜 개수 -->
+                                <div class="dibs">
+                                    <font-awesome-icon icon="heart" class="heart"/> 찜 {{item.dibs}}
+                                </div>
+                                <!-- 날짜 -->
+                                <div class="date" >
+                                    {{item.date}}
+                                </div>  
+                            </div>
+                        </router-link>
+                    </div>
+                </div> 
+                <div class="paging">
                     <ul>
-                        <router-link :to="{ name: 'productByCategory', query: { no: (startPageIndex - 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex - 1)">
-                            <li class="page-item" v-if="prev">
-                                <span aria-hidden="true">&laquo;</span>      
-                            </li>
-                        </router-link>
-                    </ul>
-                    
-                    <!-- 페이징 -->
-                    <ul v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
-                        <router-link :to="{ name: 'productByCategory', query: { no: (startPageIndex+index) -1, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId   }}">
-                            <li class="page-item">    
-                                {{startPageIndex+ index -1 }}
-                            </li>
-                        </router-link>
-                    </ul>
+                        <!-- 이전 버튼 -->
+                        <ul>
+                            <router-link :to="{ name: 'productByCategory', query: { no: (startPageIndex - 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex - 1)">
+                                <li class="page-item" v-if="prev">
+                                    <span aria-hidden="true">&laquo;</span>      
+                                </li>
+                            </router-link>
+                        </ul>
+                        
+                        <!-- 페이징 -->
+                        <ul v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
+                            <router-link :to="{ name: 'productByCategory', query: { no: (startPageIndex+index) -1, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId   }}">
+                                <li class="page-item">    
+                                    {{startPageIndex+ index -1 }}
+                                </li>
+                            </router-link>
+                        </ul>
 
-                    <!-- 다음버튼 -->
-                    <ul>
-                        <router-link :to="{ name: 'productByCategory', query: { no: (endPageIndex + 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex + 1)">
-                            <li class="page-item" v-if="next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </li>
-                        </router-link>
-                    </ul>  
-                </ul>
+                        <!-- 다음버튼 -->
+                        <ul>
+                            <router-link :to="{ name: 'productByCategory', query: { no: (endPageIndex + 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex + 1)">
+                                <li class="page-item" v-if="next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </li>
+                            </router-link>
+                        </ul>  
+                    </ul>
+                </div>
             </div>
         </body>
     </section>
@@ -226,18 +241,20 @@ export default {
 
 <style scoped>
     body{
-        padding-top: 200px;
+        padding-top: 189px;
+        font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     }
-    .category{
+    /* === 상품 wrap === */
+    .category_container{
         width: 1180px;
         margin: auto;
         text-align: left;
-        padding: 40px 0px 20px 0px;
+        padding: 20px 0px 20px 0px;
     }
-    .category span{
+    .category_container span{
         padding: 0px 8px 0px 8px;
     }
-    .category_title{
+    .searchcount_container{
         width: 1180px;
         margin: auto;
         text-align: left;
@@ -246,58 +263,65 @@ export default {
     .totalListItemCount{
         color: #888888;
     }
-    /* 신규상품 타이틀 */
-    .newproduct-title{
+    /* 신규상품 container */
+    .product_container{
         width: 1180px;
+      
         margin: auto;
-        text-align: left;
-        padding-top: 40px; 
-        padding-bottom: 20px;
+        display: flex;
+        flex-flow: wrap;
     }
-    .newproduct{
-        width: 1180px;
-        height: auto;
-        overflow:hidden;
-        margin: auto;
+    .product{
+        width: 212px;
+        height: 309px;
     }
     /* 상품 가로정렬 */
-    .newproduct-item{
-        float: left;
-        border:1px solid #DADCE0;
-        margin-bottom: 20px;
+    .product:not(:nth-child(5n)){
+        margin-right: 30px;
     }
-    .newproduct-item:not(:nth-child(5n)){
-        margin-right: 25px;
+
+    /* 상품 이미지 */
+    .image img{
+        border-radius: 12px;
     }
-    .newproduct_info{
-        width: 214px;
-        height: 70px;
-    }
-    .newproduct-name{
-        width: 194px;
-        text-align: left;
-        padding: 8px 10px 8px 10px;
-        font-size: 14px;
+    /* 상품 이름 */
+    .name{
         overflow:hidden; 
         text-overflow:ellipsis; 
         white-space:nowrap;
+        text-align: left;
+        padding: 0px 0px 4px 0px;
     }
-    .newproduct_item_div{
-        width: 194px;
-        height: 15px;
-        line-height: 15px;
-        padding: 8px 10px 0px 10px;
+    /* 가격 */
+    .price{
+        text-align: left;
+        font-size: 15px;
+        padding: 0px 0px 4px 0px;
     }
-    /* price date 가로정렬 */
-    .newproduct_item3{
-        float: left;
+    /* 거래 지역 */
+    .area{
+        text-align: left;
+        font-size: 13px;
+        padding: 0px 0px 4px 0px;
     }
-    .newproduct-price{
-        float: left;
+    /*  */
+    .info{
+        display: flex;
+        justify-content: space-between;
+        padding: 0px 0px 4px 0px;
     }
-    .newproduct-date{
-        float: right;
+    /* 찜 개수 */
+    .dibs{
+        font-size: 13px;
+        color: #868E96
+    }
+    /* 날짜 */
+    .date{
         font-size: 12px;
+        color: #868E96;
+    }
+    .heart{
+        color: red;
     }
     /* 페이징 */
     .paging{

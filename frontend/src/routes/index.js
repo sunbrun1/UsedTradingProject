@@ -29,7 +29,7 @@ export default new Router({ //라우터 연결
 		/* 상품 CRUD 관련 */
 		{
 			path:'/'  // 메인화면(신규상품/인기상품 리스트)
-			,name:productMain
+			,name:"productMain"
 			,component:productMain
 		}
 		,{

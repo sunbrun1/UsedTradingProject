@@ -55,13 +55,20 @@ app.get("/talk", async (req,res) => { //채팅 리스트 조회
     }
 
     /* 상품 판매자 ID 조회 쿼리 */
-    let [memberInfo] = await conn.query("SELECT member_id FROM product WHERE id = ?", productNo);
-    let productSellerId = memberInfo[0].member_id; //
-    if(loginId == productSellerId){  // 로그인한 ID가 판매자인 경우
-      talkUser.push(talkBuyerId);
+    try{
+      console.log(productNo)
+      let [memberInfo] = await conn.query("SELECT member_id FROM product WHERE id = ?", productNo);
+      console.log(memberInfo)
+      let productSellerId = memberInfo[0].member_id; //
+      if(loginId == productSellerId){  // 로그인한 ID가 판매자인 경우
+        talkUser.push(talkBuyerId);
+      }
+      else{ // 로그인한 ID가 구매자인 경우
+        talkUser.push(talkSellerId);
+      }
     }
-    else{ // 로그인한 ID가 구매자인 경우
-      talkUser.push(talkSellerId);
+    catch(err){
+      console.log(err);
     }
   }
   res.send({

@@ -3,82 +3,97 @@
         <Header></Header>
         <!-- 신규 상품 -->
         <body>
-            <div class="newproduct_h2">
-                <h2>신규 상품</h2>
-            </div>
-            <!-- 신규상품 리스트 -->
+            <!-- 신규 상품 wrap -->
             <div class="newproduct_wrap">
-                <div class="newproduct" v-for="(item) in newProduct" :key="item.id">
-                    <!-- 라우터 이동 -->
-                    <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
-                        <!-- 상품이미지 -->
-                        <div class="image">
-                            <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>
-                        </div>
-                        <!-- 상품 정보(상품이름,가격,날짜) -->
-                        <div class="info">
-                            <!-- 상품이름 -->
-                            <div class="info_name">
+                <div class="title">
+                    <h2>신규 상품</h2>
+                </div>
+                <!-- 신규상품 리스트 -->
+                <div class="newproduct_container">
+                    <div class="newproduct" v-for="(item) in newProduct" :key="item.id">
+                        <!-- 라우터 이동 -->
+                        <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
+                            <!-- 상품이미지 -->
+                            <div class="image">
+                                <img :src="`http://localhost:3000/`+item.thumbnail" width="212" height="212"/>
+                            </div>
+                            <!-- 상품 이름 -->
+                            <div class="name">
                                 {{item.title}}
                             </div>
-                            <div class="bottom_info">
-                                <!-- 가격 -->
-                                <div class="item info_price">
-                                    <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                            <!-- 상품 가격 -->
+                            <div class="price">
+                                <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                            </div>
+                            <div class="area">
+                                {{item.area}}
+                            </div>
+                            <!-- 찜/날짜 -->
+                            <div class="info">
+                                <!-- 찜 개수 -->
+                                <div class="dibs">
+                                    <font-awesome-icon icon="heart" class="heart"/> 찜 {{item.dibs}}
                                 </div>
                                 <!-- 날짜 -->
-                                <div class="item info_date" >
+                                <div class="date" >
                                     {{item.date}}
-                                </div>
+                                </div>  
                             </div>
-                        </div>
-                    </router-link>
-                </div>
-            </div> 
-            <!-- 신규 상품 더보기 -->
-            <div class="more_wrap">
-                <div class="more">
-                    <b>신규 상품</b> 더보기 >
+                        </router-link>
+                    </div>
+                </div> 
+                <!-- 신규 상품 더보기 -->
+                <div class="more_wrap">
+                    <div class="more">
+                        <b>신규 상품</b> 더보기 >
+                    </div>
                 </div>
             </div>
             
-            <!-- 인기상품 -->
-            <div class="bestproduct_h2">
-                <h2>인기 상품 </h2>
-            </div>
-            <!-- 인기상품 리스트 -->
+            <!-- 인기 상품 wrap -->
             <div class="bestproduct_wrap">
-                <div class="bestproduct" v-for="(item) in bestProduct" :key="item.id">
-                    <!-- 라우터 이동 -->
-                    <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
-                        <!-- 상품이미지 -->
-                        <div class="image">            
-                            <img :src="`http://localhost:3000/`+item.thumbnail" width="214" height="200"/>              
-                        </div>
-                        <!-- 상품 정보(상품이름,가격,날짜) -->
-                        <div class="info">
-                            <!-- 상품이름 -->
-                            <div class="info_name">
+                <div class="title">
+                    <h2>인기 상품</h2>
+                </div>
+                <!-- 인기상품 리스트 -->
+                <div class="bestproduct_container">
+                    <div class="bestproduct" v-for="(item) in bestProduct" :key="item.id">
+                        <!-- 라우터 이동 -->
+                        <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
+                            <!-- 상품이미지 -->
+                            <div class="image">
+                                <img :src="`http://localhost:3000/`+item.thumbnail" width="212" height="212"/>
+                            </div>
+                            <!-- 상품 이름 -->
+                            <div class="name">
                                 {{item.title}}
                             </div>
-                            <div class="bottom_info">
-                                <!-- 가격 -->
-                                <div class="item info_price">
-                                    <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                            <!-- 상품 가격 -->
+                            <div class="price">
+                                <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                            </div>
+                            <div class="area">
+                                {{item.area}}
+                            </div>
+                            <!-- 찜/날짜 -->
+                            <div class="info">
+                                <!-- 찜 개수 -->
+                                <div class="dibs">
+                                    <font-awesome-icon icon="heart" class="heart"/> 찜 {{item.dibs}}
                                 </div>
                                 <!-- 날짜 -->
-                                <div class="item info_date" >
+                                <div class="date" >
                                     {{item.date}}
-                                </div>
+                                </div>  
                             </div>
-                        </div>
-                    </router-link>
-                </div>
-            </div> 
-            <!-- 인기 상품 더보기 -->
-            <div class="more_wrap">
-                <div class="more">
-                    <b>인기 상품</b> 더보기 >
+                        </router-link>
+                    </div>
+                </div> 
+                <!-- 인기 상품 더보기 -->
+                <div class="more_wrap">
+                    <div class="more">
+                        <b>인기 상품</b> 더보기 >
+                    </div>
                 </div>
             </div>
         </body>
@@ -146,74 +161,89 @@ export default {
 <style scoped>
 body{
     background: #ffffff;
-    padding-top: 196px;
+    padding-top: 189px;
+    font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
-/* 신규상품 */
-/* 신규상품 h2 */
-.newproduct_h2{
+
+/* === 신규상품 wrap === */
+.newproduct_wrap{
+    height: 920px;
+    background: #f8f9fa;
+}
+.title{
     width: 1180px;
     margin: auto;
     text-align: left;
     padding-top: 40px; 
-    padding-bottom: 20px;
+    padding-bottom: 30px;
 }
-/* 신규상품 wrap */
-.newproduct_wrap{
+/* 신규상품 container */
+.newproduct_container{
     width: 1180px;
-    height: 575px;
+    height: 697px;
     margin: auto;
+    display: flex;
+    flex-flow: wrap;
+}
+.newproduct{
+    width: 212px;
+    height: 309px;
 }
 /* 상품 가로정렬 */
-.newproduct{
-    float: left;
-    border:1px solid #DADCE0;
-    margin-bottom: 20px;
-}
 .newproduct:not(:nth-child(5n)){
-    margin-right: 25px;
+    margin-right: 30px;
 }
-/* 상품정보 */
-.info{
-    width: 214px;
-    height: 70px;
+
+/* 상품 이미지 */
+.image img{
+    border-radius: 12px;
 }
-/* 상품이름 */
-.info_name{
-    width: 194px;
-    text-align: left;
-    padding: 8px 10px 8px 10px;
-    font-size: 14px;
+/* 상품 이름 */
+.name{
     overflow:hidden; 
     text-overflow:ellipsis; 
     white-space:nowrap;
-}
-/* 가격,날짜 info */
-.bottom_info{
-    width: 194px;
-    height: 15px;
-    line-height: 15px;
-    padding: 8px 10px 0px 10px;
-}
-/* price date 가로정렬 */
-.item{
-    float: left;
+    text-align: left;
+    padding: 0px 0px 4px 0px;
 }
 /* 가격 */
-.info_price{
-    float: left;
+.price{
+    text-align: left;
+    font-size: 15px;
+    padding: 0px 0px 4px 0px;
+}
+/* 거래 지역 */
+.area{
+    text-align: left;
+    font-size: 13px;
+    padding: 0px 0px 4px 0px;
+}
+/*  */
+.info{
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 0px 4px 0px;
+}
+/* 찜 개수 */
+.dibs{
+    font-size: 13px;
+    color: #868E96
 }
 /* 날짜 */
-.info_date{
-    float: right;
+.date{
     font-size: 12px;
+    color: #868E96;
 }
+.heart{
+    color: red;
+}
+
+/* 더보기 */
 .more_wrap{
     width: 1180px;
     height: 50px;
     margin: auto;
     padding: 30px 0px 30px 0px;
-
-    
 }
 .more{
     width: 320px;
@@ -226,53 +256,25 @@ body{
 
 /* 인기상품 */
 /* 인기상품 h2 */
-.bestproduct_h2{
-    width: 1180px;
-    margin: auto;
-    text-align: left;
-    padding-bottom: 20px;
-}
+/* === 신규상품 wrap === */
 .bestproduct_wrap{
+    height: 800px;
+}
+/* 인기상품 container */
+.bestproduct_container{
     width: 1180px;
-    height: 575px;
+    height: 697px;
     margin: auto;
+    display: flex;
+    flex-direction: row;
+    flex-flow: wrap;
 }
 .bestproduct{
-    float: left;
-    border:1px solid #DADCE0;
-    margin-bottom: 20px;
+    width: 212px;
+    height: 309px;
 }
+/* 상품 가로정렬 */
 .bestproduct:not(:nth-child(5n)){
-    margin-right: 25px;
-}
-.info{
-    width: 214px;
-    height: 70px;
-}
-.info_name{
-    width: 194px;
-    text-align: left;
-    padding: 8px 10px 8px 10px;
-    font-size: 14px;
-    overflow:hidden; 
-    text-overflow:ellipsis; 
-    white-space:nowrap;
-}
-.bottom_info{
-    width: 194px;
-    height: 15px;
-    line-height: 15px;
-    padding: 8px 10px 0px 10px;
-}
-/* price date 가로정렬 */
-.item{
-    float: left;
-}
-.info_price{
-    float: left;
-}
-.info_date{
-    float: right;
-    font-size: 12px;
+    margin-right: 30px;
 }
 </style>

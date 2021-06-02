@@ -19,6 +19,7 @@ router.get("/board/getcategory",dao.getCategory); //카테고리 데이터(GET)
 router.get("/board/product/:no",dao.product); // 상품 데이터 불러오기 모듈(GET)
 router.get("/board/product/:no/dibs",dao.dibs); // 찜하기 기능 모듈(POST)
 router.post("/board/upload",dao.upload); // 상품 업로드 모듈(POST)
+router.post("/board/areaSelect",dao.areaSelect); // 거래지역 선택 모듈(POST)
 router.post("/board/update/:id",dao.update); // 상품 수정 모듈(POST)
 
 
