@@ -31,16 +31,31 @@ app.get("/talk", async (req,res) => { //채팅 리스트 조회
   let accessToken = req.cookies.accessToken; //엑세스토큰
   let Decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
   let loginId = Decode.member_id; // 로그인한 아이디
-  let talkUser = [];
+  let productImage = [];
+  let productTitle = [];
+  let productPrice = [];
   let msgText = [];
   let msgTime = [];
+  let talkUser = [];
 
   let [chatList] = await conn.query("SELECT a.*, b.member_no AS seller_no FROM talk_room AS a, member AS b WHERE (seller_id = ? OR buyer_id = ?) AND a.seller_id = b.member_id ;",[loginId,loginId]);
+
   for(let i=0; i<chatList.length; i++){
     let productNo = chatList[i].product_no;
     let talkSellerId = chatList[i].seller_id; 
     let talkBuyerId = chatList[i].buyer_id;
     let talkNo = chatList[i].talk_no;
+
+    try{
+      /* 상품정보 조회 쿼리 */
+      let [product] = await conn.query("SELECT thumbnail,title,price FROM product WHERE id = ?;", productNo);
+      productImage.push(product[0].thumbnail);
+      productTitle.push(product[0].title);
+      productPrice.push(product[0].price);
+    }
+    catch(err){
+      console.log(err);
+    }
 
     try{
       /* 최근 메시지/시간 조회 쿼리 */
@@ -56,10 +71,9 @@ app.get("/talk", async (req,res) => { //채팅 리스트 조회
 
     /* 상품 판매자 ID 조회 쿼리 */
     try{
-      console.log(productNo)
       let [memberInfo] = await conn.query("SELECT member_id FROM product WHERE id = ?", productNo);
-      console.log(memberInfo)
-      let productSellerId = memberInfo[0].member_id; //
+      let productSellerId = memberInfo[0].member_id; 
+
       if(loginId == productSellerId){  // 로그인한 ID가 판매자인 경우
         talkUser.push(talkBuyerId);
       }
@@ -74,6 +88,9 @@ app.get("/talk", async (req,res) => { //채팅 리스트 조회
   res.send({
     success:true,
     chatList:chatList,
+    productImage:productImage,
+    productTitle:productTitle,
+    productPrice:productPrice,
     msgText:msgText,
     msgTime:msgTime,
     talkUser:talkUser,

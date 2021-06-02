@@ -3,28 +3,37 @@
         <div class="chatListWrap">
             <h4>채팅 리스트</h4>
             <div class="chatList" v-for="(item, index) in chatList" :key="index" @click="talk(item.seller_id, item.product_no, item.talk_no)">
-                <div class="horizontal">
-                    <div class="member_id">
-                        {{talkUser[index]}}
+                <div class="productInfo_wrap">
+                    <div class="image">
+                        <img :src="`http://localhost:3000/` + productImage[index]" width="50" height="50"/>
                     </div>
-                    <div class="last_message">
-                        {{msgText[index]}}
+                    <div class="product_info">
+                        <div class="title">
+                            {{productTitle[index]}}
+                        </div>
+                        <div class="won">
+                            {{productPrice[index]}} 원
+                        </div>
                     </div>
-                </div>
-                <div class="horizontal">
+                    <div class="talk_info">
+                        <div class="member_id">
+                            {{talkUser[index]}}
+                        </div>
+                        <div class="last_message">
+                            {{msgText[index]}}
+                        </div>
+                    </div>
                     <div class="time">
                         {{msgTime[index]}}
                     </div>
-                </div>
-                <div class="horizontal">
+                    
                     <div class="ellipsis">
                         <font-awesome-icon icon="ellipsis-v" class="font"/>
                     </div>
+                 
                 </div>
             </div>
         </div>
-
-
     </body>
 </template>
 
@@ -33,6 +42,9 @@ export default {
     data(){
         return{
             chatList:"",
+            productImage:"",
+            productTitle:"",
+            productPrice:"",
             talkMsgInfo:"",
             msgText:"",
             msgTime:"",
@@ -49,9 +61,19 @@ export default {
 			.then((res)=>{
                 if(res.data.success){
                     this.chatList = res.data.chatList;
+                    this.productImage = res.data.productImage;
+                    this.productTitle = res.data.productTitle;
+                    this.productPrice = res.data.productPrice;
                     this.msgText = res.data.msgText;
                     this.msgTime = res.data.msgTime;
                     this.talkUser = res.data.talkUser;
+                    let date = [];
+                    for(let i=0; i<this.msgTime.length; i++){
+                        let dateSplit = new Date(this.msgTime[i]).toLocaleString('ko-KR').split(".");
+                        date.push(dateSplit[0] + "." + dateSplit[1] + "." + dateSplit[2])
+                    }
+                    this.msgTime = date;
+                    console.log( this.msgTime)
                 }
 			})
 			.catch((err)=>{
@@ -76,6 +98,9 @@ export default {
 </script>
 
 <style scoped>
+    body{
+        font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
     .chatListWrap{
         width: 380px;
         height: 650px;
@@ -89,43 +114,75 @@ export default {
         border-bottom: solid 1px #DADCE0;
     }
     .chatList{
-        width: 360px;
-        height: 50px;
-        padding: 10px;
+        width: 380px;
+        height: 70px;
         border-bottom: solid 1px #DADCE0;
         background: white;
         cursor: pointer;
     }
-    .horizontal{
-        float: left;
+
+    /* 상품 정보 wrap */
+    .productInfo_wrap{
+        width: 360px;
+        height: 50px;
+        text-align: left;
+        display: flex;
+        padding: 10px;
+    }   
+    .image img{
+        border-radius: 50px;
+    }
+    .product_info{
+        width: 75px;
+        height: 50px;
+        padding: 0px 0px 0px 5px;
+        font-size: 12px;
+    }
+    .title{
+        width: 75px;
+        height: 17px;
+        padding-top: 3px;
+        overflow:hidden; 
+        text-overflow:ellipsis; 
+        white-space:nowrap;
+    }
+    .won{
+        width: 75px;
+        height: 17px;
+        padding-top: 7px;
+    }
+    .talk_info{
+        width: 140px;
+        height: 50px;
+        padding-left: 15px;
     }
     .member_id{
-        width: 166px;
-        height: 24px;
-        text-align: left;
+        width: 130px;
+        height: 16px;
+        line-height: 16px;
+        padding-bottom: 10px;
         color: #212121;
-        font-size: 16px;
-        padding-bottom: 3px;
-        
+        overflow:hidden; 
+        text-overflow:ellipsis; 
+        white-space:nowrap;
     }
     .last_message{
+        width: 130px;
+        height: 24px;
         color: #666666;
         font-size: 14px;
-        text-align: left;
-        padding-top: 3px;
-    
+        overflow:hidden; 
+        text-overflow:ellipsis; 
+        white-space:nowrap;
     }
     .time{
-        width: 166px;
-        height: 24px;
-        text-align: right;
         color: #999999;
         font-size: 12px;
     }
     .ellipsis{
         position: relative;
-        left: 20px;
-        top: 15px;
+        left: 10px;
+        top: 10px;
         font-size: 20px;
         color: #999999;
         cursor: pointer;

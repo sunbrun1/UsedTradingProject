@@ -253,9 +253,9 @@ export default {
         },
         /* 이미지삭제 */
         fileDeleteButton(index) { 
-            this.deleteImage.push(this.test[index])
+            this.deleteImage.push(this.imageName[index])
             this.files.splice(index, 1);
-            this.test.splice(index, 1);
+            this.imageName.splice(index, 1);
         },
 
         /* 상품 제목 관련 */
@@ -324,7 +324,7 @@ export default {
                 frm.append('select_category_medium', this.selectMediumName);
                 frm.append('state', this.state);
                 frm.append('content', this.content);
-                frm.append('image_name', this.test);
+                frm.append('image_name', this.imageName);
                 frm.append('deleteImage', this.deleteImage);
 
                 const config = {
