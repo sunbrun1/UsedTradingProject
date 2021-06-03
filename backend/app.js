@@ -38,7 +38,10 @@ app.get("/talk", async (req,res) => { //채팅 리스트 조회
   let msgTime = [];
   let talkUser = [];
 
-  let [chatList] = await conn.query("SELECT a.*, b.member_no AS seller_no FROM talk_room AS a, member AS b WHERE (seller_id = ? OR buyer_id = ?) AND a.seller_id = b.member_id ;",[loginId,loginId]);
+  let [chatList] = await conn.query("SELECT A.*, B.member_no AS seller_no, C.last_message FROM talk_room A " +
+                                    "LEFT OUTER JOIN member B ON (seller_id = ? OR buyer_id = ?) AND A.seller_id = B.member_id " +
+                                    "LEFT OUTER JOIN (SELECT talk_no, MAX(message_time) AS last_message FROM talk_message GROUP BY talk_no) C ON A.talk_no = C.talk_no " +
+                                    "ORDER BY C.last_message DESC;",[loginId,loginId]);
 
   for(let i=0; i<chatList.length; i++){
     let productNo = chatList[i].product_no;
@@ -108,6 +111,7 @@ app.get("/talk/user/:memberNum", async (req,res) => {
   let accessToken = req.cookies.accessToken; // 엑세스토큰
   let Decode = jwt.verify(accessToken, secretObj.secret); // 엑세스토큰 복호화
   currentLoginId = Decode.member_id; // 현재 로그인 ID
+  let date = new Date();
 
   /* req.query */
   let productNo = req.query.product_no; // 상품 ID
@@ -136,6 +140,7 @@ app.get("/talk/user/:memberNum", async (req,res) => {
       let [data] = await conn.query("INSERT INTO talk_room (seller_id, buyer_id, product_no) value(?, ?, ?);",[sellerId, currentLoginId, productNo]);
       let lastInsertId = data.insertId;
       roomNo = lastInsertId;
+      await conn.query("INSERT INTO talk_message (send_id, receive_id, message_text, message_time, talk_no) values(?, ?, ?, ?, ?)",[currentLoginId, sellerId, "상품에 관심있습니다!" , date, roomNo]);
     } 
     /* 채팅 내역 조회 쿼리*/
     let [msgData] = await conn.query("SELECT * FROM talk_message WHERE talk_no = ?", roomNo);

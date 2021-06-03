@@ -2,7 +2,7 @@
     <body>
         <div class="chatListWrap">
             <h4>채팅 리스트</h4>
-            <div class="chatList" v-for="(item, index) in chatList" :key="index" @click="talk(item.seller_id, item.product_no, item.talk_no)">
+            <div class="chatList" v-for="(item, index) in chatList" :key="index" @click="talk(item.seller_no, item.product_no, item.talk_no)">
                 <div class="productInfo_wrap">
                     <div class="image">
                         <img :src="`http://localhost:3000/` + productImage[index]" width="50" height="50"/>
