@@ -1,3 +1,3 @@
 git add --all
-git commit -m "err app.js ORDER BY last_message "
+git commit -m "update UI Chat.vue, ChatList.vue, app.js "
 git push -u origin master

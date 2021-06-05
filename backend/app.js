@@ -39,8 +39,9 @@ app.get("/talk", async (req,res) => { //채팅 리스트 조회
   let talkUser = [];
 
   let [chatList] = await conn.query("SELECT A.*, B.member_no AS seller_no, C.last_message FROM talk_room A " +
-                                    "LEFT OUTER JOIN member B ON (seller_id = ? OR buyer_id = ?) AND A.seller_id = B.member_id " +
-                                    "LEFT OUTER JOIN (SELECT talk_no, MAX(message_time) AS last_message FROM talk_message GROUP BY talk_no) C ON A.talk_no = C.talk_no " +
+                                    "LEFT OUTER JOIN member B ON (A.seller_id = B.member_id) " +
+                                    "LEFT OUTER JOIN (SELECT talk_no, MAX(message_time) AS last_message FROM talk_message GROUP BY talk_no) C ON (A.talk_no = C.talk_no) " +
+                                    "WHERE A.seller_id = ? OR A.buyer_id = ? " +
                                     "ORDER BY C.last_message DESC;",[loginId,loginId]);
 
   for(let i=0; i<chatList.length; i++){
@@ -119,6 +120,8 @@ app.get("/talk/user/:memberNum", async (req,res) => {
 
   /* 판매자 ID 조회 쿼리 */
   let [memberInfo] = await conn.query("SELECT member_id FROM product WHERE id = ?;", productNo);
+  /* 상품 정보 조회 쿼리 */
+  let [product] = await conn.query("SELECT member_id, title, price, thumbnail FROM product WHERE id = ?", productNo);
   let sellerId = memberInfo[0].member_id; // 판매자 ID
   recevieId = sellerId;
 
@@ -146,6 +149,9 @@ app.get("/talk/user/:memberNum", async (req,res) => {
     let [msgData] = await conn.query("SELECT * FROM talk_message WHERE talk_no = ?", roomNo);
     res.send({
       msgData:msgData,
+      product:product,
+      me:currentLoginId,
+      you:recevieId,
       success:true
     })
   }
@@ -172,9 +178,87 @@ app.get("/talk/user/:memberNum", async (req,res) => {
     let [msgData] = await conn.query("SELECT * FROM talk_message WHERE talk_no = ?", roomNo);
     res.send({
       msgData:msgData,
+      product:product,
+      me:currentLoginId,
+      you:recevieId,
       success:true
     })
   }
+})
+
+app.post("/talk/delete", async (req,res) => {
+  let accessToken = req.cookies.accessToken; //엑세스토큰
+  let Decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
+  let loginId = Decode.member_id; // 로그인한 아이디
+  let productNo = req.body.productNo;
+  let isDirect = req.body.isDirect;
+
+  try{
+    if(isDirect == 'true'){ // 상품페이지에서 판매자에게 채팅한 경우
+      /* 방 번호 조회 쿼리 */
+      let [talk_no] = await conn.query("SELECT talk_no FROM talk_room WHERE product_no = ? AND buyer_id = ?;", [productNo, loginId]);
+      let roomNo = talk_no[0].talk_no; // 방 번호
+
+      let [talkInfo] = await conn.query("SELECT seller_id, buyer_id FROM talk_room WHERE talk_no = ?", roomNo);
+      let sellerId = talkInfo[0].seller_id;
+      let buyerId = talkInfo[0].buyer_id;
+      if(sellerId != "알수없음" && buyerId != "알수없음"){
+        console.log("둘다있음")
+        await conn.query("UPDATE talk_room SET buyer_id = ? WHERE talk_no = ?", ["알수없음",roomNo]);
+        await conn.query("UPDATE talk_message SET send_id = ? WHERE send_id=? AND talk_no = ?", ["알수없음", loginId, roomNo]);
+        res.send({success:true})
+      }
+      else{
+        console.log("한명만있음")
+        await conn.query("DELETE FROM talk_room WHERE talk_no = ?", roomNo);
+        await conn.query("DELETE FROM talk_message WHERE talk_no = ?", roomNo);
+        res.send({success:true})
+      }
+      
+    }
+    else{ // 채팅리스트에서 채팅한 경우
+      let roomNo = req.body.roomNo;
+      let [talkInfo] = await conn.query("SELECT seller_id, buyer_id FROM talk_room WHERE talk_no = ?", roomNo);
+      let sellerId = talkInfo[0].seller_id;
+      let buyerId = talkInfo[0].buyer_id;
+      if(loginId == sellerId){ // 현재 로그인 유저가 판매자인 경우
+        console.log("로그인한 유저는 판매자입니다")
+        if(sellerId != "알수없음" && buyerId != "알수없음"){
+          console.log("둘다있음")
+          await conn.query("UPDATE talk_room SET seller_id = ? WHERE talk_no = ?", ["알수없음",roomNo]);
+          await conn.query("UPDATE talk_message SET send_id = ? WHERE send_id = ? AND talk_no = ?", ["알수없음", loginId, roomNo]);
+          res.send({success:true})
+        }
+        else{
+          console.log("한명만있음")
+          await conn.query("DELETE FROM talk_room WHERE talk_no = ?", roomNo);
+          await conn.query("DELETE FROM talk_message WHERE talk_no = ?", roomNo);
+          res.send({success:true})
+        }
+      }
+      else{ // 현재 로그인 유저가 구매자인 경우
+        console.log("로그인한 유저는 구매자입니다.")
+        if(sellerId != "알수없음" && buyerId != "알수없음"){
+          console.log("둘다있음")
+          await conn.query("UPDATE talk_room SET buyer_id = ? WHERE talk_no = ?", ["알수없음",roomNo]);
+          await conn.query("UPDATE talk_message SET send_id = ? WHERE send_id=? AND talk_no = ?", ["알수없음", loginId, roomNo]);
+          res.send({success:true})
+        }
+        else{
+          console.log("한명만있음")
+          await conn.query("DELETE FROM talk_room WHERE talk_no = ?", roomNo);
+          await conn.query("DELETE FROM talk_message WHERE talk_no = ?", roomNo);
+          res.send({success:true})
+        }
+      }
+    }
+
+  }catch(err){
+    console.log(err);
+  }
+  
+
+
 })
 
   /* 소켓 */
@@ -190,9 +274,6 @@ app.get("/talk/user/:memberNum", async (req,res) => {
       console.log("room_no : " + socket.roomNo)
 
       socket.join(socket.roomNo); // 방 입장
-  
-      /* 새로운 유저가 접속했을 경우 다른 소켓에게도 알려줌 */
-      socket.broadcast.to(socket.roomNo).emit('update', {message: socket.sendId  + "님이 접속하였습니다."})
   
       /* 전송한 메세지 받기 */
       socket.on('message', (data) => {

@@ -2,7 +2,8 @@ import Vue from 'vue';
 import App from './App.vue';
 import router from './routes'; //설정 라우터 호출
 import axios from 'axios'; //axios 호출
-
+import swal from 'sweetalert2';
+window.Swal = swal;
 
 import { library as faLibrary } from '@fortawesome/fontawesome-svg-core'
 import { faHome, faSearch, faPlus,faWonSign, faAddressCard,faAlignJustify,faArrowAltCircleRight,faArrowAltCircleLeft,

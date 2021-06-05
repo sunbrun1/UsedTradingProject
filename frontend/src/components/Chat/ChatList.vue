@@ -2,32 +2,33 @@
     <body>
         <div class="chatListWrap">
             <h4>채팅 리스트</h4>
-            <div class="chatList" v-for="(item, index) in chatList" :key="index" @click="talk(item.seller_no, item.product_no, item.talk_no)">
+            <div class="chatList" v-for="(item, index) in chatList" :key="index">
                 <div class="productInfo_wrap">
-                    <div class="image">
-                        <img :src="`http://localhost:3000/` + productImage[index]" width="50" height="50"/>
-                    </div>
-                    <div class="product_info">
-                        <div class="title">
-                            {{productTitle[index]}}
+                    <div class="productInfo_container" @click="talk(item.seller_no, item.product_no, item.talk_no, index)">
+                        <div class="image">
+                            <img :src="`http://localhost:3000/` + productImage[index]" width="50" height="50"/>
                         </div>
-                        <div class="won">
-                            {{productPrice[index]}} 원
+                        <div class="product_info">
+                            <div class="title">
+                                {{productTitle[index]}}
+                            </div>
+                            <div class="won">
+                                {{productPrice[index].toLocaleString('ko-KR')}} 원
+                            </div>
+                        </div>
+                        <div class="talk_info">
+                            <div class="member_id">
+                                {{talkUser[index]}}
+                            </div>
+                            <div class="last_message">
+                                {{msgText[index]}}
+                            </div>
+                        </div>
+                        <div class="time">
+                            {{msgTime[index]}}
                         </div>
                     </div>
-                    <div class="talk_info">
-                        <div class="member_id">
-                            {{talkUser[index]}}
-                        </div>
-                        <div class="last_message">
-                            {{msgText[index]}}
-                        </div>
-                    </div>
-                    <div class="time">
-                        {{msgTime[index]}}
-                    </div>
-                    
-                    <div class="ellipsis">
+                    <div class="ellipsis" @click="talkDelete(item.talk_no)">
                         <font-awesome-icon icon="ellipsis-v" class="font"/>
                     </div>
                  
@@ -80,8 +81,11 @@ export default {
 				console.log(err);
 			})
         },
-        talk(member_num,product_id,id){
-            window.open("/talk/user/" + member_num + "?isDirect=false&product_no=" + product_id + '&room_no=' + id, "PopupWin", "width=380,height=670");
+        talk(member_num,product_id,id,index){
+            window.open("/talk/user/" + member_num + "?isDirect=false&product_no=" + product_id + '&room_no=' + id, index, "width=380,height=670");
+        },
+        talkDelete(talk_no){
+            console.log(talk_no)
         },
         // 로그인여부 확인
         loginCheck(){
@@ -128,18 +132,24 @@ export default {
         text-align: left;
         display: flex;
         padding: 10px;
+        position: relative;
     }   
+    .productInfo_container{
+        width: 340px;
+        height: 50px;
+        display: flex;
+    }
     .image img{
         border-radius: 50px;
     }
     .product_info{
-        width: 75px;
+        width: 80px;
         height: 50px;
         padding: 0px 0px 0px 5px;
         font-size: 12px;
     }
     .title{
-        width: 75px;
+        width: 80px;
         height: 17px;
         padding-top: 3px;
         overflow:hidden; 
@@ -147,14 +157,14 @@ export default {
         white-space:nowrap;
     }
     .won{
-        width: 75px;
+        width: 80px;
         height: 17px;
         padding-top: 7px;
     }
     .talk_info{
         width: 140px;
         height: 50px;
-        padding-left: 15px;
+        padding-left: 3px;
     }
     .member_id{
         width: 130px;
@@ -180,11 +190,17 @@ export default {
         font-size: 12px;
     }
     .ellipsis{
-        position: relative;
-        left: 10px;
+        width: 30px;
+        height: 50px;
+        line-height: 50px;
+        position: absolute;
+        left: 350px;
         top: 10px;
         font-size: 20px;
         color: #999999;
         cursor: pointer;
+        text-align: left;
+       
+
     }
 </style>

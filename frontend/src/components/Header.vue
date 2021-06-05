@@ -217,7 +217,7 @@ export default {
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then((res)=>{
                 if(res.data.success){
-                    window.open("http://localhost:8081/talk", "PopupWin", "width=380,height=670");
+                    window.open("http://localhost:8081/talk", "talkList", "width=380,height=670");
                 }
                 else{
                     this.openModal();
