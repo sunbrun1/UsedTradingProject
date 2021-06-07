@@ -2,6 +2,7 @@
     <section>
         <Header></Header>
         <body>
+            
             <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
             <div class="product_wrap">
                 <!-- 사진 슬라이드 -->
@@ -34,7 +35,7 @@
 
 
                     <!-- 상품이름 -->
-                    <div class="name">
+                    <div class="name" @click="test">
                         {{title}}
                     </div>
                     <!-- 상품 가격 -->
@@ -79,7 +80,7 @@
                     
                     <div class="button_wrap" v-if="myProductCheck">
                         <!-- 바로구매 -->
-                        <div class='button_wrap_item buy'>
+                        <div class='button_wrap_item buy' @click="onPayment">
                             바로구매
                         </div>
                         <!-- 연락하기 -->
@@ -114,15 +115,15 @@
             <div class="product_content_content">
                 {{content}}
             </div>
+            
         </body>
     </section>
 </template>
 
-
-
 <script>
 import Loginmodal from '@/components/Member/Login_modal'; 
 import Header from '@/components/Header.vue'
+import axios from 'axios';
 
 export default {
     components:{Loginmodal,Header},
@@ -150,13 +151,38 @@ export default {
             memberNum:'', //유저 ID 넘버
             dibsState:false, // 찜 상태
             productCount:0
+            
     
         }
     },
     mounted() {
         this.loginCheck();
+         /* 1. 가맹점 식별하기 */
+           
 	},
 	methods:{
+        test(){
+            let data = {
+                    imp_uid: "1",
+                    merchant_uid: "2"
+                }
+            this.$axios.post("http://localhost:3000/api/payments/complete", data)
+            .then((res)=>{
+                switch(res.data.status) {
+                    case "vbankIssued":
+                        // 가상계좌 발급 시 로직
+                        alert("가상계좌 발급 성공");
+                        break;
+                    case "success":
+                        // 결제 성공 시 로직
+                        alert("결제에 성공하였습니다.");
+                        break;
+                }
+            })
+            .catch((err)=>{
+                console.log(err);
+            }) 
+        },
          // 로그인창 열기
         openModal() {
             this.modal = true;
@@ -234,6 +260,74 @@ export default {
                 this.ea = this.ea + 1;
             }
         },
+        onPayment() {
+            var IMP = window.IMP;
+            IMP.init('imp15190037');
+            IMP.request_pay({
+                pg : 'html5_inicis',
+                pay_method : 'card',
+                merchant_uid : 'merchant_' + new Date().getTime(),
+                name : this.title,
+                amount : this.price,
+                buyer_email : 'dkdlrk111@naver.com',
+                buyer_name : '구매자이름',
+                buyer_tel : '010-2403-5208',
+                buyer_addr : this.area,
+                buyer_postcode : '123-456',
+                custom_data : this.$route.params.no, 
+            }, function (rsp) { // callback
+                if (rsp.success) { // 결제 성공 시: 결제 승인 또는 가상계좌 발급에 성공한 경우
+                    console.log("성공")
+                    let data = {
+                                imp_uid: rsp.imp_uid,
+                                merchant_uid: rsp.merchant_uid,
+                                product_no : rsp.custom_data, 
+                            }
+                    axios.post("http://localhost:3000/api/payments/complete", data)
+                    .then((res)=>{
+                        switch(res.data.status) {
+                            case "vbankIssued":
+                                // 가상계좌 발급 시 로직
+                                alert("가상계좌 발급 성공");
+                                break;
+                            case "success":
+                                // 결제 성공 시 로직
+                                alert("결제에 성공하였습니다.");
+                                break;
+                        }
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                    }) 
+                    // jQuery로 HTTP 요청
+                    // jQuery.ajax({
+                    //     url: "http://localhost:3000/api/payments/complete", // 가맹점 서버
+                    //     method: "POST",
+                    //     headers: { "Content-Type": "application/json" },
+                    //     data: {
+                    //         imp_uid: rsp.imp_uid,
+                    //         merchant_uid: rsp.merchant_uid
+                    //     }
+                    // }).done(function (data) {
+                    //     // 가맹점 서버 결제 API 성공시 로직
+                    //     switch(res.data.status) {
+                    //         case "vbankIssued":
+                    //             // 가상계좌 발급 시 로직
+                    //             alert("가상계좌 발급 성공");
+                    //             break;
+                    //         case "success":
+                    //             // 결제 성공 시 로직
+                    //             alert("결제에 성공하였습니다.");
+                    //             break;
+                    //     }
+                    // })
+                } 
+                else {
+                    alert("결제에 실패하였습니다. 에러 내용: " +  rsp.error_msg);        
+                }
+            });
+        },   
+      
         /* 연락하기  */
         talk(){
             /* 로그인 상태 확인 */

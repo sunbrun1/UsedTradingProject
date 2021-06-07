@@ -1,3 +1,3 @@
 git add --all
-git commit -m "update UI Chat.vue, ChatList.vue, app.js "
+git commit -m "add iamport.js  "
 git push -u origin master

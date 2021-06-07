@@ -3,7 +3,7 @@ const dao = require('./board');
 const member = require('./member'); 
 const mypage = require('./mypage'); 
 const paging = require('./paging'); 
-
+const iamport = require('./iamport'); 
 
 /* 배포 */
 router.get('/zz', function(req, res, next) {
@@ -41,6 +41,9 @@ router.post("/mypage/memberinfo/update",mypage.MemberInfoUpdate); // 마이페�
 router.get("/paging/bycategory",paging.byCategoryCount); // 카테고리별 게시물 카운트(get)
 router.get("/paging/bysearch",paging.bySearchCount); // 검색별 게시물 카운트(get)
 router.get("/paging/myProductCount",paging.myProductCount); // 게시물 카운트(get)
+
+/* 아임포트 api */
+router.post("/payments/complete", iamport.payments); //아임포트
 
 
 

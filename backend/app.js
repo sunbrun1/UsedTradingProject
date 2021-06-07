@@ -256,9 +256,6 @@ app.post("/talk/delete", async (req,res) => {
   }catch(err){
     console.log(err);
   }
-  
-
-
 })
 
   /* 소켓 */
