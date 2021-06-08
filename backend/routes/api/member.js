@@ -5,127 +5,139 @@ const secretObj = require("../../config/jwt");
 
 /* 회원가입 모듈 */
 exports.signup = async (req,res) =>{
-	const body = req.body;
-	let inputId = body.id; // 입력한 ID
-	let inputPw = body.pw; // 입력한 PW
-	let inputPwCheck = body.pwCheck // 입력한 PW check
-	let inputEmail = body.email; // 입력한 Email
+	const { id, pw, pwCheck, email } = req.body;
 
-	if(inputId.length > 5){ // ID 길이 체크
-		if(inputPw.length > 5){ // PW 길이 체크
-			if(inputPw == inputPwCheck){ // PW 재확인 체크
-				let [data] = await conn.query("SELECT count(*) AS count FROM member WHERE member_id = ?", inputId);
-				let count = data[0].count;
-				if(count < 1){ // 아이디 중복 체크
-					await conn.query("INSERT INTO member (member_id, member_pw, member_email, member_point) values(?, ?, ?);",[inputId, inputPw, inputEmail, 0]);
-					res.send({
-						success:true
-					})
-				}
-				else{
-					res.send("idCheckError") // ID 중복
-				}
-			}
-			else{
-				res.send("pwCheckError") // PW 재확인 에러
-			}
-		}
-		else{
-			res.send("pwLengthError") // PW 길이 에러
-		}
+	if(id.length < 6 || id.length > 13){ // ID 6~13자 체크
+		return res.send("idLengthError")
 	}
-	else{
-		res.send("idLengthError") // ID 길이 에러
+	if(pw.length < 6 || pw.length > 13){ // PW 6~13자 체크
+		return res.send("pwLengthError") 
 	}
+	if(pw != pwCheck){ // PW 재확인 체크
+		return res.send("pwCheckError") 
+	}
+	try{
+		/* ID 중복체크 쿼리 */
+		var [data] = await conn.query("SELECT count(*) AS count FROM member WHERE member_id = ?", id);
+		const count = data[0].count;
+
+		if(count > 0){ // 아이디 중복 
+			return res.send("idCheckError") 
+		}
+
+		/* 회원가입 쿼리 */
+		await conn.query("INSERT INTO member (member_id, member_pw, member_email, member_point) values(?, ?, ?, ?);",[id, pw, email, 0]);
+
+		return res.send({success:true})
+	}
+	catch{
+		return res.status(500).send(err)
+	}
+			
+
 }
 
 /* 로그인 모듈 */
 exports.login = async (req,res) =>{
-	let inputId = req.body.id // 입력한 ID
-	let inputPw = req.body.pw // 입력한 PW
+	const { id, pw } = req.body;
 
+	if(id.length < 6 || id.length > 13){ // ID 6~13자 체크
+		return res.send({success:false})
+	}
+	if(pw.length < 6 || pw.length > 13){ // PW 6~13자 체크
+		return res.send({success:false})
+	}
+	try{
+		/* DB에 저장되어있는 ID인지 확인하는 쿼리 */
+		var [data] = await conn.query("SELECT member_id, member_pw FROM member WHERE member_id = ?", id);
+		const memberId = data[0].member_id  // ID
+		const memberPw = data[0].member_pw	// PW
 
-	if(inputId.length > 5){ // ID 길이 체크
-		if(inputPw.length > 5){ // PW 길이 체크
-			let [memberInfo] = await conn.query("SELECT member_id, member_pw FROM member WHERE member_id = ?", inputId);
-			let memberId = memberInfo[0].member_id
-			let memberPw = memberInfo[0].member_pw
-			if(memberId.length < 1){ // 사용자가 입력한 ID가 DB에 없다면
-				res.send({success:false})
+		if(memberId.length < 1){ // 사용자가 입력한 ID가 DB에 없다면
+			return res.send({success:false})
+		}
+		if(memberPw != pw){ // 비밀번호 확인
+			return res.send({success:false})
+		}
+
+		const accessToken  = jwt.sign( //엑세스 토큰
+			{
+				member_id:id   // 토큰의 내용(payload)
+			},
+				secretObj.secret ,    // 비밀 키
+			{
+				expiresIn: '1m'    // 유효 시간은 20분
 			}
-			else if(memberPw === inputPw){ // 비밀번호 확인
-				let accessToken  = jwt.sign( //엑세스 토큰
-					{
-						member_id:inputId   // 토큰의 내용(payload)
-					},
-						secretObj.secret ,    // 비밀 키
-					{
-						expiresIn: '1m'    // 유효 시간은 20분
-					}
-				)
-				let refreshToken  = jwt.sign( //리프레쉬 토큰
-					{
-						member_id:inputId   // 토큰의 내용(payload)
-					},
-						secretObj.secret ,    // 비밀 키
-					{
-						expiresIn: '14d'    // 유효 시간은 14일
-					})
-				await conn.query("UPDATE member SET refreshtoken = ? WHERE member_id = ?;",[refreshToken,inputId]);
-				res.cookie("accessToken", accessToken, {httpOnly: true});
-				res.cookie("refreshToken", refreshToken, {httpOnly: true});
-				res.send({
-					success:true,
-					loginState:true
-				})
-			}	
-			else{
-				res.send({success:false})
-			}                          
-		}
-		else{
-			res.send("pwLengthError") // PW 길이 에러
-		}
-	}
-	else{
-		res.send("idLengthError") // ID 길이 에러
-	}
+		)
+		const refreshToken  = jwt.sign( //리프레쉬 토큰
+			{
+				member_id:id   // 토큰의 내용(payload)
+			},
+				secretObj.secret ,    // 비밀 키
+			{
+				expiresIn: '14d'    // 유효 시간은 14일
+			})
+		/*	리프레쉬 토큰 DB저장 쿼리 */
+		await conn.query("UPDATE member SET refreshtoken = ? WHERE member_id = ?;",[refreshToken, id]);
 
-	
+		res.cookie("accessToken", accessToken, {httpOnly: true});
+		res.cookie("refreshToken", refreshToken, {httpOnly: true});
+
+		return res.send({
+			success:true,
+			loginState:true
+		})
+	}
+	catch{
+		return res.status(500).send(err)
+	}
 }
 
 /* 로그아웃 모듈 */
 exports.logout = (req,res) =>{
 	res.cookie("accessToken", '', {httpOnly: true,maxAge: 10});
 	res.cookie("refreshToken", '', {httpOnly: true,maxAge: 10});
-	res.send({success:true})
+
+	return res.send({success:true})
 }
 
 /* 로그인여부 확인 모듈 */
 exports.someAPI = async (req,res) =>{
-	let accessToken = req.cookies.accessToken;
-	let refreshToken = req.cookies.refreshToken;
+	const { accessToken, refreshToken } = req.cookies;
+	console.log(accessToken);
+	console.log(refreshToken);
+
 	try{
-		if(accessToken != null ){
-			let decode = jwt.verify(accessToken, secretObj.secret);
-			if(decode){
-				res.send({success:true})
-			}
-			else{
-				res.send({success:false})
-			}
+		/* 엑세스토큰 없으면 false */
+		if(accessToken == null){
+			return res.send({success:false})
 		}
-		else{
-			res.send({success:false})
+	
+		const decode = jwt.verify(accessToken, secretObj.secret); // 엑세스토큰 복호화
+		console.log(decode)
+
+		/* 엑세스토큰 복호화 못하면 false */
+		if(!decode){
+			return res.send({success:false})
 		}
+	
+		return res.send({success:true})
+		
 	}
+	/* 토큰 유효시간 만료 */
 	catch(err){
-		let decode = jwt.verify(refreshToken, secretObj.secret);
-		let [data] = await conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", decode.member_id);
-		if(data[0].refreshtoken == refreshToken){
-			let accessToken  = jwt.sign(
+		console.log("토큰 유효시간 만료")
+		const decode = jwt.verify(refreshToken, secretObj.secret); // 리프레쉬 토큰 복호화
+		const memberId = decode.member_id; // 로그인 ID
+
+		/* 리프레시 토큰 조회 쿼리 */
+		var [data] = await conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", memberId);
+		const DBrefreshToken = data[0].refreshtoken
+
+		if(DBrefreshToken == refreshToken){
+			const accessToken  = jwt.sign(
 				{
-					member_id:decode.member_id  // 토큰의 내용(payload)
+					member_id:memberId  // 토큰의 내용(payload)
 				},
 					secretObj.secret ,    // 비밀 키
 				{
@@ -133,7 +145,8 @@ exports.someAPI = async (req,res) =>{
 				}
 			)
 			res.cookie("accessToken", accessToken, {httpOnly: true});
-			res.send({success:true})
+			
+			return res.send({success:true})
 		}
 	
 	}

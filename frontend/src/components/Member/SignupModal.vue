@@ -48,7 +48,6 @@
 export default {
     data(){ 
         return {
-            form:'',
             id:'',  
             pw:'',  
             pwCheck:'',
@@ -58,13 +57,13 @@ export default {
     methods:{
         /* 회원가입 */
         signup(){
-            this.form = { 
+            const form = { 
 				id:this.id,
                 pw:this.pw,
                 pwCheck:this.pwcheck,
                 email:this.email
 			} 
-            this.$axios.post("http://localhost:3000/api/member/signup",this.form)
+            this.$axios.post("http://localhost:3000/api/member/signup", form)
 			.then((res)=>{
                 if(res.data == "idLengthError"){
                     alert("ID 6자~13자로 입력해주세요");

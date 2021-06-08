@@ -45,7 +45,6 @@ export default {
     components: {SignUpModal},
     data(){ 
         return {
-            form:'',
             id:'',  
             pw:'',  
             modal:false,
@@ -62,11 +61,11 @@ export default {
         },
         // 로그인
         login(){
-            this.form = { 
+            const form = { 
 				id:this.id,
                 pw:this.pw,
 			} 
-            this.$axios.post("http://localhost:3000/api/member/login",this.form,{withCredentials: true})
+            this.$axios.post("http://localhost:3000/api/member/login", form, {withCredentials: true})
 			.then((res)=>{
                 if(res.data.success){ // 로그인 성공시
                     this.$emit('close'); // 로그인 모달 닫기
