@@ -298,29 +298,7 @@ export default {
                     })
                     .catch((err)=>{
                         console.log(err);
-                    }) 
-                    // jQuery로 HTTP 요청
-                    // jQuery.ajax({
-                    //     url: "http://localhost:3000/api/payments/complete", // 가맹점 서버
-                    //     method: "POST",
-                    //     headers: { "Content-Type": "application/json" },
-                    //     data: {
-                    //         imp_uid: rsp.imp_uid,
-                    //         merchant_uid: rsp.merchant_uid
-                    //     }
-                    // }).done(function (data) {
-                    //     // 가맹점 서버 결제 API 성공시 로직
-                    //     switch(res.data.status) {
-                    //         case "vbankIssued":
-                    //             // 가상계좌 발급 시 로직
-                    //             alert("가상계좌 발급 성공");
-                    //             break;
-                    //         case "success":
-                    //             // 결제 성공 시 로직
-                    //             alert("결제에 성공하였습니다.");
-                    //             break;
-                    //     }
-                    // })
+                    })   
                 } 
                 else {
                     alert("결제에 실패하였습니다. 에러 내용: " +  rsp.error_msg);        

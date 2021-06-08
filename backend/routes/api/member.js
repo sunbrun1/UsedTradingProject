@@ -17,7 +17,7 @@ exports.signup = async (req,res) =>{
 				let [data] = await conn.query("SELECT count(*) AS count FROM member WHERE member_id = ?", inputId);
 				let count = data[0].count;
 				if(count < 1){ // 아이디 중복 체크
-					await conn.query("INSERT INTO member (member_id, member_pw, member_email) values(?, ?, ?);",[inputId, inputPw, inputEmail]);
+					await conn.query("INSERT INTO member (member_id, member_pw, member_email, member_point) values(?, ?, ?);",[inputId, inputPw, inputEmail, 0]);
 					res.send({
 						success:true
 					})

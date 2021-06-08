@@ -1,3 +1,3 @@
 git add --all
-git commit -m "add iamport.js  "
+git commit -m "update border.js  "
 git push -u origin master

@@ -80,3 +80,17 @@ exports.myProductCount = async (req,res) => {
 	})
 
 }
+exports.myWishListCount = async (req,res) => {
+	let accessToken = req.cookies.accessToken;
+	let accessToken_decoded = jwt.verify(accessToken, secretObj.secret);
+
+	let [count] = await conn.query("SELECT COUNT(*) AS count " +  
+								   "FROM dibs_list AS A " +
+								   "LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+								   "WHERE A.member_id = ?",
+								    accessToken_decoded.member_id);
+	res.send({
+		success:true,
+		count:count
+	})
+}

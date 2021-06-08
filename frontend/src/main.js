@@ -9,13 +9,13 @@ import LoadScript from 'vue-plugin-load-script';
 import { library as faLibrary } from '@fortawesome/fontawesome-svg-core'
 import { faHome, faSearch, faPlus,faWonSign, faAddressCard,faAlignJustify,faArrowAltCircleRight,faArrowAltCircleLeft,
        faUser,faComments,faListUl,faCog,faHeart,faEye,faClock,faLock,faSignOutAlt,faPaperPlane,faEllipsisV
-      ,faChevronRight,faChevronLeft,faMinus } from '@fortawesome/free-solid-svg-icons' 
+      ,faChevronRight,faChevronLeft,faMinus,faCoins } from '@fortawesome/free-solid-svg-icons' 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome' 
 // Set up FontAwesome 
 faLibrary.add(faHome, faSearch, faPlus, faWonSign, 
   faAddressCard,faAlignJustify,faArrowAltCircleRight,
   faArrowAltCircleLeft,faUser,faComments,faListUl,faCog,faHeart,faEye,faClock,faLock,faSignOutAlt,faPaperPlane,faEllipsisV,
-  faChevronRight,faChevronLeft,faMinus) 
+  faChevronRight,faChevronLeft,faMinus,faCoins) 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(LoadScript);
 Vue.loadScript("https://code.jquery.com/jquery-1.12.4.min.js") 

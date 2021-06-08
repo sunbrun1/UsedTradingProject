@@ -180,7 +180,7 @@ export default {
         return{
             files:[],  //파일
             title:'',  //제목
-            price:'',  //가격
+            price:0,  //가격
             state:'',  //상품 상태
             content:'',  //내용 
             categoryList:[], //카테고리 데이터
@@ -200,6 +200,7 @@ export default {
             }
         },
     mounted() {
+        this.loginCheck();
         this.getCategory(); //접속시 카테고리 데이터 불러오기
 	},
 	methods:{
@@ -276,10 +277,35 @@ export default {
 
         /* 업로드 */
         upload(){  
+            console.log(this.area.length)
             /* 로그인여부 확인 */
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then(()=>{
-                let frm = new FormData()
+                if(this.files.length < 1){
+                    return alert("상품 사진을 등록해주세요.");
+                }
+                if(this.title.length < 2 || this.title.length > 20){
+                    this.$refs.title.focus();
+                    return alert("상품명을 2~20자 이내로 입력해주세요.")
+                }
+                if(this.selectLargeName.length < 1 && this.selectMediumName.length < 1){
+                    return alert("카테고리를 선택해주세요.")
+                }
+                if(this.area.length < 1){
+                    return alert("거래지역을 선택해주세요.")
+                }
+                if(this.price < 100){
+                    this.$refs.price.focus();
+                    return alert("상품 가격을 100원이상 입력해주세요.")
+                }
+                if(this.state.length < 1){
+                    return alert("상품 상태를 선택해주세요.")
+                }
+                if(this.ea < 1){
+                    return alert("상품 수량을 입력해주세요.")
+                }
+                 
+                const frm = new FormData()
                 for(let i=0; i<this.files.length; i++){
                     frm.append('files',  this.files[i].file);
                 }
@@ -307,7 +333,7 @@ export default {
                         alert("상품 사진을 등록해주세요.")
                     }
                     else if(res.data == "titleCheckError"){
-                        alert("상품명을 2자 이상 입력해주세요.")
+                        alert("상품명을 2~13자 이내로 입력해주세요.")
                         this.$refs.title.focus();
                     }
                     else if(res.data == "categoryCheckError"){
@@ -317,23 +343,33 @@ export default {
                         alert("거래지역을 선택해주세요.")
                     }
                     else if(res.data == "priceCheckError"){
-                        alert("상품 가격을 입력해주세요.")
+                        alert("상품 가격을 100원이상 입력해주세요.")
                         this.$refs.price.focus();
                     }
                     else if(res.data == "stateCheckError"){
                         alert("상품 상태를 선택해주세요.")
                     }
+                    else if(res.data == "eaCheckError"){
+                        alert("상품 수량을 입력해주세요.")
+                    }
                     else{
                         alert("등록실패");
                     }
-                })
-                .catch((err)=>{
-                    console.log(err);
                 })
             })
             .catch((err)=>{
                 console.log(err);
             })
+        },
+        // 로그인여부 확인
+        loginCheck(){
+            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            .then(()=>{
+                this.getList(); // 로그인 여부 확인후 getList
+			})
+			.catch((err)=>{
+				console.log(err);
+			})
         },
 	}
 }

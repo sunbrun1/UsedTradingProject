@@ -31,16 +31,19 @@ router.get("/member/someAPI",member.someAPI); // 로그인여부 확인 모듈(G
 router.get("/member/loginstatuscheck",member.loginStatusCheck); //Header 컴포넌트- 로그인/회원가입 버튼 렌더링 (로그인여부에 따라)
 
 /*       마이페이지 관련        */
-router.get("/mypage/myproduct/list",mypage.myProduct); // 내게시물 모듈(GET)
-router.post("/mypage/myproduct/delete",mypage.myProductDelete); // 내게시물 삭제(post)
-router.post("/mypage/memberinfo/pwcheck",mypage.pwCheck); // 마이페이지-개인정보-비밀번호 재확인
-router.get("/mypage/memberinfo",mypage.getMemberInfo); // 마이페이지-개인정보-조회
-router.post("/mypage/memberinfo/update",mypage.MemberInfoUpdate); // 마이페이지-개인정보-수정
+router.get("/mypage/myproduct/list", mypage.myProduct); // 내게시물 모듈(GET)
+router.get("/mypage/wishlist", mypage.getWishList); // 관심목록 조회모듈(get)
+router.get("/mypage/mypoint", mypage.getPoint); // 내 포인트 조회 모듈(GET)
+router.post("/mypage/myproduct/delete", mypage.myProductDelete); // 내게시물 삭제(post)
+router.post("/mypage/memberinfo/pwcheck", mypage.pwCheck); // 마이페이지-개인정보-비밀번호 재확인
+router.get("/mypage/memberinfo", mypage.getMemberInfo); // 마이페이지-개인정보-조회
+router.post("/mypage/memberinfo/update", mypage.MemberInfoUpdate); // 마이페이지-개인정보-수정
 
 /* 페이징 관련 */
 router.get("/paging/bycategory",paging.byCategoryCount); // 카테고리별 게시물 카운트(get)
 router.get("/paging/bysearch",paging.bySearchCount); // 검색별 게시물 카운트(get)
 router.get("/paging/myProductCount",paging.myProductCount); // 게시물 카운트(get)
+router.get("/paging/myWishListCount",paging.myWishListCount); // 관심목록 리스트 카운트(get)
 
 /* 아임포트 api */
 router.post("/payments/complete", iamport.payments); //아임포트

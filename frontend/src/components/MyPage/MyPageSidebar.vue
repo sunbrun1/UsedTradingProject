@@ -22,8 +22,8 @@
                     { menuName : "마이페이지 홈", menuPath : "/mypage", color : false},
                     { menuName : "내 상품", menuPath : "/mypage/myproduct/list", color : false},
                     { menuName : "거래상태", menuPath : "/abcd", color : false},
-                    { menuName : "관심목록", menuPath : "/abcde", color : false},
-                    { menuName : "포인트", menuPath : "/abcderf", color : false},
+                    { menuName : "관심목록", menuPath : "/mypage/mywishlist?no=1", color : false},
+                    { menuName : "포인트", menuPath : "/mypage/mypoint", color : false},
                     { menuName : "개인정보", menuPath : "/mypage/memberinfo/pwcheck", color : false},
                     { menuName : "회원탈퇴", menuPath : "/abcass", color : false},
                 ],   
@@ -43,10 +43,10 @@
                 else if(this.$route.path == "/abcd"){
                     this.sidebarMenu[2].color = true;
                 }
-                else if(this.$route.path == "/abcde"){
+                else if(this.$route.path == "/mypage/mywishlist"){
                     this.sidebarMenu[3].color = true;
                 }
-                else if(this.$route.path == "/abcderf"){
+                else if(this.$route.path == "/mypage/mypoint"){
                     this.sidebarMenu[4].color = true;
                 }
                 else if(this.$route.path == "/mypage/memberinfo/pwcheck"){

@@ -189,7 +189,7 @@ export default {
             selectMediumName:'', //선택한 카테고리 중분류
             area:'',
             ea:1,
-            imageName:"",
+            remainImage:"",
             title_length:0, //제목 글자수
             content_length:0, //내용 글자수
             deleteImage:[], //삭제된 이미지
@@ -220,9 +220,9 @@ export default {
                     this.selectMediumName = this.product.category_medium_name;
                     this.area = this.product.area;
                     this.ea = this.product.ea;
-                    this.imageName = this.product.image_name.split(',');
-                    for(let i=0; i<this.imageName.length; i++){
-                        this.files.push({preview : "http://localhost:3000/" + this.imageName[i], image_name : this.imageName[i]})
+                    this.remainImage = this.product.image_name.split(',');
+                    for(let i=0; i<this.remainImage.length; i++){
+                        this.files.push({preview : "http://localhost:3000/" + this.remainImage[i], image_name : this.remainImage[i]})
                     }
                 })
                 .catch((err)=>{
@@ -253,9 +253,9 @@ export default {
         },
         /* 이미지삭제 */
         fileDeleteButton(index) { 
-            this.deleteImage.push(this.imageName[index])
+            this.deleteImage.push(this.remainImage[index])
             this.files.splice(index, 1);
-            this.imageName.splice(index, 1);
+            this.remainImage.splice(index, 1);
         },
 
         /* 상품 제목 관련 */
@@ -312,8 +312,34 @@ export default {
         /* 업로드 */
         update(){  
             /* 로그인여부 확인 */
+            console.log(this.files)
+
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then(()=>{
+                if(this.files.length < 1){
+                    return alert("상품 사진을 등록해주세요.");
+                }
+                if(this.title.length < 2 || this.title.length > 20){
+                    this.$refs.title.focus();
+                    return alert("상품명을 2~20자 이내로 입력해주세요.")
+                }
+                if(this.selectLargeName.length < 1 && this.selectMediumName.length < 1){
+                    return alert("카테고리를 선택해주세요.")
+                }
+                if(this.area.length < 1){
+                    return alert("거래지역을 선택해주세요.")
+                }
+                if(this.price < 100){
+                    this.$refs.price.focus();
+                    return alert("상품 가격을 100원이상 입력해주세요.")
+                }
+                if(this.state.length < 1){
+                    return alert("상품 상태를 선택해주세요.")
+                }
+                if(this.ea < 1){
+                    return alert("상품 수량을 입력해주세요.")
+                }
+
                 let frm = new FormData()
                 for(let i=0; i<this.files.length; i++){
                     frm.append('files',  this.files[i].file);
@@ -324,7 +350,9 @@ export default {
                 frm.append('select_category_medium', this.selectMediumName);
                 frm.append('state', this.state);
                 frm.append('content', this.content);
-                frm.append('image_name', this.imageName);
+                frm.append('area', this.area);
+                frm.append('ea', this.ea);
+                frm.append('remainImage', this.remainImage);
                 frm.append('deleteImage', this.deleteImage);
 
                 const config = {

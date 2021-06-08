@@ -47,7 +47,7 @@ export default {
         // 거래지역 검색
         areaSearch(){
             this.form = { 
-				area:this.area,
+				areaSearch:this.area,
 			} 
             this.$axios.post("http://localhost:3000/api/board/areaSelect",this.form)
 			.then((res)=>{

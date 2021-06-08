@@ -13,6 +13,8 @@ import productBySearch from '@/components/Board/ProductBySearch';
 /* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
 import myProdcut from '@/components/MyPage/MyProduct';
+import myWishList from '@/components/MyPage/MyWishList';
+import myPoint from '@/components/MyPage/MyPoint';
 import pwcheck from '@/components/MyPage/PwCheck';
 import memberInfo from '@/components/MyPage/MemberInfo';
 
@@ -70,6 +72,16 @@ export default new Router({ //라우터 연결
 			,name:myProdcut
 			,component:myProdcut,
 			props:true 
+		}
+		,{
+			path:'/mypage/mywishlist' // 관심목록
+			,name:myWishList
+			,component:myWishList,
+		}
+		,{
+			path:'/mypage/mypoint' //  내포인트
+			,name:myPoint
+			,component:myPoint,
 		}
 		,{
 			path:'/mypage/memberinfo/pwcheck' // 개인정보 비밀번호 재확인

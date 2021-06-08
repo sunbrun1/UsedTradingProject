@@ -180,7 +180,6 @@ body{
 /* 신규상품 container */
 .newproduct_container{
     width: 1180px;
-    height: 697px;
     margin: auto;
     display: flex;
     flex-flow: wrap;
@@ -188,6 +187,7 @@ body{
 .newproduct{
     width: 212px;
     height: 309px;
+    margin-bottom: 30px;
 }
 /* 상품 가로정렬 */
 .newproduct:not(:nth-child(5n)){

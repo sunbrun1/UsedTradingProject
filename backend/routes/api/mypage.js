@@ -31,6 +31,40 @@ exports.myProduct = async (req,res) => {
 	}
 }
 
+/* 마이페이지-관심목록 */
+exports.getWishList = async (req,res) => {
+	console.log("성공")
+	let accessToken = req.cookies.accessToken; //엑세스 토큰
+	let decode = jwt.verify(accessToken, secretObj.secret); //복호화
+	let loginId = decode.member_id
+	console.log(loginId)
+	let limit = parseInt(req.query.limit);
+	let offset = parseInt(req.query.offset);
+	let [wishList] = await conn.query("SELECT A.dibs_no, A.member_id, A.product_no, B.thumbnail, B.title, B.price, B.area, B.dibs, B.date " +  
+									 "FROM dibs_list AS A " +
+									 "LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+									 "WHERE A.member_id = ? " +
+									 "ORDER BY A.dibs_no DESC LIMIT ? OFFSET ?;",
+									 [loginId, limit, offset]);
+	res.send({
+		success:true,
+		wishList:wishList,
+	})
+}
+/* 내포인트 조회  */
+exports.getPoint = async (req,res) => {
+	let accessToken = req.cookies.accessToken; //엑세스 토큰
+	let decode = jwt.verify(accessToken, secretObj.secret); //복호화
+	let loginId = decode.member_id // 로그인 ID
+	console.log(loginId)
+	let [memberInfo] = await conn.query("SELECT member_id, member_email, member_point FROM member WHERE member_id = ?", loginId);
+
+	res.send({
+		success:true,
+		memberInfo:memberInfo,
+	})
+}
+
 /* 마이페이지/내게시물 삭제 */
 exports.myProductDelete = async (req,res) => {
 	let [data] = await conn.query("SELECT image_name FROM product_image WHERE id = ?", req.body.id);

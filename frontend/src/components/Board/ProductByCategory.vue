@@ -274,6 +274,7 @@ export default {
     .product{
         width: 212px;
         height: 309px;
+        margin-bottom: 30px;
     }
     /* 상품 가로정렬 */
     .product:not(:nth-child(5n)){
