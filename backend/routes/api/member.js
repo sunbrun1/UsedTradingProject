@@ -104,8 +104,6 @@ exports.logout = (req,res) =>{
 /* 로그인여부 확인 모듈 */
 exports.someAPI = async (req,res) =>{
 	const { accessToken, refreshToken } = req.cookies;
-	console.log(accessToken);
-	console.log(refreshToken);
 
 	try{
 		/* 엑세스토큰 없으면 false */
@@ -114,7 +112,6 @@ exports.someAPI = async (req,res) =>{
 		}
 	
 		const decode = jwt.verify(accessToken, secretObj.secret); // 엑세스토큰 복호화
-		console.log(decode)
 
 		/* 엑세스토큰 복호화 못하면 false */
 		if(!decode){

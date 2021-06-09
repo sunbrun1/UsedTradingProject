@@ -5,91 +5,87 @@ var fs = require('fs');
 
 /* 카테고리별 상품 리스트 페이징 */
 exports.byCategoryCount = async (req,res) => {
-    let categoryLargeId = req.query.categoryLargeId; // 대분류 ID
-	let categoryMediumId = req.query.categoryMediumId; // 중분류 ID
+	/* req.query */
+	const { categoryLargeId, categoryMediumId } = req.query;
+
     //대분류 클릭시
 	if(categoryMediumId == null){ 
 		/* 카테고리 이름 조회 쿼리 */
-		let [category] = await conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?;", categoryLargeId);
-		let categoryLargeName = category[0].category_large_name; //카테고리 대분류 name
+		var [data] = await conn.query("SELECT category_large_name FROM category_large WHERE category_large_id = ?;", categoryLargeId);
+		const categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
 
 		/* 상품 개수 조회 쿼리 */
-		let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ?;", categoryLargeName);
+		var [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ?;", categoryLargeName);
 
-		res.send({
-			count:count,
-		})
-
-
+		return res.send({count:count})
 	}
 	//중분류 클릭시
 	else{
 		/* 카테고리 이름 조회 쿼리 */
-		let [category] = await conn.query("SELECT category_large_name, category_medium_name FROM category_medium WHERE category_medium_id = ?",categoryMediumId);
-		let categoryLargeName = category[0].category_large_name; //카테고리 대분류 name
-		let categoryMediumName = category[0].category_medium_name; //카테고리 중분류 name
+		var [data] = await conn.query("SELECT category_large_name, category_medium_name FROM category_medium WHERE category_medium_id = ?",categoryMediumId);
+		const categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
+		const categoryMediumName = data[0].category_medium_name; //카테고리 중분류 name
 
 		/* 상품 개수 조회 쿼리 */
 		let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ? AND category_medium_name = ?;",[categoryLargeName,categoryMediumName]);
 		
-		res.send({
-			count:count,
-		})
-		
-	
+		return res.send({count:count})
 	}
 }
 
 /* 검색별 상품 리스트 페이징 */
 exports.bySearchCount = async (req,res) => {
-    let categoryLargeId = req.query.categoryLargeId; // 대분류 ID
-	let search = req.query.search; // 검색 text
-    //대분류 클릭시
+	/* req.query */
+	const { categoryLargeId, search } = req.query;
+
+    // 카테고리 전체선택 검색
 	if(categoryLargeId == "all"){ 
 		/* 상품 개수 조회 쿼리 */
 		let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE title LIKE ?;", "%"+search+"%");
 	
-		res.send({
-			count:count,
-		})
-	
+		return res.send({count:count})
 	}
-	//중분류 클릭시
+	// 카테고리 대분류 선택 검색
 	else{
 		/* 카테고리 이름 조회 쿼리 */
-		let [category] = await conn.query("SELECT category_large_name FROM category_medium WHERE category_Large_id = ?",categoryLargeId);
-		let categoryLargeName = category[0].category_large_name; //카테고리 대분류 name
+		let [data] = await conn.query("SELECT category_large_name FROM category_medium WHERE category_Large_id = ?",categoryLargeId);
+		let categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
 		
 		/* 상품 개수 조회 쿼리 */
 		let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ? AND title LIKE ?;",[categoryLargeName,"%"+search+"%" ]);
 
-		res.send({
-			count:count,
-		})
+		return res.send({count:count})
 	}
 }
 
+/* 내 상품 리스트 페이징 */
 exports.myProductCount = async (req,res) => {
-	let accessToken = req.cookies.accessToken;
-	let accessToken_decoded = jwt.verify(accessToken, secretObj.secret);
+	/* jwt 토큰 */
+	const accessToken = req.cookies.accessToken; // 엑세스토큰
+	const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
+	const memberId = decode.member_id; // 로그인 ID
 
-	let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE member_id = ?;", accessToken_decoded.member_id);
-	res.send({
+	/* 상품 개수 조회 */
+	let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE member_id = ?;", memberId);
+
+	return res.send({
 		success:true,
 		count:count
 	})
-
 }
+
+/* 관심목록 리스트 페이징 */
 exports.myWishListCount = async (req,res) => {
-	let accessToken = req.cookies.accessToken;
-	let accessToken_decoded = jwt.verify(accessToken, secretObj.secret);
+	/* jwt 토큰 */
+	const accessToken = req.cookies.accessToken; // 엑세스토큰
+	const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
+	const memberId = decode.member_id; // 로그인 ID
 
 	let [count] = await conn.query("SELECT COUNT(*) AS count " +  
 								   "FROM dibs_list AS A " +
 								   "LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
-								   "WHERE A.member_id = ?",
-								    accessToken_decoded.member_id);
-	res.send({
+								   "WHERE A.member_id = ?", memberId);
+	return res.send({
 		success:true,
 		count:count
 	})
