@@ -56,6 +56,9 @@ app.get("/talk", async (req,res) => { //채팅 리스트 조회
       productImage.push(product[0].thumbnail);
       productTitle.push(product[0].title);
       productPrice.push(product[0].price);
+      console.log(productImage)
+      console.log(productTitle)
+      console.log(productPrice)
     }
     catch(err){
       console.log(err);

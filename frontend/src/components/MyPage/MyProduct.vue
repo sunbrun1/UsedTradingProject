@@ -244,7 +244,9 @@ export default {
                     }
                 })
                 .then((res)=>{
-                    this.myProduct = res.data.myProduct; 
+                    if(res.data.success){
+                        this.myProduct = res.data.myProduct; 
+                    }
                 })
                 .catch((err)=>{
                     console.log(err);
