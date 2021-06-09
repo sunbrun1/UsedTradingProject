@@ -1,8 +1,57 @@
 const axios = require('axios').default;
 const conn = require('../../config/db'); //db설정 호출
 
-/* 초기 로그인/회원가입 버튼 렌더링 */
+/* payments */
 exports.payments = async (req,res) => {
+	try {
+        const { imp_uid, merchant_uid, buyer_id} = req.body; // req의 body에서 imp_uid, merchant_uid 추출
+
+        // 액세스 토큰(access token) 발급 받기
+        const getToken = await axios({
+        url: "https://api.iamport.kr/users/getToken",
+        method: "post", // POST method
+        headers: { "Content-Type": "application/json" }, // "Content-Type": "application/json"
+        data: {
+            imp_key: "3203226771474111", // REST API키
+            imp_secret: "7df725b490bb12f8a58d235eaf1fe0a41757661499bb9d336f56d1484087e8585b56c1264841eeeb" // REST API Secret
+        }
+        });
+        const { access_token } = getToken.data.response; // 인증 토큰
+
+        // imp_uid로 아임포트 서버에서 결제 정보 조회
+        const getPaymentData = await axios({
+            url: "https://api.iamport.kr/payments/" + imp_uid, // imp_uid 전달
+            method: "get", // GET method
+            headers: { "Authorization": access_token } // 인증 토큰 Authorization header에 추가
+        });
+        const paymentData = getPaymentData.data.response; // 조회한 결제 정보
+        
+        // 결제 검증하기
+        const { amount } = paymentData;
+        console.log(amount)
+
+        /* DB에 결제 정보 저장 */
+        await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, member_id) values(?, ?, ?);", [imp_uid, merchant_uid, buyer_id]);
+
+        /* 포인트 조회 */
+        const [data] = await conn.query("SELECT member_point FROM member WHERE member_id = ?", buyer_id);
+        const point = data[0].member_point;
+        console.log(point)
+        console.log(amount);
+        console.log(point + amount)
+
+        /* 포인트 추가 */
+        await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [point + amount, buyer_id]);
+            
+        return res.send({success:true})  
+    }
+    catch (e) {
+        res.status(400).send(e);
+    }
+}
+
+/* payments */
+exports.directpayments = async (req,res) => {
 	try {
         const { imp_uid, merchant_uid, buyer_id} = req.body; // req의 body에서 imp_uid, merchant_uid 추출
    
@@ -48,4 +97,6 @@ exports.payments = async (req,res) => {
         res.status(400).send(e);
     }
 }
+
+
 
