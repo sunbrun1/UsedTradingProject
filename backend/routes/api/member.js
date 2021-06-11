@@ -112,29 +112,33 @@ exports.someAPI = async (req,res) =>{
 		}
 	
 		const decode = jwt.verify(accessToken, secretObj.secret); // 엑세스토큰 복호화
+		const loginId = decode.member_id
 
 		/* 엑세스토큰 복호화 못하면 false */
 		if(!decode){
 			return res.send({success:false})
 		}
 	
-		return res.send({success:true})
+		return res.send({
+			success:true,
+			loginId:loginId
+		})
 		
 	}
 	/* 토큰 유효시간 만료 */
 	catch(err){
 		console.log("토큰 유효시간 만료")
 		const decode = jwt.verify(refreshToken, secretObj.secret); // 리프레쉬 토큰 복호화
-		const memberId = decode.member_id; // 로그인 ID
+		const loginId = decode.member_id; // 로그인 ID
 
 		/* 리프레시 토큰 조회 쿼리 */
-		var [data] = await conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", memberId);
+		var [data] = await conn.query("SELECT refreshtoken FROM member WHERE member_id = ?", loginId);
 		const DBrefreshToken = data[0].refreshtoken
 
 		if(DBrefreshToken == refreshToken){
 			const accessToken  = jwt.sign(
 				{
-					member_id:memberId  // 토큰의 내용(payload)
+					member_id:loginId  // 토큰의 내용(payload)
 				},
 					secretObj.secret ,    // 비밀 키
 				{
@@ -143,7 +147,10 @@ exports.someAPI = async (req,res) =>{
 			)
 			res.cookie("accessToken", accessToken, {httpOnly: true});
 			
-			return res.send({success:true})
+			return res.send({
+				success:true,
+				loginId:loginId
+			})
 		}
 	
 	}

@@ -9,6 +9,7 @@ import productUpdate from '@/components/Board/ProductUpdate';
 import productDetail from '@/components/Board/ProductDetail'; 
 import productByCategory from '@/components/Board/ProductByCategory';
 import productBySearch from '@/components/Board/ProductBySearch';
+import payment from '@/components/Board/payment';
 
 /* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
@@ -58,6 +59,11 @@ export default new Router({ //라우터 연결
 			path:'/bySearch/list'  // 검색별 상품리스트
 			,name:"productBySearch"
 			,component:productBySearch,
+		}
+		,{
+			path:'/product/:no/payment'  // 결제하기
+			,name:"payment"
+			,component:payment,
 		}
 
 		/* 마이페이지 관련 */

@@ -66,7 +66,6 @@ export default {
         },
         // 거래지역 선택
         areaSelect(index){
-            console.log(index)
             let area_sido = this.areaList[index].area_sido;
             let area_sigugun = this.areaList[index].area_sigugun;
             let area_dongeupmyeon = this.areaList[index].area_dongeupmyeon;

@@ -1,3 +1,3 @@
 git add --all
-git commit -m "update mypage.js  "
+git commit -m "add payment.vue  "
 git push -u origin master

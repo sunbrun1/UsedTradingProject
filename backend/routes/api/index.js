@@ -21,6 +21,7 @@ router.get("/board/product/:no/dibs",dao.dibs); // 찜하기 기능 모듈(POST)
 router.post("/board/upload",dao.upload); // 상품 업로드 모듈(POST)
 router.post("/board/areaSelect",dao.areaSelect); // 거래지역 선택 모듈(POST)
 router.post("/board/update/:id",dao.update); // 상품 수정 모듈(POST)
+router.get("/board/getProductInfo/:no",dao.getProductInfo); // 상품정보 조회(GET)
 
 
 /*      로그인/회원가입 관련       */
@@ -47,6 +48,7 @@ router.get("/paging/myWishListCount",paging.myWishListCount); // 관심목록 �
 
 /* 아임포트 api */
 router.post("/payments/complete", iamport.payments); //아임포트
+router.post("/directPayments/complete", iamport.directPayments); //아임포트
 
 
 

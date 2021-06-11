@@ -436,6 +436,20 @@ exports.update = async (req,res) => {
 	})
 }
 
+exports.getProductInfo = async (req,res) => {
+	/* req.params */
+	const productNo = req.params.no; // 상품 ID
+
+	/* 상품정보 조회 쿼리 */
+	const [productInfo] = await conn.query("SELECT a.*, group_concat(b.image_name) AS image_name " +
+										   "FROM product a, product_image b " +
+										   "WHERE b.id = a.id AND a.id = ?;", productNo);
+	return res.send({
+				success:true,
+				productInfo:productInfo
+			})
+}
+
 
 
 

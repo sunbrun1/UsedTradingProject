@@ -80,7 +80,7 @@
                     
                     <div class="button_wrap" v-if="myProductCheck">
                         <!-- 바로구매 -->
-                        <div class='button_wrap_item buy' @click="onPayment">
+                        <div class='button_wrap_item buy' @click="paymentPage">
                             바로구매
                         </div>
                         <!-- 연락하기 -->
@@ -260,51 +260,7 @@ export default {
                 this.ea = this.ea + 1;
             }
         },
-        onPayment() {
-            var IMP = window.IMP;
-            IMP.init('imp15190037');
-            IMP.request_pay({
-                pg : 'html5_inicis',
-                pay_method : 'card',
-                merchant_uid : 'merchant_' + new Date().getTime(),
-                name : this.title,
-                amount : this.price,
-                buyer_email : 'dkdlrk111@naver.com',
-                buyer_name : '구매자이름',
-                buyer_tel : '010-2403-5208',
-                buyer_addr : this.area,
-                buyer_postcode : '123-456',
-                custom_data : this.$route.params.no, 
-            }, function (rsp) { // callback
-                if (rsp.success) { // 결제 성공 시: 결제 승인 또는 가상계좌 발급에 성공한 경우
-                    console.log("성공")
-                    let data = {
-                                imp_uid: rsp.imp_uid,
-                                merchant_uid: rsp.merchant_uid,
-                                product_no : rsp.custom_data, 
-                            }
-                    axios.post("http://localhost:3000/api/payments/complete", data)
-                    .then((res)=>{
-                        switch(res.data.status) {
-                            case "vbankIssued":
-                                // 가상계좌 발급 시 로직
-                                alert("가상계좌 발급 성공");
-                                break;
-                            case "success":
-                                // 결제 성공 시 로직
-                                alert("결제에 성공하였습니다.");
-                                break;
-                        }
-                    })
-                    .catch((err)=>{
-                        console.log(err);
-                    })   
-                } 
-                else {
-                    alert("결제에 실패하였습니다. 에러 내용: " +  rsp.error_msg);        
-                }
-            });
-        },   
+         
       
         /* 연락하기  */
         talk(){
@@ -384,6 +340,12 @@ export default {
             if(betweenTimeDay < 365){
                 return betweenTimeDay + '일전';
             } 
+        },
+        // 결제페이지 이동
+        paymentPage(){
+            const productNo = this.$route.params.no;
+            console.log(productNo)
+            this.$router.push({ path: `/product/${productNo}/payment`});
         },
 	}
 }

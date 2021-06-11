@@ -36,9 +36,6 @@ exports.payments = async (req,res) => {
         /* 포인트 조회 */
         const [data] = await conn.query("SELECT member_point FROM member WHERE member_id = ?", buyer_id);
         const point = data[0].member_point;
-        console.log(point)
-        console.log(amount);
-        console.log(point + amount)
 
         /* 포인트 추가 */
         await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [point + amount, buyer_id]);
@@ -51,9 +48,11 @@ exports.payments = async (req,res) => {
 }
 
 /* payments */
-exports.directpayments = async (req,res) => {
+exports.directPayments = async (req,res) => {
 	try {
-        const { imp_uid, merchant_uid, buyer_id} = req.body; // req의 body에서 imp_uid, merchant_uid 추출
+        /* req.body */
+        const { imp_uid, merchant_uid, custom_data} = req.body; // req의 body에서 imp_uid, merchant_uid 추출
+        const { productNo, loginId } = custom_data[0];
    
         // 액세스 토큰(access token) 발급 받기
         const getToken = await axios({
@@ -76,8 +75,7 @@ exports.directpayments = async (req,res) => {
         const paymentData = getPaymentData.data.response; // 조회한 결제 정보
 
         // DB에서 결제되어야 하는 금액 조회
-        const [order] = await conn.query("SELECT price FROM product WHERE id = ?", product_no);
-        console.log(order[0]);
+        const [order] = await conn.query("SELECT price FROM product WHERE id = ?", productNo);
         const amountToBePaid = order[0].price;
         console.log("결제 되어야 하는 금액 : " + amountToBePaid);
         
@@ -86,7 +84,7 @@ exports.directpayments = async (req,res) => {
         const { amount } = paymentData;
         if (amount === amountToBePaid) { // 결제 금액 일치. 결제 된 금액 === 결제 되어야 하는 금액
             console.log("금액일치")
-            await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, member_id) values(?, ?, ?);", [imp_uid, merchant_uid, buyer_id]); // DB에 결제 정보 저장
+            await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, member_id) values(?, ?, ?);", [imp_uid, merchant_uid, loginId]); // DB에 결제 정보 저장
             res.send({success:true})  
         }
         else{ // 결제 금액 불일치. 위/변조 된 결제
