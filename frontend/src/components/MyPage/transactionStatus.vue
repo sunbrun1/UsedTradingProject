@@ -12,7 +12,7 @@
                     <h2>거래상태</h2>
                     <!-- 거래상태 컨테이너 -->
                     <div class="main_container">
-                        <div class="status_list" v-for="(item) in wishList" :key="item.id">
+                        <div class="status_list" v-for="(item, index) in productInfo" :key="index">
                             <!-- 라우터 이동 -->
                             <router-link :to="{ name: 'productDetail', params: { no: item.product_no }}">
                                 <!-- 상품이미지 -->
@@ -20,9 +20,15 @@
                                     <img :src="`http://localhost:3000/`+item.thumbnail" width="212" height="212"/>
                                 </div>
                                 <!-- 상품 이름 -->
-                                <div class="name">
-                                    {{item.title}}
+                                <div class="info">
+                                    <div class="name">
+                                        {{item.title}}
+                                    </div>
+                                    <div class="status">
+                                        {{transactionStatus[index]}}
+                                    </div>
                                 </div>
+                                
                                 <!-- 상품 가격 -->
                                 <div class="price">
                                     <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
@@ -88,7 +94,8 @@ export default {
     components: {Header,MyPageSidebar},
     data(){
         return{
-            wishList:"",
+            productInfo:"",
+            transactionStatus:"",
 
             /* 페이징 */
             totalListItemCount: 0, //내 게시물 개수
@@ -109,13 +116,13 @@ export default {
     watch: {
         '$route' (to, from) { 
             if(to.query.no != from.query.no){
-                this.getWishList();
+                this.getTransactionStatus();
                 this.myProductCount();
             }
         }
     },
     mounted() {
-		this.getWishList();
+		this.getTransactionStatus();
         this.myProductCount();
 	},
 	methods:{
@@ -126,11 +133,11 @@ export default {
             this.initUI();
         },
         /* 상품 데이터 조회 */
-        getWishList() {
+        getTransactionStatus() {
             /* 로그인 여부 확인 */
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
             .then(()=>{
-                this.$axios.get("http://localhost:3000/api/mypage/wishlist",{
+                this.$axios.get("http://localhost:3000/api/mypage/getTransactionStatus/list",{
                     withCredentials: true,
                     params: {
                         limit : this.pageLimit,
@@ -138,11 +145,14 @@ export default {
                     }
                 })
                 .then((res)=>{
-                    this.wishList = res.data.wishList; // 신규상품
+                    this.productInfo = res.data.productInfo; // 상품정보
+                    this.transactionStatus = res.data.transactionStatus;
+                    console.log(this.productInfo)
+                    console.log(this.transactionStatus)
 
                     // 신규상품 등록 시간
-                    for(let i=0;  i<this.wishList.length; i++){
-                        this.wishList[i].date = this.timeForToday(this.wishList[i].date)
+                    for(let i=0;  i<this.productInfo.length; i++){
+                        this.productInfo[i].date = this.timeForToday(this.productInfo[i].date)
                     }
                 })
                 .catch((err)=>{
@@ -259,13 +269,13 @@ export default {
         display: flex;
         flex-flow: wrap;
     }
-    .statuslist{
+    .status_list{
         width: 212px;
         height: 309px;
         margin-bottom: 30px;
     }
     /* 상품 가로정렬 */
-    .statuslist:not(:nth-child(4n)){
+    .status_list:not(:nth-child(4n)){
         margin-right: 27px;
     }
     /* 상품 이미지 */
@@ -279,6 +289,16 @@ export default {
         white-space:nowrap;
         text-align: left;
         padding: 0px 0px 4px 0px;
+    }
+    /* 거래상태 */
+    .status{
+        width: 50px;
+        height: 25px;
+        line-height: 25px;
+        background: #19b2f5;
+        color: white;
+        font-size: 14px;
+        border-radius: 50px;
     }
     /* 가격 */
     .price{

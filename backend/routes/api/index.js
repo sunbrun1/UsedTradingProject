@@ -33,6 +33,7 @@ router.get("/member/loginstatuscheck",member.loginStatusCheck); //Header 컴포�
 
 /*       마이페이지 관련        */
 router.get("/mypage/getMyProduct/list", mypage.getMyProduct); // 내 상품 리스트 조회 (GET)
+router.get("/mypage/getTransactionStatus/list", mypage.getTransactionStatus); // 거래상태 조회 (GET)
 router.get("/mypage/wishlist", mypage.getWishList); // 관심목록 조회모듈(get)
 router.get("/mypage/mypoint", mypage.getPoint); // 내 포인트 조회 모듈(GET)
 router.post("/mypage/myproduct/delete", mypage.myProductDelete); // 내게시물 삭제(post)

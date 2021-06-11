@@ -52,7 +52,7 @@ exports.directPayments = async (req,res) => {
 	try {
         /* req.body */
         const { imp_uid, merchant_uid, custom_data} = req.body; // req의 body에서 imp_uid, merchant_uid 추출
-        const { productNo, loginId } = custom_data[0];
+        const { productNo, loginId, memberPoint } = custom_data[0];
    
         // 액세스 토큰(access token) 발급 받기
         const getToken = await axios({
@@ -90,20 +90,28 @@ exports.directPayments = async (req,res) => {
         if (amount === totalPay) { // 결제 금액 일치. 결제 된 금액 === 결제 되어야 하는 금액
             console.log("금액일치")
 
-            await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, member_id) values(?, ?, ?);", [imp_uid, merchant_uid, loginId]); // DB에 결제 정보 저장
+            /* 판매자 ID 조회 */
+            const [memberInfo] = await conn.query("SELECT member_id FROM product WHERE id = ?", productNo);
+            const sellerId = memberInfo[0].member_id;
+            console.log(sellerId)
+            // DB에 결제 정보 저장
+            await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point) values(?, ?, ?, ?, ?, ?, ?);",
+                            [imp_uid, merchant_uid, productNo, sellerId, loginId, amount, memberPoint]); 
             /* 포인트 차감 */
             await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [0, loginId]);
-
             /* 상품 상태 변경 */
             await conn.query("UPDATE product SET transaction_status = ? WHERE id = ?", ["판매중", productNo]);
+
+
             res.send({success:true})  
         }
         else{ // 결제 금액 불일치. 위/변조 된 결제
             throw { status: "forgery", message: "위조된 결제시도" };
         }
     }
-    catch (e) {
-        res.status(400).send(e);
+    catch(err){
+        console.log(err);
+        return res.status(500).send(err)
     }
 }
 
@@ -112,15 +120,16 @@ exports.onlyPointPayments = async (req,res) => {
     try{
         console.log("통신성공")
         /* req.body */
-        const { orderPrice, currentPoint, loginId, productNo } = req.body; 
-        console.log("req.orderPrice: " + orderPrice)
-        console.log("req.currentPoint: " + currentPoint)
-        console.log("req.loginId: " + loginId)
-        console.log("req.productNo: " + productNo)
+        const { orderPrice, memberPoint, loginId, productNo } = req.body; 
+        console.log(orderPrice)
+        console.log(memberPoint)
+        console.log(loginId)
+        console.log(productNo)
 
         /* 포인트 조회 */
         var [data] = await conn.query("SELECT member_point FROM member WHERE member_id = ?;", loginId);
         const point = data[0].member_point; // 포인트
+        console.log("멤버포인트: " + memberPoint)
         console.log("포인트: " + point)
 
         // DB에서 결제되어야 하는 금액 조회
@@ -129,18 +138,30 @@ exports.onlyPointPayments = async (req,res) => {
         console.log("amountToBePaid: " + amountToBePaid)
 
         /* 포인트 검증 */
-        if(currentPoint != point){
+        if(memberPoint != point){
+            console.log("포인트검증")
             return res.send({success:false}) 
         }
         /* 주문금액 검증 */
         if(orderPrice != amountToBePaid){
+            console.log("주문금액검증")
             return res.send({success:false}) 
         }
-        if(orderPrice > currentPoint){
+        if(orderPrice > memberPoint){
+            console.log("??")
             return res.send({success:false}) 
         }
-        const remainPoint = currentPoint - orderPrice; // 잔여포인트
+        const remainPoint = memberPoint - orderPrice; // 잔여포인트
         console.log("remainPoint: " + amountToBePaid)
+
+        /* 판매자 ID 조회 */
+        const [memberInfo] = await conn.query("SELECT member_id FROM product WHERE id = ?", productNo);
+        const sellerId = memberInfo[0].member_id; // 판매자 ID
+        console.log(sellerId)
+        // DB에 결제 정보 저장
+        await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point) values(?, ?, ?, ?, ?, ?, ?);",
+                        ["null", "null", productNo, sellerId, loginId, 0, orderPrice]);
+
         /* 포인트 차감 */
         await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [remainPoint, loginId]);
 
@@ -150,6 +171,7 @@ exports.onlyPointPayments = async (req,res) => {
         return res.send({success:true}) 
     }
     catch(err){
+        console.log(err);
         return res.status(500).send(err)
     }
     

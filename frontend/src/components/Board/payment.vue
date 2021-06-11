@@ -412,9 +412,9 @@ export default {
                     .then(()=>{
                         let data = {
                                 orderPrice: this.price,
-                                currentPoint: this.memberPoint,
+                                memberPoint: this.memberPoint,
                                 loginId : this.loginId,
-                                productNo: this.$route.params.no
+                                productNo : this.$route.params.no,
                             }
                         /* 결제 검증 */
                         this.$axios.post("http://localhost:3000/api/onlyPointPayments/complete", data, {withCredentials: true})
@@ -423,6 +423,7 @@ export default {
                                 console.log("거래상태 페이지로 이동")
                             }
                             else{
+                                
                                 console.log("위조")
                             }
                         })
@@ -451,7 +452,8 @@ export default {
                 buyer_tel : this.orderPhoneNum1 + "-" + this.orderPhoneNum2 + "-" + this.orderPhoneNum3,
                 buyer_addr : this.orderDefaultAddress + " " + this.orderRemainAddress,
                 custom_data : [{"productNo" : this.$route.params.no,
-                                "loginId" : this.loginId}]
+                                "loginId" : this.loginId,
+                                "memberPoint" : this.memberPoint}]
             }, function (rsp) { // callback
                 if (rsp.success) { // 결제 성공 시: 결제 승인 또는 가상계좌 발급에 성공한 경우
                     console.log("성공")

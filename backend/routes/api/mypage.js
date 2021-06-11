@@ -24,7 +24,33 @@ exports.getMyProduct = async (req,res) => {
 		productInfo:productInfo,
 	})
 }
+/* 거래상태 */
+exports.getTransactionStatus = async (req,res) => {
+	/* jwt 토큰 */
+	const accessToken = req.cookies.accessToken; // 엑세스토큰
+	const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
+	const loginId = decode.member_id; // 로그인 ID
 
+	/* 거래상태 조회 */
+	const [productInfo] = await conn.query("SELECT A.product_no, A.seller_id, A.buyer_id, B.thumbnail, B.title, B.price, B.date, B.dibs, B.area FROM payment_info AS A " +
+											"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+											"WHERE A.seller_id = ? OR A.buyer_id = ?;",
+										    [loginId, loginId]);
+	let transactionStatus = [];
+	for(let i=0; i<productInfo.length; i++){
+		if(productInfo[i].seller_id == loginId){
+			transactionStatus.push("판매중");
+		}
+		else{
+			transactionStatus.push("구매중");
+		}
+	}
+	return res.send({
+		success:true,
+		productInfo:productInfo,
+		transactionStatus:transactionStatus
+	})
+}
 /* 마이페이지-관심목록 */
 exports.getWishList = async (req,res) => {
 	/* jwt 토큰 */
