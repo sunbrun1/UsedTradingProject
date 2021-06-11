@@ -32,7 +32,7 @@ router.get("/member/someAPI",member.someAPI); // 로그인여부 확인 모듈(G
 router.get("/member/loginstatuscheck",member.loginStatusCheck); //Header 컴포넌트- 로그인/회원가입 버튼 렌더링 (로그인여부에 따라)
 
 /*       마이페이지 관련        */
-router.get("/mypage/myproduct/list", mypage.myProduct); // 내게시물 모듈(GET)
+router.get("/mypage/getMyProduct/list", mypage.getMyProduct); // 내 상품 리스트 조회 (GET)
 router.get("/mypage/wishlist", mypage.getWishList); // 관심목록 조회모듈(get)
 router.get("/mypage/mypoint", mypage.getPoint); // 내 포인트 조회 모듈(GET)
 router.post("/mypage/myproduct/delete", mypage.myProductDelete); // 내게시물 삭제(post)
@@ -48,7 +48,8 @@ router.get("/paging/myWishListCount",paging.myWishListCount); // 관심목록 �
 
 /* 아임포트 api */
 router.post("/payments/complete", iamport.payments); //아임포트
-router.post("/directPayments/complete", iamport.directPayments); //아임포트
+router.post("/directPayments/complete", iamport.directPayments); // 
+router.post("/onlyPointPayments/complete", iamport.onlyPointPayments); // 포인트로만 결제
 
 
 

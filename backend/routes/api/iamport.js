@@ -77,14 +77,25 @@ exports.directPayments = async (req,res) => {
         // DB에서 결제되어야 하는 금액 조회
         const [order] = await conn.query("SELECT price FROM product WHERE id = ?", productNo);
         const amountToBePaid = order[0].price;
-        console.log("결제 되어야 하는 금액 : " + amountToBePaid);
+
+        /* 포인트 조회 */
+        var [data] = await conn.query("SELECT member_point FROM member WHERE member_id = ?;", loginId);
+        const point = data[0].member_point; // 포인트
+        const totalPay = amountToBePaid - point
+        console.log("결제 되어야 하는 금액 : " + totalPay);
         
 
         // 결제 검증하기
         const { amount } = paymentData;
-        if (amount === amountToBePaid) { // 결제 금액 일치. 결제 된 금액 === 결제 되어야 하는 금액
+        if (amount === totalPay) { // 결제 금액 일치. 결제 된 금액 === 결제 되어야 하는 금액
             console.log("금액일치")
+
             await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, member_id) values(?, ?, ?);", [imp_uid, merchant_uid, loginId]); // DB에 결제 정보 저장
+            /* 포인트 차감 */
+            await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [0, loginId]);
+
+            /* 상품 상태 변경 */
+            await conn.query("UPDATE product SET transaction_status = ? WHERE id = ?", ["판매중", productNo]);
             res.send({success:true})  
         }
         else{ // 결제 금액 불일치. 위/변조 된 결제
@@ -94,6 +105,55 @@ exports.directPayments = async (req,res) => {
     catch (e) {
         res.status(400).send(e);
     }
+}
+
+/* 포인트로만 결제 */
+exports.onlyPointPayments = async (req,res) => {
+    try{
+        console.log("통신성공")
+        /* req.body */
+        const { orderPrice, currentPoint, loginId, productNo } = req.body; 
+        console.log("req.orderPrice: " + orderPrice)
+        console.log("req.currentPoint: " + currentPoint)
+        console.log("req.loginId: " + loginId)
+        console.log("req.productNo: " + productNo)
+
+        /* 포인트 조회 */
+        var [data] = await conn.query("SELECT member_point FROM member WHERE member_id = ?;", loginId);
+        const point = data[0].member_point; // 포인트
+        console.log("포인트: " + point)
+
+        // DB에서 결제되어야 하는 금액 조회
+        const [order] = await conn.query("SELECT price FROM product WHERE id = ?", productNo);
+        const amountToBePaid = order[0].price;
+        console.log("amountToBePaid: " + amountToBePaid)
+
+        /* 포인트 검증 */
+        if(currentPoint != point){
+            return res.send({success:false}) 
+        }
+        /* 주문금액 검증 */
+        if(orderPrice != amountToBePaid){
+            return res.send({success:false}) 
+        }
+        if(orderPrice > currentPoint){
+            return res.send({success:false}) 
+        }
+        const remainPoint = currentPoint - orderPrice; // 잔여포인트
+        console.log("remainPoint: " + amountToBePaid)
+        /* 포인트 차감 */
+        await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [remainPoint, loginId]);
+
+        /* 상품 상태 변경 */
+        await conn.query("UPDATE product SET transaction_status = ? WHERE id = ?", ["판매중", productNo]);
+
+        return res.send({success:true}) 
+    }
+    catch(err){
+        return res.status(500).send(err)
+    }
+    
+
 }
 
 

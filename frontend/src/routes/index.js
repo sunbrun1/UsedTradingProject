@@ -18,6 +18,7 @@ import myWishList from '@/components/MyPage/MyWishList';
 import myPoint from '@/components/MyPage/MyPoint';
 import pwcheck from '@/components/MyPage/PwCheck';
 import memberInfo from '@/components/MyPage/MemberInfo';
+import transactionStatus from '@/components/MyPage/transactionStatus';
 
 /* 채팅 관련 */
 import chat from '@/components/Chat/Chat';
@@ -98,6 +99,11 @@ export default new Router({ //라우터 연결
 			path:'/mypage/memberinfo' // 개인정보 확인/수정
 			,name:memberInfo
 			,component:memberInfo,
+		}
+		,{
+			path:'/mypage/transactionStatus' // 개인정보 확인/수정
+			,name:transactionStatus
+			,component:transactionStatus,
 		}
 		/* 채팅 관련 */
 		,{

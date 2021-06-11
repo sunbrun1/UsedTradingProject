@@ -66,7 +66,8 @@ exports.myProductCount = async (req,res) => {
 	const memberId = decode.member_id; // 로그인 ID
 
 	/* 상품 개수 조회 */
-	let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE member_id = ?;", memberId);
+	const [data] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE member_id = ?;", memberId);
+	const count = data[0].count // 상품 총 개수
 
 	return res.send({
 		success:true,

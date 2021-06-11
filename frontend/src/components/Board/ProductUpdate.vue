@@ -364,7 +364,7 @@ export default {
                 .then((res)=>{
                     if(res.data.success){
                         alert("등록완료");
-                        this.$router.push({path:'/mypage/myproduct/list'});
+                        this.$router.push({path:'/mypage/myproduct/list?no=1'});
                     }
                     else if(res.data == "imageCheckError"){
                         alert("상품 사진을 등록해주세요.")

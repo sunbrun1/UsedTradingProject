@@ -176,16 +176,40 @@
                     </div> 
                 </div>
                 <p>결제</p>
-                <div class="payment">
+                <div class="total_payment">
                     <div class="total_amount">
-                        총 결제 금액
+                        총 주문 금액
                     </div>
                     <div class="won">
-                        {{price}}원
+                        {{price.toLocaleString('ko-KR')}}원
                     </div>
-                    <div class="payment_btn" @click="onPayment">
-                        결제하기
+                </div>
+                <div class="member_point">
+                    <div class="total_amount">
+                        현재 포인트
                     </div>
+                    <div class="won">
+                        -{{memberPoint.toLocaleString('ko-KR')}}원
+                    </div>
+                </div>
+                <div class="remain_point">
+                    <div class="total_amount">
+                        잔여 포인트
+                    </div>
+                    <div class="won">
+                        {{remainPoint.toLocaleString('ko-KR')}}원
+                    </div>
+                </div>
+                <div class="final_payment">
+                    <div class="total_amount">
+                        총 결제금액
+                    </div>
+                    <div class="won">
+                        {{totalMoney.toLocaleString('ko-KR')}}원
+                    </div>
+                </div>
+                <div class="payment_btn" @click="onPayment">
+                    결제하기
                 </div>
             </div>
         </body>
@@ -206,7 +230,7 @@ export default {
             thumbnail:"",
             title:"",
             content:"",
-            price:"",
+            price:0,
             /* 주문 정보 */
             orderName:"",
             orderDefaultAddress:"",
@@ -228,12 +252,17 @@ export default {
             deliverEmail2:"naver.com",
             /* 주소검색 모달 상태*/
             modal:false,
-            /* 로그인ID */
-            loginId:""
+            /* 개인정보 */
+            loginId:"",
+            memberPoint:0,
+            /* 총결제금액 */
+            remainPoint:0,
+            totalMoney:0
         }
     },
     mounted() {
         this.getProductInfo(); // 상품정보 조회
+        this.getMemberInfo();
 	},
     watch:{
         /* 휴대전화 입력 숫자만 입력가능 */
@@ -266,9 +295,7 @@ export default {
             const productNo = this.$route.params.no; // 상품 넘버
             /* 로그인유지 */
             this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then((res)=>{
-                this.loginId = res.data.loginId;
-                console.log(this.loginId)
+            .then(()=>{
                 /* 상품정보 조회 */
                 this.$axios.get(`http://localhost:3000/api/board/getProductInfo/${productNo}`, {withCredentials: true})
                 .then((res)=>{
@@ -287,6 +314,44 @@ export default {
 			.catch((err)=>{
 				console.log(err);
 			})
+        },
+        /* 개인정보 조회 */
+        getMemberInfo(){
+            /* 로그인 여부 확인 */
+            this.$axios.get("http://localhost:3000/api/member/someAPI", {withCredentials: true})
+            .then(()=>{
+                /* 개인정보 조회 GET */
+                this.$axios.get("http://localhost:3000/api/mypage/mypoint", {withCredentials: true})
+                .then((res)=>{
+                    if(res.data.success){
+                        const memberInfo = res.data.memberInfo[0];
+                        this.loginId = memberInfo.member_id;
+                        this.memberPoint = memberInfo.member_point;
+                        this.totalPay();
+                    }
+                })
+                .catch((err)=>{
+                    console.log(err);
+                }) 
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
+        },
+        /* 총 결제금액 계산 */
+        totalPay(){
+            if(this.price > this.memberPoint){
+                this.remainPoint = 0;
+                return this.totalMoney = this.price - this.memberPoint;
+            }
+            if(this.price < this.memberPoint){
+                this.remainPoint = this.memberPoint - this.price;
+                return this.totalMoney = 0;
+            }
+            if(this.price == this.memberPoint){
+                this.remainPoint = 0;
+                return this.totalMoney = this.price - this.memberPoint;
+            }
         },
         /* 주문자 정보와 동일 */
         sameInfo(){
@@ -340,6 +405,39 @@ export default {
             if(this.orderEmail1 == "" ||  this.deliverEmail1 == ""){
                 return alert("이메일을 입력해주세요.")
             }
+            if(this.totalMoney == 0){
+                if (confirm("결제 하시겠습니까?") == true){ // 확인
+                    /* 로그인유지 */
+                    return this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+                    .then(()=>{
+                        let data = {
+                                orderPrice: this.price,
+                                currentPoint: this.memberPoint,
+                                loginId : this.loginId,
+                                productNo: this.$route.params.no
+                            }
+                        /* 결제 검증 */
+                        this.$axios.post("http://localhost:3000/api/onlyPointPayments/complete", data, {withCredentials: true})
+                        .then((res)=>{
+                            if(res.data.success){
+                                console.log("거래상태 페이지로 이동")
+                            }
+                            else{
+                                console.log("위조")
+                            }
+                        })
+                        .catch((err)=>{
+                            console.log(err);
+                        })
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                    })
+                }
+                else{ // 취소
+                    return false;
+                }
+            }
             var IMP = window.IMP;
             IMP.init('imp15190037');
             IMP.request_pay({
@@ -347,7 +445,7 @@ export default {
                 pay_method : 'card',
                 merchant_uid : 'merchant_' + new Date().getTime(),
                 name : this.title,
-                amount : this.price,
+                amount : this.totalMoney,
                 buyer_email : this.orderEmail1 + "@" + this.orderEmail2,
                 buyer_name : this.orderName,
                 buyer_tel : this.orderPhoneNum1 + "-" + this.orderPhoneNum2 + "-" + this.orderPhoneNum3,
@@ -538,10 +636,9 @@ export default {
         margin-right: 5px
     }
     /* 결제 */
-    .payment{
-        line-height: 50px;
+    .total_payment{
+        padding: 10px 0px 0px 0px;
         display: flex;
-        padding: 20px 0px 20px 0px;
         background: #f8fafa;
     }
     .total_amount{
@@ -552,9 +649,26 @@ export default {
         width: 150px;
         text-align: left;
     }
+    .member_point{
+        display: flex;
+        padding: 10px 0px 0px 0px;
+        background: #f8fafa;
+    }
+    .remain_point{
+        display: flex;
+        padding: 10px 0px 0px 0px;
+        background: #f8fafa;
+    }
+    .final_payment{
+        display: flex;
+        padding: 10px 0px 10px 0px;
+        background: #f8fafa;
+        color: red;
+    }
     .payment_btn{
         width: 150px;
         height: 50px;
+        line-height: 50px;
         background: black;
         color: white;
         border-radius: 3px;

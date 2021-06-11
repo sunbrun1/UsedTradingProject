@@ -5,20 +5,23 @@ var fs = require('fs');
 
 
 /* 마이페이지-내게시물-초기화면 */
-exports.myProduct = async (req,res) => {
+exports.getMyProduct = async (req,res) => {
 	/* jwt 토큰 */
 	const accessToken = req.cookies.accessToken; // 엑세스토큰
 	const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
 	const loginId = decode.member_id; // 로그인 ID
 	/* req.query */
-	const {limit, offset} = req.query
+	const {limit, offset} = req.query;
 
 	/* 내 게시물 조회 쿼리 */
-	const [myProduct] = await conn.query("SELECT * FROM product WHERE member_id = ? ORDER BY id DESC LIMIT ? OFFSET ?;", [loginId, parseInt(limit), parseInt(offset)]);
+	const [productInfo] = await conn.query("SELECT * FROM product " +  
+										  "WHERE member_id = ? " +
+										  "ORDER BY id DESC LIMIT ? OFFSET ?;", 
+										  [loginId, parseInt(limit), parseInt(offset)]);
 
 	return res.send({
 		success:true,
-		myProduct:myProduct,
+		productInfo:productInfo,
 	})
 }
 

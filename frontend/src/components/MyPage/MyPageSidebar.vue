@@ -20,8 +20,8 @@
             return{ 
                 sidebarMenu: [
                     { menuName : "마이페이지 홈", menuPath : "/mypage", color : false},
-                    { menuName : "내 상품", menuPath : "/mypage/myproduct/list", color : false},
-                    { menuName : "거래상태", menuPath : "/abcd", color : false},
+                    { menuName : "내 상품", menuPath : "/mypage/myproduct/list?no=1", color : false},
+                    { menuName : "거래상태", menuPath : "/mypage/transactionStatus", color : false},
                     { menuName : "관심목록", menuPath : "/mypage/mywishlist?no=1", color : false},
                     { menuName : "포인트", menuPath : "/mypage/mypoint", color : false},
                     { menuName : "개인정보", menuPath : "/mypage/memberinfo/pwcheck", color : false},
@@ -40,7 +40,7 @@
                 else if(this.$route.path == "/mypage/myproduct/list"){
                     this.sidebarMenu[1].color = true;
                 }
-                else if(this.$route.path == "/abcd"){
+                else if(this.$route.path == "/mypage/transactionStatus"){
                     this.sidebarMenu[2].color = true;
                 }
                 else if(this.$route.path == "/mypage/mywishlist"){
@@ -66,11 +66,12 @@
 <style scoped>
     body{
         padding-top: 196px;
+        font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     }
     /* 사이드바 */
     .sidebar_wrap{
         width: 179px;
-        height: 400px;
+        height: auto;
         padding: 19px;
         border: solid 2px #DADCE0;
         margin-top: 30px;
@@ -78,8 +79,8 @@
     /* 사이드바 제목 */
     .sidebar_title{
         width: 179px;
-        height: 40px;
-        line-height: 40px;
+        height: 26px;
+        line-height: 28px;
         text-align: left;
         padding: 0px 0px 15px 0px;
         border-bottom: 1px #666 solid;

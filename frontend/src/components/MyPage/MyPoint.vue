@@ -91,7 +91,6 @@ export default {
             .catch((err)=>{
                 console.log(err);
             })
-
         },
         onPayment() {
             var IMP = window.IMP;

@@ -35,7 +35,7 @@
 
 
                     <!-- 상품이름 -->
-                    <div class="name" @click="test">
+                    <div class="name">
                         {{title}}
                     </div>
                     <!-- 상품 가격 -->
@@ -123,8 +123,6 @@
 <script>
 import Loginmodal from '@/components/Member/Login_modal'; 
 import Header from '@/components/Header.vue'
-import axios from 'axios';
-
 export default {
     components:{Loginmodal,Header},
     data(){
@@ -156,33 +154,10 @@ export default {
         }
     },
     mounted() {
-        this.loginCheck();
-         /* 1. 가맹점 식별하기 */
-           
+        this.loginCheck();   
 	},
 	methods:{
-        test(){
-            let data = {
-                    imp_uid: "1",
-                    merchant_uid: "2"
-                }
-            this.$axios.post("http://localhost:3000/api/payments/complete", data)
-            .then((res)=>{
-                switch(res.data.status) {
-                    case "vbankIssued":
-                        // 가상계좌 발급 시 로직
-                        alert("가상계좌 발급 성공");
-                        break;
-                    case "success":
-                        // 결제 성공 시 로직
-                        alert("결제에 성공하였습니다.");
-                        break;
-                }
-            })
-            .catch((err)=>{
-                console.log(err);
-            }) 
-        },
+
          // 로그인창 열기
         openModal() {
             this.modal = true;

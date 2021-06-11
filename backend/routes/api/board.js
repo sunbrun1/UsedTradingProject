@@ -61,8 +61,8 @@ exports.upload = async (req,res)  =>{
 		
 		try{
 			/* 상품 업로드 쿼리 */
-			const [data] = await conn.query("INSERT INTO product (member_id, thumbnail, title, price, content, category_large_name, category_medium_name, area, state, date, ea, views, dibs) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-			[loginId, files[0].filename ,title , price, content, select_category_large, select_category_medium, area, state, date, ea, 0, 0]);
+			const [data] = await conn.query("INSERT INTO product (member_id, thumbnail, title, price, content, category_large_name, category_medium_name, area, state, date, ea, views, dibs, transaction_status) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+			[loginId, files[0].filename ,title , price, content, select_category_large, select_category_medium, area, state, date, ea, 0, 0, "판매등록"]);
 			const productNo = data.insertId // 상품 넘버
 
 			/* 상품 이미지 업로드 쿼리 */
@@ -105,8 +105,8 @@ exports.areaSelect = async (req,res)  =>{
 /* 메인화면 상품 리스트 조회 */
 exports.list = async (req,res) => { //리스트 모듈 router 에서 호출
 	try{
-		const [newProduct] = await conn.query("SELECT * FROM product ORDER BY id DESC LIMIT 10;");
-		const [bestProduct] = await conn.query("SELECT * FROM product ORDER BY dibs DESC LIMIT 10;");
+		const [newProduct] = await conn.query("SELECT * FROM product WHERE transaction_status = ? ORDER BY id DESC LIMIT 10;", "판매등록");
+		const [bestProduct] = await conn.query("SELECT * FROM product WHERE transaction_status = ? ORDER BY dibs DESC LIMIT 10;", "판매등록");
 		return res.send({
 			success:true,
 			newProduct:newProduct,
@@ -126,7 +126,7 @@ exports.bySearch = async (req,res) => {
 		//카테고리 전체로 검색한 경우
 		if(categoryLargeId == "all"){ 
 			/* 검색별 상품리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product WHERE title LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?;",["%"+search+"%", parseInt(limit), parseInt(offset)]);
+			const [product] = await conn.query("SELECT * FROM product WHERE title LIKE ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",["%"+search+"%", "판매등록", parseInt(limit), parseInt(offset)]);
 
 			return res.send({
 				success:true,
@@ -141,7 +141,7 @@ exports.bySearch = async (req,res) => {
 			const categoryLargeName = data[0].category_large_name; // 카테고리 대분류 이름
 
 			/* 카테고리,검색별 상품리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND title LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "%"+search+"%", parseInt(limit), parseInt(offset)]);
+			const [product] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND title LIKE ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "%"+search+"%", "판매등록", parseInt(limit), parseInt(offset)]);
 
 			return res.send({
 				success:false,
@@ -170,7 +170,7 @@ exports.byCategory = async (req,res) => {
 			const categoryLargeName = data[0].category_large_name; //카테고리 대분류 이름
 
 			/* 카테고리별 상품 리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product  WHERE category_large_name = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, parseInt(limit), parseInt(offset)]);
+			const [product] = await conn.query("SELECT * FROM product  WHERE category_large_name = ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "판매완료", parseInt(limit), parseInt(offset)]);
 
 			return res.send({
 				success:true,
@@ -187,7 +187,7 @@ exports.byCategory = async (req,res) => {
 			const categoryMediumName = data[0].category_medium_name //카테고리 중분류 이름
 
 			/* 카테고리별 상품 리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND category_medium_name = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName,categoryMediumName, parseInt(limit), parseInt(offset)]);
+			const [product] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND category_medium_name = ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName,categoryMediumName, "판매완료", parseInt(limit), parseInt(offset)]);
 
 			return res.send({
 				success:false,
