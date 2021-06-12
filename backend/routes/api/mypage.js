@@ -26,30 +26,112 @@ exports.getMyProduct = async (req,res) => {
 }
 /* 거래상태 */
 exports.getTransactionStatus = async (req,res) => {
-	/* jwt 토큰 */
-	const accessToken = req.cookies.accessToken; // 엑세스토큰
-	const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
-	const loginId = decode.member_id; // 로그인 ID
-
-	/* 거래상태 조회 */
-	const [productInfo] = await conn.query("SELECT A.product_no, A.seller_id, A.buyer_id, B.thumbnail, B.title, B.price, B.date, B.dibs, B.area FROM payment_info AS A " +
-											"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
-											"WHERE A.seller_id = ? OR A.buyer_id = ?;",
-										    [loginId, loginId]);
-	let transactionStatus = [];
-	for(let i=0; i<productInfo.length; i++){
-		if(productInfo[i].seller_id == loginId){
-			transactionStatus.push("판매중");
+	try{
+		/* jwt 토큰 */
+		const accessToken = req.cookies.accessToken; // 엑세스토큰
+		const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
+		const loginId = decode.member_id; // 로그인 ID
+		/* req.query */
+		const { orderBy } = req.query;
+		if(orderBy == "전체"){
+			/* 거래상태 조회 */
+			const [productInfo] = await conn.query("SELECT A.product_no, A.seller_id, A.buyer_id, B.thumbnail, B.title, B.price, B.date, B.dibs, B.area, B.transaction_status FROM payment_info AS A " +
+													"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+													"WHERE A.seller_id = ? OR A.buyer_id = ?;",
+													[loginId, loginId]);
+			let transactionStatus = [];
+			for(let i=0; i<productInfo.length; i++){
+				if(productInfo[i].transaction_status == "판매완료"){
+					if(productInfo[i].seller_id == loginId){
+						transactionStatus.push("판매완료");
+					}
+					else if(productInfo[i].buyer_id == loginId){
+						transactionStatus.push("구매완료");
+					}
+				}
+				else{
+					if(productInfo[i].seller_id == loginId){
+						transactionStatus.push("판매중");
+					}
+					else if(productInfo[i].buyer_id == loginId){
+						transactionStatus.push("구매중");
+					}
+				}
+			}
+			return res.send({
+				success:true,
+				productInfo:productInfo,
+				transactionStatus:transactionStatus
+			})
 		}
-		else{
-			transactionStatus.push("구매중");
+		if(orderBy == "판매중"){
+			/* 거래상태 조회 */
+			const [productInfo] = await conn.query("SELECT A.product_no, A.seller_id, A.buyer_id, B.thumbnail, B.title, B.price, B.date, B.dibs, B.area, B.transaction_status FROM payment_info AS A " +
+													"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+													"WHERE A.seller_id = ? AND B.transaction_status = ? " +
+													"ORDER BY A.payment_no DESC;", [loginId, "판매중"]);
+			let transactionStatus = [];
+			for(let i=0; i<productInfo.length; i++){
+				transactionStatus.push("판매중");
+			}
+			return res.send({
+				success:true,
+				productInfo:productInfo,
+				transactionStatus:transactionStatus
+			})
+		}
+		if(orderBy == "구매중"){
+			/* 거래상태 조회 */
+			const [productInfo] = await conn.query("SELECT A.product_no, A.seller_id, A.buyer_id, B.thumbnail, B.title, B.price, B.date, B.dibs, B.area, B.transaction_status FROM payment_info AS A " +
+													"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+													"WHERE A.buyer_id = ? AND B.transaction_status = ? " +
+													"ORDER BY A.payment_no DESC;", [loginId, "판매중"]);
+			let transactionStatus = [];
+			for(let i=0; i<productInfo.length; i++){
+				transactionStatus.push("구매중");
+			}
+			return res.send({
+				success:true,
+				productInfo:productInfo,
+				transactionStatus:transactionStatus
+			})
+		}
+		if(orderBy == "판매완료"){
+			/* 거래상태 조회 */
+			const [productInfo] = await conn.query("SELECT A.product_no, A.seller_id, A.buyer_id, B.thumbnail, B.title, B.price, B.date, B.dibs, B.area, B.transaction_status FROM payment_info AS A " +
+													"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+													"WHERE A.seller_id = ? AND B.transaction_status = ? " +
+													"ORDER BY A.payment_no DESC;", [loginId, "판매완료"]);
+			let transactionStatus = [];
+			for(let i=0; i<productInfo.length; i++){
+				transactionStatus.push("판매완료");
+			}
+			return res.send({
+				success:true,
+				productInfo:productInfo,
+				transactionStatus:transactionStatus
+			})
+		}
+		if(orderBy == "구매완료"){
+			/* 거래상태 조회 */
+			const [productInfo] = await conn.query("SELECT A.product_no, A.seller_id, A.buyer_id, B.thumbnail, B.title, B.price, B.date, B.dibs, B.area, B.transaction_status FROM payment_info AS A " +
+													"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+													"WHERE A.buyer_id = ? AND B.transaction_status = ? " +
+													"ORDER BY A.payment_no DESC;", [loginId, "판매완료"]);
+			let transactionStatus = [];
+			for(let i=0; i<productInfo.length; i++){
+				transactionStatus.push("구매완료");
+			}
+			return res.send({
+				success:true,
+				productInfo:productInfo,
+				transactionStatus:transactionStatus
+			})
 		}
 	}
-	return res.send({
-		success:true,
-		productInfo:productInfo,
-		transactionStatus:transactionStatus
-	})
+	catch(err){
+		console.log(err);
+	}
 }
 /* 마이페이지-관심목록 */
 exports.getWishList = async (req,res) => {

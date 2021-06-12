@@ -21,7 +21,7 @@
                 sidebarMenu: [
                     { menuName : "마이페이지 홈", menuPath : "/mypage", color : false},
                     { menuName : "내 상품", menuPath : "/mypage/myproduct/list?no=1", color : false},
-                    { menuName : "거래상태", menuPath : "/mypage/transactionStatus", color : false},
+                    { menuName : "거래상태", menuPath : "/mypage/transactionStatus/list?no=1", color : false},
                     { menuName : "관심목록", menuPath : "/mypage/mywishlist?no=1", color : false},
                     { menuName : "포인트", menuPath : "/mypage/mypoint", color : false},
                     { menuName : "개인정보", menuPath : "/mypage/memberinfo/pwcheck", color : false},
@@ -40,7 +40,7 @@
                 else if(this.$route.path == "/mypage/myproduct/list"){
                     this.sidebarMenu[1].color = true;
                 }
-                else if(this.$route.path == "/mypage/transactionStatus"){
+                else if(this.$route.path == "/mypage/transactionStatus/list"){
                     this.sidebarMenu[2].color = true;
                 }
                 else if(this.$route.path == "/mypage/mywishlist"){

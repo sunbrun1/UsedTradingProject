@@ -9,7 +9,18 @@
                 </div>
                 <!-- 거래상태 wrap -->
                 <div class="main_wrap">
-                    <h2>거래상태</h2>
+                    <div class="main_title"> 
+                        <h2>거래상태</h2>
+                        <div class="option">
+                            <select v-model="option" @click="[getTransactionStatus(),pagingCount()]">
+                                <option value="전체">전체</option>
+                                <option value="판매중">판매중</option>
+                                <option value="구매중">구매중</option>
+                                <option value="판매완료">판매완료</option>
+                                <option value="구매완료">구매완료</option>
+                            </select>
+                        </div>
+                    </div>
                     <!-- 거래상태 컨테이너 -->
                     <div class="main_container">
                         <div class="status_list" v-for="(item, index) in productInfo" :key="index">
@@ -53,7 +64,7 @@
                             <ul>
                                 <!-- 이전 버튼 -->
                                 <ul>
-                                    <router-link :to="{ path: '/mypage/mywishlist', query: { no: (startPageIndex - 1) * listRowCount}}" @click.native="movePage(endPageIndex - 1)">
+                                    <router-link :to="{ path: '/mypage/transactionStatus/list', query: { no: (startPageIndex - 1) * listRowCount}}" @click.native="movePage(endPageIndex - 1)">
                                         <li class="page-item" v-if="prev">
                                             <span aria-hidden="true">&laquo;</span>      
                                         </li>
@@ -62,7 +73,7 @@
                                 
                                 <!-- 페이징 -->
                                 <ul v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
-                                    <router-link :to="{ path: '/mypage/mywishlist', query: { no: (startPageIndex+index) -1}}">
+                                    <router-link :to="{ path: '/mypage/transactionStatus/list', query: { no: (startPageIndex+index) -1}}">
                                         <li class="page-item">    
                                             {{startPageIndex+ index -1 }}
                                         </li>
@@ -71,7 +82,7 @@
 
                                 <!-- 다음버튼 -->
                                 <ul>
-                                    <router-link :to="{ path: '/mypage/mywishlist', query: { no: (endPageIndex + 1) * listRowCount}}" @click.native="movePage(endPageIndex + 1)">
+                                    <router-link :to="{ path: '/mypage/transactionStatus/list', query: { no: (endPageIndex + 1) * listRowCount}}" @click.native="movePage(endPageIndex + 1)">
                                         <li class="page-item" v-if="next">
                                             <span aria-hidden="true">&raquo;</span>
                                         </li>
@@ -89,26 +100,28 @@
 <script>
 import Header from '@/components/Header.vue'
 import MyPageSidebar from '@/components/MyPage/MyPageSidebar.vue'
+import axios from 'axios';
 
 export default {
     components: {Header,MyPageSidebar},
     data(){
         return{
-            productInfo:"",
-            transactionStatus:"",
-
+            /* 상품정보 */
+            productInfo:"", 
+            transactionStatus:"", // 거래상태
+            /* 옵션 */
+            option:"전체",
             /* 페이징 */
             totalListItemCount: 0, //내 게시물 개수
             listRowCount: 12, // 한 페이지당 출력할 게시물 개수
             pageLinkCount: 10, //페이징 단위 
             currentPageIndex: 1, //현재 페이지
-
             pageCount: 0, //출력할 페이지 버튼 개수
             startPageIndex: 0,
             endPageIndex: 0,
             prev: false, //이전버튼
             next: false, //다음버튼
-
+            /* limit offset */
             pageLimit : 12, //pageLimit = listRowCount sql 2개만 출력
             pageOffset : 0 
         }
@@ -117,70 +130,65 @@ export default {
         '$route' (to, from) { 
             if(to.query.no != from.query.no){
                 this.getTransactionStatus();
-                this.myProductCount();
+                this.pagingCount();
             }
         }
     },
     mounted() {
 		this.getTransactionStatus();
-        this.myProductCount();
+        this.pagingCount();
 	},
 	methods:{
         /* 페이지 이동 */
         movePage( param ) {
             this.currentPageIndex = param;
-            this.myProductCount();
-            this.initUI();
+            this.pagingCount();
         },
         /* 상품 데이터 조회 */
-        getTransactionStatus() {
-            /* 로그인 여부 확인 */
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then(()=>{
-                this.$axios.get("http://localhost:3000/api/mypage/getTransactionStatus/list",{
+        async getTransactionStatus() {
+            try{
+                /* 로그인 유지 */
+                await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+                /* 상품 리스트 조회 */
+                const res = await axios.get("http://localhost:3000/api/mypage/getTransactionStatus/list",{
                     withCredentials: true,
                     params: {
+                        no : this.$route.query.no,
                         limit : this.pageLimit,
-                        offset : (this.$route.query.no - 1) * this.pageLimit
+                        offset : (this.$route.query.no - 1) * this.pageLimit,
+                        orderBy : this.option
                     }
                 })
-                .then((res)=>{
-                    this.productInfo = res.data.productInfo; // 상품정보
-                    this.transactionStatus = res.data.transactionStatus;
-                    console.log(this.productInfo)
-                    console.log(this.transactionStatus)
+                this.productInfo = res.data.productInfo; // 상품정보
+                this.transactionStatus = res.data.transactionStatus; // 거래상태
 
-                    // 신규상품 등록 시간
-                    for(let i=0;  i<this.productInfo.length; i++){
-                        this.productInfo[i].date = this.timeForToday(this.productInfo[i].date)
+                /* 상품 등록 시간 */
+                for(let i=0;  i<this.productInfo.length; i++){
+                    this.productInfo[i].date = this.timeForToday(this.productInfo[i].date)
+                }  
+            }
+            catch(err){
+                console.log(err);
+            }
+		},
+        /* 페이징 */
+        async pagingCount(){
+            try{
+                /* 로그인 유지 */
+                await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            
+                const res = await axios.get("http://localhost:3000/api/paging/transactionStatusCount",{
+                    withCredentials: true,
+                    params: {
+                        orderBy : this.option
                     }
                 })
-                .catch((err)=>{
-                    console.log(err);
-                })
-            })
-            .catch((err)=>{
+                this.totalListItemCount = res.data.count;  // 내 상품 총 개수
+                this.initUI();
+            }
+            catch(err){
                 console.log(err);
-            })
-		},
-        /* 초기 페이징 화면 */
-        myProductCount(){
-            /* 로그인 여부 확인 */
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-                .then(()=>{
-                this.$axios.get("http://localhost:3000/api/paging/myWishListCount",{withCredentials: true})
-                .then((res)=>{
-                    this.totalListItemCount = res.data.count[0].count; 
-                    console.log(this.totalListItemCount)
-                    this.initUI();
-                })
-                .catch((err)=>{
-                    console.log(err);
-                })
-            })
-            .catch((err)=>{
-                console.log(err);
-            })
+            }  
         },
       
         /* 페이징 계산 */
@@ -255,10 +263,28 @@ export default {
         margin: 30px 0px 0px 30px;
         padding-top: 196px;
     }
+    .main_title{
+        display: flex;
+    }
     /* h2 거래상태 */
     .main_wrap h2{
         text-align: left;
-        padding-bottom: 30px;
+        padding: 0px 20px 30px 0px;
+    }
+    .option{
+        width: 100px;
+        height: 30px;
+        border: solid 1px #DADCE0;
+        border-radius: 3px;
+    }
+    .option select{
+        width: 90px;
+        height: 30px;
+        padding: 5px;
+        float: left;
+        font-size: 14px;
+        border: 0px;
+        outline: 0px;
     }
     /* 메인 container */
     .main_container{
@@ -284,6 +310,7 @@ export default {
     }
     /* 상품 이름 */
     .name{
+        width: 150px;
         overflow:hidden; 
         text-overflow:ellipsis; 
         white-space:nowrap;
@@ -292,12 +319,13 @@ export default {
     }
     /* 거래상태 */
     .status{
-        width: 50px;
+        width: auto;
         height: 25px;
         line-height: 25px;
+        padding: 3px;
         background: #19b2f5;
         color: white;
-        font-size: 14px;
+        font-size: 12px;
         border-radius: 50px;
     }
     /* 가격 */
@@ -347,6 +375,7 @@ export default {
         float: left;
         width: 30px;
         height: 30px;
+        line-height: 30px;
         color: #9b99a9;
         border: solid 1px rgb(204, 204, 204);;
         margin: 10px 5px 10px 5px;

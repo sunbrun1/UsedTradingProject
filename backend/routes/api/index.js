@@ -46,6 +46,7 @@ router.get("/paging/bycategory",paging.byCategoryCount); // 카테고리별 게�
 router.get("/paging/bysearch",paging.bySearchCount); // 검색별 게시물 카운트(get)
 router.get("/paging/myProductCount",paging.myProductCount); // 게시물 카운트(get)
 router.get("/paging/myWishListCount",paging.myWishListCount); // 관심목록 리스트 카운트(get)
+router.get("/paging/transactionStatusCount",paging.transactionStatusCount); // 거래상태 카운트(get)
 
 /* 아임포트 api */
 router.post("/payments/complete", iamport.payments); //아임포트

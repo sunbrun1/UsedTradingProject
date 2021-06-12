@@ -91,3 +91,73 @@ exports.myWishListCount = async (req,res) => {
 		count:count
 	})
 }
+
+/* 거래상태 페이징 */
+exports.transactionStatusCount = async (req,res) => {
+	/* jwt 토큰 */
+	const accessToken = req.cookies.accessToken; // 엑세스토큰
+	const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
+	const loginId = decode.member_id; // 로그인 ID
+	/* req.query */
+	const { orderBy } = req.query;
+	if(orderBy == "전체"){
+		/* 거래상태 조회 */
+		const [data] = await conn.query("SELECT count(*) AS count FROM payment_info AS A " +
+										"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+										"WHERE A.seller_id = ? OR A.buyer_id = ?;",[loginId, loginId]);
+		const count = data[0].count // 상품 총 개수
+
+		return res.send({
+			success:true,
+			count:count
+		})
+	}
+	if(orderBy == "판매중"){
+		/* 거래상태 조회 */
+		const [data] = await conn.query("SELECT count(*) AS count FROM payment_info AS A " +
+										"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+										"WHERE A.seller_id = ? AND B.transaction_status = ?", [loginId, "판매중"]);
+		const count = data[0].count // 상품 총 개수
+
+		return res.send({
+			success:true,
+			count:count
+		})
+	}
+	if(orderBy == "구매중"){
+		/* 거래상태 조회 */
+		const [data] = await conn.query("SELECT count(*) AS count FROM payment_info AS A " +
+										"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+										"WHERE A.buyer_id = ? AND B.transaction_status = ?", [loginId, "판매중"]);
+		const count = data[0].count // 상품 총 개수
+
+		return res.send({
+			success:true,
+			count:count
+		})
+	}
+	if(orderBy == "판매완료"){
+		/* 거래상태 조회 */
+		const [data] = await conn.query("SELECT count(*) AS count FROM payment_info AS A " +
+										"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+										"WHERE A.seller_id = ? AND B.transaction_status = ?", [loginId, "판매완료"]);
+		const count = data[0].count // 상품 총 개수
+
+		return res.send({
+			success:true,
+			count:count
+		})
+	}
+	if(orderBy == "구매완료"){
+		/* 거래상태 조회 */
+		const [data] = await conn.query("SELECT count(*) AS count FROM payment_info AS A " +
+										"LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
+										"WHERE A.buyer_id = ? AND B.transaction_status = ?", [loginId, "판매완료"]);
+		const count = data[0].count // 상품 총 개수
+
+		return res.send({
+			success:true,
+			count:count
+		})
+	}
+}

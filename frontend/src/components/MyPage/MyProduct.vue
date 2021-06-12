@@ -138,7 +138,7 @@ export default {
                 await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
 
                 /* 내 상품 리스트 조회 */
-                const productInfo = await axios.get("http://localhost:3000/api/mypage/getMyProduct/list",{
+                const res = await axios.get("http://localhost:3000/api/mypage/getMyProduct/list",{
                     withCredentials: true,
                     params: {
                         no : this.$route.query.no,
@@ -146,8 +146,8 @@ export default {
                         offset : (this.$route.query.no - 1) * this.pageLimit
                     }
                 })
-                this.productInfo = productInfo.data.productInfo; // 상품 정보
-                }
+                this.productInfo = res.data.productInfo; // 상품 정보
+            }
             catch(err){
                 console.log(err);
             }
@@ -159,8 +159,8 @@ export default {
                 await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
 
                 /* 내 상품 총 개수 조회 */
-                const count = await axios.get("http://localhost:3000/api/paging/myProductCount",{withCredentials: true})
-                this.totalListItemCount = count.data.count; // 내 상품 총 개수
+                const res = await axios.get("http://localhost:3000/api/paging/myProductCount",{withCredentials: true})
+                this.totalListItemCount = res.data.count; // 내 상품 총 개수
                 this.initUI();
             }
             catch(err){
@@ -237,7 +237,8 @@ export default {
                     if(res.data.success){
                         this.$router.go({path:'/mypage/myproduct'});
                     }
-                }else{ // 취소
+                }
+                else{ // 취소
                     return false;
                 }
             }

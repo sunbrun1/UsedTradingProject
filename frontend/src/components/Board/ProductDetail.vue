@@ -59,21 +59,7 @@
                     <div class="area">
                         <span>거래 지역</span> {{area}}
                     </div>
-                    <!-- 상품 수량 -->
-                    <div class="ea_container">
-                        <div class="title">
-                            수량
-                        </div>
-                        <div class="minus" @click="minus">
-                            <font-awesome-icon icon="minus" class="font"/>
-                        </div>
-                        <div class="ea">
-                            {{ea}} 
-                        </div>
-                        <div class="plus" @click="plus">
-                            <font-awesome-icon icon="plus" class="font"/>
-                        </div>
-                    </div>
+
 
                     <!-- 바로구매,연락하기,찜 버튼  -->
                     <!-- 다른 유저 게시물인 경우 -->
@@ -472,33 +458,7 @@ body{
     width: 75px;
     font-size: 22px;
 }
-.minus{
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    text-align: center;
-    border-left: solid 1px #DADCE0;
-    border-top: solid 1px #DADCE0;
-    border-bottom: solid 1px #DADCE0;
-    cursor: pointer;
-}
-.ea{
-    width: 50px;
-    height: 30px;
-    line-height: 30px;
-    text-align: center;
-    border: solid 1px #DADCE0;
-}
-.plus{
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    text-align: center;
-    border-right: solid 1px #DADCE0;
-    border-top: solid 1px #DADCE0;
-    border-bottom: solid 1px #DADCE0;
-    cursor: pointer;
-}
+
 /* 바로구매,연락하기,찜 버튼  */
 .button_wrap{
     padding-top: 12px;
@@ -565,6 +525,7 @@ body{
 /* 내용 */
 .product_content_content{
     width: 1180px;
+    height: 500px;
     margin: auto;
     text-align: left;
     padding-top: 30px;

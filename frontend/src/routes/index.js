@@ -101,7 +101,7 @@ export default new Router({ //라우터 연결
 			,component:memberInfo,
 		}
 		,{
-			path:'/mypage/transactionStatus' // 개인정보 확인/수정
+			path:'/mypage/transactionStatus/list' // 개인정보 확인/수정
 			,name:transactionStatus
 			,component:transactionStatus,
 		}

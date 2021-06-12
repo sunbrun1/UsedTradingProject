@@ -342,6 +342,8 @@ export default {
         totalPay(){
             if(this.price > this.memberPoint){
                 this.remainPoint = 0;
+                console.log(this.price)
+                console.log(this.memberPoint)
                 return this.totalMoney = this.price - this.memberPoint;
             }
             if(this.price < this.memberPoint){
