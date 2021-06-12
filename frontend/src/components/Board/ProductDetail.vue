@@ -3,7 +3,7 @@
         <Header></Header>
         <body>
             
-            <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
+            <Loginmodal @close="closeModal" v-if="modal"></Loginmodal>
             <div class="product_wrap">
                 <!-- 사진 슬라이드 -->
                 <div class="images_container">
@@ -81,11 +81,9 @@
                     <!-- 내 게시물인 경우  -->
                     <div class="button_wrap" v-else>
                         <!-- 라우터 이동 -->
-                        <router-link to="/mypage/myproduct/list">
-                            <div class="mypage">
-                                <button>마이페이지 이동</button>
-                            </div>
-                        </router-link>
+                        <div class="mypage" @click="mypage">
+                            <button>마이페이지 이동</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -109,12 +107,13 @@
 <script>
 import Loginmodal from '@/components/Member/Login_modal'; 
 import Header from '@/components/Header.vue'
+import axios from 'axios';
+
 export default {
     components:{Loginmodal,Header},
     data(){
         return{
-            modal:false,
-            product:'', // 상품 데이터
+            /* 상품정보 */
             title:'',  // 상품 제목
             price:'', // 상품 가격
             content:'', // 상품 내용
@@ -125,12 +124,15 @@ export default {
             views:'', // 상품 조회수
             date:'', // 상품 등록 시간
             dibs:0, // 찜 개수
-            ea:1, // 상품 개수
             image:'', //상품 이미지
+            /* 이미지 슬라이드 */
             imageSlider:0,
-            sliderStartIndex:0,
-            sliderEndIndex:4,
-            currentNumber: 0, // 이미지 인덱스 값
+            sliderStartIndex:0, // 시작인덱스
+            sliderEndIndex:4, // 종료인덱스
+            currentNumber: 0, // 현재 인덱스 값
+            /* 로그인모달 상태 */
+            modal:false,
+            /* 상태 값*/
             myProductCheck:true, // 내 게시물인지 확인하는 변수
             memberNum:'', //유저 ID 넘버
             dibsState:false, // 찜 상태
@@ -140,37 +142,41 @@ export default {
         }
     },
     mounted() {
-        this.loginCheck();   
+        this.getProductInfo();   
 	},
 	methods:{
-
-         // 로그인창 열기
+        /* 로그인창 열기 */
         openModal() {
             this.modal = true;
         },
-        // 로그인창 닫기
+        /* 로그인창 닫기 */
         closeModal() {
             this.modal = false;
         },
-        /* 상품 데이터 조회 */
-		getList() {
-            let productNo = this.$route.params.no; // 상품 넘버
-			this.$axios.get("http://localhost:3000/api/board/product/" + productNo, {withCredentials: true})
-			.then((res)=>{
-                this.product = res.data.product[0]; // 상품 데이터
-                this.title = this.product.title; // 상품 제목
-                this.price = this.product.price; // 상품 가격
-                this.content = this.product.content; // 상품 내용
-                this.category_large_name = this.product.category_large_name; // 상품 대분류 이름
-                this.category_medium_name = this.product.category_medium_name; // 상품 중분류 이름
-                this.state = this.product.state; // 상품 상태 
-                this.area = this.product.area; // 상품 거래지역 
-                this.productCount = this.product.ea
-                this.views = this.product.views; // 상품 조회수
-                this.date = this.timeForToday(this.product.date)
-                this.dibs = this.product.dibs; // 상품 찜 개수
-                this.image = this.product.image_name.split(','); //상품 이미지
+        /* 상품 정보 조회 */
+		async getProductInfo() {
+            try{
+                /* 로그인여부 확인, 로그인유지 */
+                await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+
+                const productNo = this.$route.params.no; // 상품 넘버
+                const res = await axios.get("http://localhost:3000/api/board/product/" + productNo, {withCredentials: true})
+                /* 상품정보 */
+                const productInfo = res.data.productInfo[0]; // 상품 데이터
+                this.title = productInfo.title; // 상품 제목
+                this.price = productInfo.price; // 상품 가격
+                this.content = productInfo.content; // 상품 내용
+                this.category_large_name = productInfo.category_large_name; // 상품 대분류 이름
+                this.category_medium_name = productInfo.category_medium_name; // 상품 중분류 이름
+                this.state = productInfo.state; // 상품 상태 
+                this.area = productInfo.area; // 상품 거래지역 
+                this.views = productInfo.views; // 상품 조회수
+                this.date = this.timeForToday(productInfo.date)
+                this.dibs = productInfo.dibs; // 상품 찜 개수
+                this.image = productInfo.image_name.split(','); //상품 이미지
+                /* 상품 이미지 슬라이드 */
                 this.imageSlider = this.image.slice(this.sliderStartIndex,this.sliderEndIndex); // 상품 이미지 슬라이드
+                /* 유저넘버 */
                 this.memberNo = res.data.memberNo; //유저 ID 넘버
 
                 if(res.data.myProduct){ // 내 게시물인 경우
@@ -186,12 +192,10 @@ export default {
                 else{ // 찜하기 안한 상태
                     this.dibsState = false;
                 }
-
                 this.views = this.views + 1;
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err);
+            }
 		},
 
         /* 이미지 이전 */ 
@@ -206,83 +210,61 @@ export default {
             this.sliderEndIndex = this.sliderEndIndex + 1;
             this.imageSlider = this.image.slice(this.sliderStartIndex,this.sliderEndIndex);
         },
+        /* 이미지 클릭 */
         imageClick(index){
             this.currentNumber = this.image.indexOf(this.imageSlider[index]);
         },
-        /* 수량 - */
-        minus(){
-            if(this.ea > 1 ){
-                this.ea = this.ea - 1;
-            }
+        /* 결제페이지 이동 */
+        paymentPage(){
+            const productNo = this.$route.params.no;
+            this.$router.push({ path: `/product/${productNo}/payment`});
         },
-        /* 수량 + */
-        plus(){
-            if(this.ea < this.productCount){
-                this.ea = this.ea + 1;
-            }
-        },
-         
-      
-        /* 연락하기  */
-        talk(){
-            /* 로그인 상태 확인 */
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then((res)=>{
+        /* 연락하기 페이지 이동 */
+        async talk(){
+            try{
+                /* 로그인여부 확인, 로그인유지 */
+                const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
                 if(res.data.success){ // 로그인 상태
-                    let memberNo = this.memberNo;
-                    let productId = this.$route.params.no;
-                    console.log(memberNo)
-                    console.log(productId)
-                    window.open('http://localhost:8081/talk/user/' + memberNo + "?isDirect=true&product_no=" + productId, "PopupWin", "width=380,height=670");
+                    const memberNo = this.memberNo; // 회원넘버
+                    const productNo = this.$route.params.no; // 상품넘버
+                    window.open('http://localhost:8081/talk/user/' + memberNo + "?isDirect=true&product_no=" + productNo, "PopupWin", "width=380,height=670");
                 }
                 else{ // 비로그인 상태
                     this.openModal();
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err);
+            }
         },
         /* 찜하기 */
-        dibsAdd(){
-            /* 로그인 상태 확인 */
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then((res)=>{
+        async dibsAdd(){
+            try{
+                /* 로그인여부 확인, 로그인유지 */
+                const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
                 if(res.data.success){ // 로그인 상태
-                    let productId = this.$route.params.no;
+                    const productNo = this.$route.params.no;
                     /* 찜하기 POST */
-                    this.$axios.get("http://localhost:3000/api/board/product/"+ productId + "/dibs", {withCredentials: true})
-                    .then((res)=>{
-                        if(res.data.success){ // 찜하기
-                            this.dibsState = true;
-                            this.dibs = this.dibs + 1
-                        }
-                        else{ // 찜하기 취소
-                            this.dibsState = false;
-                            this.dibs = this.dibs - 1
-                        }   
-                    })
-                    .catch((err)=>{
-                        console.log(err);
-                    })
+                const res = await axios.get("http://localhost:3000/api/board/product/"+ productNo + "/dibs", {withCredentials: true})
+                    if(res.data.success){ // 찜하기
+                        this.dibsState = true;
+                        this.dibs = this.dibs + 1
+                    }
+                    else{ // 찜하기 취소
+                        this.dibsState = false;
+                        this.dibs = this.dibs - 1
+                    }   
+                
                 }
                 else{ // 비로그인 상태
                     this.openModal();
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err);
+            }
         },
-        // 로그인여부 확인
-        loginCheck(){
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then(()=>{
-                this.getList(); // 로그인 여부 확인후 getList
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+        /* 마이페이지 이동 */
+        mypage(){
+            this.$router.push({ path: "/mypage/myproduct/list?no=1"});
         },
         /* 시간 계산 */
         timeForToday(value){
@@ -302,12 +284,6 @@ export default {
                 return betweenTimeDay + '일전';
             } 
         },
-        // 결제페이지 이동
-        paymentPage(){
-            const productNo = this.$route.params.no;
-            console.log(productNo)
-            this.$router.push({ path: `/product/${productNo}/payment`});
-        },
 	}
 }
 </script>
@@ -318,7 +294,6 @@ body{
     padding-top: 189px;
     background: #ffffff;
     font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    
 }
 /* 짧얇은 구분선 */
 .short_thin_line{

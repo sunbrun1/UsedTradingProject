@@ -66,7 +66,7 @@
                     <!-- 대분류 -->
                     <div class="category_large" >
                         <ul>
-                            <li v-for="(largeitem,index) in categoryList" :key="index" @click="[categoryList.medium = largeitem.medium, selectCategoryLarge(index)]">
+                            <li v-for="(largeitem,index) in categoryInfo" :key="index" @click="[categoryInfo.medium = largeitem.medium, selectCategoryLarge(index)]">
                                 {{largeitem.large[0][1]}}
                             </li>
                         </ul>
@@ -74,7 +74,7 @@
                     <!-- 중분류 -->
                     <div class="category_medium">
                         <ul>
-                            <li v-for="(mediumitem,index) in categoryList.medium" :key="index" class="category_medium_li" @click="selectCategoryMedium(index)">
+                            <li v-for="(mediumitem,index) in categoryInfo.medium" :key="index" class="category_medium_li" @click="selectCategoryMedium(index)">
                                 {{mediumitem[1]}}
                             </li>
                         </ul>
@@ -145,19 +145,6 @@
                     </div>
                 </div>
 
-                <!-- 상품 개수 -->
-                <div class="product_EA_wrap">
-                    <div class="product_EA_title" >
-                        수량
-                    </div>
-                    <div class="product_EA_input">
-                        <input type="text" v-model="ea">
-                    </div>
-                    <div class="product_EA">
-                        개
-                    </div>
-                </div>
-
                 <!-- 등록 -->
                 <div class="product-upload">
                     <button type="button" @click="upload">등록</button>
@@ -173,55 +160,59 @@
 <script>
 import Header from '@/components/Header.vue'
 import AreaModal from '@/components/Board/AreaModal.vue'
+import axios from 'axios';
 
 export default {
     components: {Header, AreaModal},
     data(){
         return{
+            /* 이미지 정보 */
             files:[],  //파일
-            title:'',  //제목
+            /* 상품 정보 */
+            title:"",  //제목
+            selectLargeName:"",  //선택한 카테고리 대분류
+            selectMediumName:"", //선택한 카테고리 중분류
+            area:"",  //거래지역
             price:0,  //가격
-            state:'',  //상품 상태
-            content:'',  //내용 
-            categoryList:[], //카테고리 데이터
-            selectLargeName:'',  //선택한 카테고리 대분류
-            selectMediumName:'', //선택한 카테고리 중분류
-            area:'',
-            ea:1,
+            state:"",  //상품 상태
+            content:"",  //내용 
+            /* 카테고리 데이터 */
+            categoryInfo:[], //카테고리 데이터
+            /* 글자수 */
             title_length:0, //제목 글자수
             content_length:0, //내용 글자수
+            /* 모달 상태 */
             modal:false, // 거래지역 검색 모달 상태 
         }
     },
+    mounted() {
+        this.stayLogin();
+        this.getCategoryInfo(); //접속시 카테고리 데이터 불러오기
+	},
     watch:{
         /* 상품 가격 숫자만 입력가능 */
         price(){
-                return this.price = this.price.replace(/[^0-9]/g, '');
-            }
-        },
-    mounted() {
-        this.loginCheck();
-        this.getCategory(); //접속시 카테고리 데이터 불러오기
-	},
+            return this.price = this.price.replace(/[^0-9]/g, '');
+        }
+    },
 	methods:{
-        /* 상품 이미지 배열 추가 */
+        /* 상품 이미지 추가 */
         imageUpload(){  //이미지 업로드 
-            if(this.files.length < 12){
-                for (let i = 0; i < this.$refs.files.files.length; i++) {
-                    this.files = [
-                        ...this.files, //이미지 추가
-                        {
-                            file: this.$refs.files.files[i], //실제 파일
-                            preview: URL.createObjectURL(this.$refs.files.files[i]), //이미지 미리보기
-                        }
-                    ];
-                }
+            if(this.files.length > 11){
+                return alert("이미지는 최대 12개 까지 업로드 할 수 있습니다.");
             }
-            else{
-                alert("이미지는 최대 12개 까지 업로드 할 수 있습니다.");
+
+            for (let i = 0; i < this.$refs.files.files.length; i++) {
+                this.files = [
+                    ...this.files, //이미지 추가
+                    {
+                        file: this.$refs.files.files[i], //실제 파일
+                        preview: URL.createObjectURL(this.$refs.files.files[i]), //이미지 미리보기
+                    }
+                ];
             }
         },
-        /* 이미지 삭제 */
+        /* 상품 이미지 삭제 */
         fileDeleteButton(index) { 
             this.files.splice(index, 1);
         },
@@ -246,22 +237,27 @@ export default {
             }
         },
 
-        /* 상품 카테고리 관련 */
-        getCategory() { // 카테고리 데이터 불러오기
-			this.$axios.get("http://localhost:3000/api/board/getcategory")
-			.then((res)=>{
-                this.categoryList = res.data.categoryList; 
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+        /* 카테고리 정보 조회 */
+        async getCategoryInfo() { 
+            try{
+                /* 카테고리 정보 조회 */
+                const res = await axios.get("http://localhost:3000/api/board/getCategoryInfo");
+                if(res.data.success){
+                    this.categoryInfo = res.data.categoryInfo; 
+                }
+            }
+            catch(err){
+                console.log(err);
+            }
 		},
-        selectCategoryLarge(index){ // 대분류 카테고리 선택 함수
+        /* 대분류 카테고리 선택 */
+        selectCategoryLarge(index){ 
             this.selectMediumName = '';
-            this.selectLargeName=this.categoryList[index].large[0][1];
+            this.selectLargeName=this.categoryInfo[index].large[0][1];
         },
-        selectCategoryMedium(index){ // 중분류 카테고리 선택 함수
-            this.selectMediumName=this.categoryList.medium[index][1];
+        /* 중분류 카테고리 선택 */
+        selectCategoryMedium(index){ 
+            this.selectMediumName=this.categoryInfo.medium[index][1];
         },
         // 주소 검색 모달창 열기
         openModal() {
@@ -276,11 +272,11 @@ export default {
         },
 
         /* 업로드 */
-        upload(){  
-            console.log(this.area.length)
-            /* 로그인여부 확인 */
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then(()=>{
+        async upload(){  
+            try{
+                /* 로그인유지 */
+                await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+
                 if(this.files.length < 1){
                     return alert("상품 사진을 등록해주세요.");
                 }
@@ -301,11 +297,13 @@ export default {
                 if(this.state.length < 1){
                     return alert("상품 상태를 선택해주세요.")
                 }
-                if(this.ea < 1){
-                    return alert("상품 수량을 입력해주세요.")
-                }
-                 
+                
                 const frm = new FormData()
+                const config = {
+                    header: { 'content-type': 'multipart/form-data'},
+                    'withCredentials': true
+                };
+
                 for(let i=0; i<this.files.length; i++){
                     frm.append('files',  this.files[i].file);
                 }
@@ -316,60 +314,49 @@ export default {
                 frm.append('area', this.area);
                 frm.append('state', this.state);
                 frm.append('content', this.content);
-                frm.append('ea', this.ea);
 
-                const config = {
-                    header: { 'content-type': 'multipart/form-data'},
-                    'withCredentials': true
-                };
                 /* 업로드 POST */
-                this.$axios.post("http://localhost:3000/api/board/upload",frm, config)
-                .then((res)=>{
-                    if(res.data.success){
-                        alert("등록완료");
-                        this.$router.push({path:'./'});
-                    }
-                    else if(res.data == "imageCheckError"){
-                        alert("상품 사진을 등록해주세요.")
-                    }
-                    else if(res.data == "titleCheckError"){
-                        alert("상품명을 2~13자 이내로 입력해주세요.")
-                        this.$refs.title.focus();
-                    }
-                    else if(res.data == "categoryCheckError"){
-                        alert("카테고리를 선택해주세요.")
-                    }
-                    else if(res.data == "areaCheckError"){
-                        alert("거래지역을 선택해주세요.")
-                    }
-                    else if(res.data == "priceCheckError"){
-                        alert("상품 가격을 100원이상 입력해주세요.")
-                        this.$refs.price.focus();
-                    }
-                    else if(res.data == "stateCheckError"){
-                        alert("상품 상태를 선택해주세요.")
-                    }
-                    else if(res.data == "eaCheckError"){
-                        alert("상품 수량을 입력해주세요.")
-                    }
-                    else{
-                        alert("등록실패");
-                    }
-                })
-            })
-            .catch((err)=>{
+                const res = await axios.post("http://localhost:3000/api/board/upload", frm, config);
+                if(res.data.success){
+                    alert("등록완료");
+                    this.$router.push({path:'./'});
+                }
+                else if(res.data == "imageCheckError"){
+                    alert("상품 사진을 등록해주세요.")
+                }
+                else if(res.data == "titleCheckError"){
+                    alert("상품명을 2~13자 이내로 입력해주세요.")
+                    this.$refs.title.focus();
+                }
+                else if(res.data == "categoryCheckError"){
+                    alert("카테고리를 선택해주세요.")
+                }
+                else if(res.data == "areaCheckError"){
+                    alert("거래지역을 선택해주세요.")
+                }
+                else if(res.data == "priceCheckError"){
+                    alert("상품 가격을 100원이상 입력해주세요.")
+                    this.$refs.price.focus();
+                }
+                else if(res.data == "stateCheckError"){
+                    alert("상품 상태를 선택해주세요.")
+                }
+                else{
+                    alert("등록실패");
+                }
+            }
+            catch(err){
                 console.log(err);
-            })
+            }
         },
-        // 로그인여부 확인
-        loginCheck(){
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then(()=>{
-                this.getList(); // 로그인 여부 확인후 getList
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+        /* 로그인유지 */
+        async stayLogin(){
+            try{
+                await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+            }
+            catch(err){
+                console.log(err);
+            }
         },
 	}
 }
@@ -788,40 +775,7 @@ export default {
         left: 910px;
         padding: 0px 0px 30px 0px;
     }
-    /* 상품 수량 */
-    .product_EA_wrap{
-        width: 1180px;
-        margin: auto;
-        padding: 30px 0px 30px 0px;
-        display: flex;
-        border-bottom: solid 1px #DADCE0;
-        border-top: solid 1px #DADCE0;
-    }
-    .product_EA_title{
-        width: 145px;
-        height: 48px;
-        line-height: 48px;
-        font-size: 18px;
-        text-align: left;
-    }
-    .product_EA_input{
-        width: 240px;
-        height: 48px;
-        border: solid 1px #DADCE0;
-    }
-    .product_EA_input input{
-        width: 220px;
-        height: 28px;
-        padding: 10px;
-        font-size: 18px;
-        border: 0;
-        outline: 0;
-    }
-    .product_EA{
-        line-height: 48px;
-        padding-left: 20px;
-        font-size: 20px;
-    }
+
     /*=================  등록버튼  =========================*/
     .product-upload button{
         width: 960px;

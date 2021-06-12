@@ -1,6 +1,6 @@
 <template>
     <header>
-        <Loginmodal @close="closeModal" @loginCheck="login" v-if="modal"></Loginmodal>
+        <Loginmodal @close="closeModal"  v-if="modal"></Loginmodal>
         <!-- =======상단바======= -->
         <div class="topbar_wrap">
             <div class="topbar_container">
@@ -82,15 +82,15 @@
                             <font-awesome-icon icon="list-ul" class="list-ul"/><span>전체 카테고리 </span>
                             <!-- 서브 카테고리 -->
                             <div class="subcategory">
-                                <ul class="category_large" v-for="(largeitem,index) in categoryList" :key="index">
-                                    <router-link :to="{ name: 'productByCategory', query: {no: 1, categoryLargeId: largeitem.large[0][0] }}">
+                                <ul class="category_large" v-for="(largeitem,index) in categoryInfo" :key="index">
+                                    <router-link :to="{ path: '/bycategory/list', query: {no: 1, categoryLargeId: largeitem.large[0][0] }}">
                                         <li class="category_large_item">
                                             {{largeitem.large[0][1]}}                                        
                                         </li>
                                     </router-link>
                                     <ul class="category_medium" v-for="(mediumitem,index1) in largeitem.medium" :key="index1">
                                   
-                                        <router-link :to="{ name: 'productByCategory', query: {no: 1, categoryLargeId: largeitem.large[0][0], categoryMediumId: mediumitem[0] }}">
+                                        <router-link :to="{ path: '/bycategory/list', query: {no: 1, categoryLargeId: largeitem.large[0][0], categoryMediumId: mediumitem[0] }}">
                                             <li class="category_medium_item">
                                                 {{mediumitem[1]}}
                                             </li>    
@@ -112,129 +112,123 @@
 
 <script>
 import Loginmodal from "@/components/Member/Login_modal"; 
+import axios from 'axios';
+
 export default {
     components:{Loginmodal},
     data(){
         return{
             modal:false, // 로그인 모달 상태 
             loginStatus:"", // 로그인 상태 (로그인/로그아웃)
-            categoryList:[], // 카테고리데이터
+            categoryInfo:[], // 카테고리데이터
             search:"", // 검색값
             categoryLargeId:"all" // 검색 카테고리 값
         }
     },
     mounted() {
-        this.getCategory();
+        this.getCategoryInfo();
         this.loginStatusCheck();
 	},
 	methods:{
-        // 로그인창 열기
+        /* 로그인창 열기 */
         openModal() {
             this.modal = true;
         },
-        // 로그인창 닫기
+        /* 로그인창 닫기 */
         closeModal() {
             this.modal = false;
         },
-        // 로그인시 (로그인상태 false) => 로그아웃 렌더링
-        login(){
-            this.loginStatusCheck();
-        }, 
-        // 로그아웃
-        logout(){
-            this.$axios.get("http://localhost:3000/api/member/logout",{withCredentials: true})
-            .then((res)=>{
+        /* 로그아웃 */
+        async logout(){
+            try{
+                const res = await axios.get("http://localhost:3000/api/member/logout",{withCredentials: true})
                 if(res.data.success){
                     alert("로그아웃 되었습니다")               
                     this.$router.push({path:"/"}).catch(()=>{});
                     this.loginStatusCheck();
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err);
+            }
         },
         // 로그인 상태 확인 렌더링
-        loginStatusCheck(){
-            this.$axios.get("http://localhost:3000/api/member/loginstatuscheck",{withCredentials: true})
-            .then((res)=>{
+        async loginStatusCheck(){
+            try{
+                const res = await axios.get("http://localhost:3000/api/member/loginstatuscheck",{withCredentials: true})
                 if(res.data.success){
                     this.loginStatus = false;      
                 }
                 else{
                     this.loginStatus = true;
-                }               
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+                }         
+            }catch(err){
+                console.log(err);
+            }      
         },
-        // 카테고리 데이터 불러오기
-        getCategory() {
-			this.$axios.get("http://localhost:3000/api/board/getcategory")
-			.then((res)=>{
-                this.categoryList = res.data.categoryList; //카테고리 리스트 데이터
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+        /* 카테고리 정보 조회 */
+        async getCategoryInfo() {
+            try{
+                /* 카테고리 정보 조회 */
+                const res = await axios.get("http://localhost:3000/api/board/getCategoryInfo")
+                this.categoryInfo = res.data.categoryInfo; //카테고리 정보 
+            }catch(err){
+                console.log(err);
+            }
 		},
-        // 판매하기 라우터 이동
-        sellPage(){
-            // 로그인여부 확인, 리프레쉬 토큰 재발급
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then((res)=>{
+        /* 판매하기 라우터 이동 */
+        async sellPage(){
+            try{
+                /* 로그인여부 확인, 로그인유지 */
+                const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true});
                 if(res.data.success){
-                    this.$router.push({path:"/upload"});
+                    this.$router.push({path:"/upload"}).catch(() => {});;
                 }
                 else{
                     this.openModal();
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err);
+            }
         },
-        // 마이페이지 라우터 이동
-        myPage(){
-            // 로그인여부 확인, 리프레쉬 토큰 재발급
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then((res)=>{
+        /* 마이페이지 라우터 이동 */
+        async myPage(){
+            try{
+                /* 로그인여부 확인, 로그인유지 */
+                const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true});
                 if(res.data.success){
-                    this.$router.push({path:"/mypage"});
+                    this.$router.push({path:"/mypage"}).catch(() => {});
                 }
                 else{
                     this.openModal();
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err);
+            }
         },
-        // 채팅 라우터 이동
-        talkPage(){
-            // 로그인여부 확인, 리프레쉬 토큰 재발급
-            this.$axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
-            .then((res)=>{
+        /* 채팅페이지 라우터 이동 */
+        async talkPage(){
+            try{
+                /* 로그인여부 확인, 로그인유지 */
+                const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true});
                 if(res.data.success){
                     window.open("http://localhost:8081/talk", "talkList", "width=380,height=670");
                 }
                 else{
                     this.openModal();
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err);
+            }
         },
         // 검색 라우터 이동 
         searchPage(){
-           this.$router.push({ path: "/bySearch/list", query: {no: 1, categoryLargeId: this.categoryLargeId, search: this.search}});
+           this.$router.push({ path: "/bySearch/list", query: {no: 1, categoryLargeId: this.categoryLargeId, search: this.search}}).catch(() => {});
         },
         // 홈 라우터 이동
         homePage(){
-            this.$router.push({ path: "/"});
+            this.$router.push({ path: "/"}).catch(() => {});
         }
+        // 홈 라우터 이동
 	}
 }
 </script>

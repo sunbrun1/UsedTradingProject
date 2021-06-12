@@ -26,43 +26,40 @@ const multertUpload = multer({ storage }).array("files",12);
 /* 업로드 */
 exports.upload = async (req,res)  =>{ 
 	multertUpload (req,res, async (err) => { //multer
-		/* req.body */
-		const { title, price, state, content, select_category_large, select_category_medium, area, ea} = req.body; 
-		/* req.files */
-		const files = req.files; // 파일
-		/* 시간 */
-		const date = new Date(); // 현재 시간
-		/* jwt토큰 */
-		const accessToken = req.cookies.accessToken; // 엑세스 토큰
-		const decode = jwt.verify(accessToken, secretObj.secret); // 엑세스토큰 복호화
-		const loginId = decode.member_id; //로그인 ID
-
-		if(files.length < 1){ // 이미지공백 체크
-			return res.send("imageCheckError"); 
-		}
-		if(title.length < 2 || title.length > 13){ // 제목 2 ~ 13자 체크
-			return res.send("titleCheckError"); 
-		}
-		if(select_category_large.length < 1 && select_category_medium.length < 1){ // 카테고리 선택 공백 체크
-			return res.send("categoryCheckError");
-		}
-		if(area.length < 1){ // 거래지역 선택 공백 체크
-			return res.send("areaCheckError") ;
-		}
-		if(price < 100){ // 가격 100원 이상 체크
-			return res.send("priceCheckError");
-		}
-		if(state.length < 1){ // 상품상태 선택 공백 체크
-			return res.send("stateCheckError") ;
-		}
-		if(ea < 1){ // 상품수량 체크
-			return res.send("eaCheckError") ;
-		}
-		
 		try{
+			/* req.body */
+			const { title, price, state, content, select_category_large, select_category_medium, area} = req.body; 
+			/* req.files */
+			const files = req.files; // 파일
+			/* 시간 */
+			const date = new Date(); // 현재 시간
+			/* jwt토큰 */
+			const accessToken = req.cookies.accessToken; // 엑세스 토큰
+			const decode = jwt.verify(accessToken, secretObj.secret); // 엑세스토큰 복호화
+			const loginId = decode.member_id; //로그인 ID
+
+			if(files.length < 1){ // 이미지공백 체크
+				return res.send("imageCheckError"); 
+			}
+			if(title.length < 2 || title.length > 13){ // 제목 2 ~ 13자 체크
+				return res.send("titleCheckError"); 
+			}
+			if(select_category_large.length < 1 && select_category_medium.length < 1){ // 카테고리 선택 공백 체크
+				return res.send("categoryCheckError");
+			}
+			if(area.length < 1){ // 거래지역 선택 공백 체크
+				return res.send("areaCheckError") ;
+			}
+			if(price < 100){ // 가격 100원 이상 체크
+				return res.send("priceCheckError");
+			}
+			if(state.length < 1){ // 상품상태 선택 공백 체크
+				return res.send("stateCheckError") ;
+			}
+			
 			/* 상품 업로드 쿼리 */
-			const [data] = await conn.query("INSERT INTO product (member_id, thumbnail, title, price, content, category_large_name, category_medium_name, area, state, date, ea, views, dibs, transaction_status) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
-			[loginId, files[0].filename ,title , price, content, select_category_large, select_category_medium, area, state, date, ea, 0, 0, "판매등록"]);
+			const [data] = await conn.query("INSERT INTO product (member_id, thumbnail, title, price, content, category_large_name, category_medium_name, area, state, date, views, dibs, transaction_status) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+			[loginId, files[0].filename ,title , price, content, select_category_large, select_category_medium, area, state, date, 0, 0, "판매등록"]);
 			const productNo = data.insertId // 상품 넘버
 
 			/* 상품 이미지 업로드 쿼리 */
@@ -103,7 +100,7 @@ exports.areaSelect = async (req,res)  =>{
 
 /* Read */
 /* 메인화면 상품 리스트 조회 */
-exports.list = async (req,res) => { //리스트 모듈 router 에서 호출
+exports.getMainList = async (req,res) => { //리스트 모듈 router 에서 호출
 	try{
 		const [newProduct] = await conn.query("SELECT * FROM product WHERE transaction_status = ? ORDER BY id DESC LIMIT 10;", "판매등록");
 		const [bestProduct] = await conn.query("SELECT * FROM product WHERE transaction_status = ? ORDER BY dibs DESC LIMIT 10;", "판매등록");
@@ -126,11 +123,11 @@ exports.bySearch = async (req,res) => {
 		//카테고리 전체로 검색한 경우
 		if(categoryLargeId == "all"){ 
 			/* 검색별 상품리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product WHERE title LIKE ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",["%"+search+"%", "판매등록", parseInt(limit), parseInt(offset)]);
+			const [productInfo] = await conn.query("SELECT * FROM product WHERE title LIKE ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",["%"+search+"%", "판매등록", parseInt(limit), parseInt(offset)]);
 
 			return res.send({
 				success:true,
-				product:product,
+				productInfo:productInfo,
 				categoryLargeName:"카테고리 전체"
 			})
 		}
@@ -141,11 +138,11 @@ exports.bySearch = async (req,res) => {
 			const categoryLargeName = data[0].category_large_name; // 카테고리 대분류 이름
 
 			/* 카테고리,검색별 상품리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND title LIKE ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "%"+search+"%", "판매등록", parseInt(limit), parseInt(offset)]);
+			const [productInfo] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND title LIKE ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "%"+search+"%", "판매등록", parseInt(limit), parseInt(offset)]);
 
 			return res.send({
 				success:false,
-				product:product,
+				productInfo:productInfo,
 				categoryLargeName:categoryLargeName,
 			})
 		}
@@ -170,11 +167,11 @@ exports.byCategory = async (req,res) => {
 			const categoryLargeName = data[0].category_large_name; //카테고리 대분류 이름
 
 			/* 카테고리별 상품 리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product  WHERE category_large_name = ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "판매완료", parseInt(limit), parseInt(offset)]);
-
+			const [productInfo] = await conn.query("SELECT * FROM product  WHERE category_large_name = ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName, "판매등록", parseInt(limit), parseInt(offset)]);
+			console.log(productInfo)
 			return res.send({
 				success:true,
-				product:product,
+				productInfo:productInfo,
 				categoryLargeName:categoryLargeName
 			})
 		}
@@ -187,11 +184,11 @@ exports.byCategory = async (req,res) => {
 			const categoryMediumName = data[0].category_medium_name //카테고리 중분류 이름
 
 			/* 카테고리별 상품 리스트 조회 */
-			const [product] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND category_medium_name = ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName,categoryMediumName, "판매완료", parseInt(limit), parseInt(offset)]);
+			const [productInfo] = await conn.query("SELECT * FROM product WHERE category_large_name = ? AND category_medium_name = ? AND transaction_status = ? ORDER BY id DESC LIMIT ? OFFSET ?;",[categoryLargeName,categoryMediumName, "판매등록", parseInt(limit), parseInt(offset)]);
 
 			return res.send({
 				success:false,
-				product:product,
+				productInfo:productInfo,
 				categoryLargeName:categoryLargeName,
 				categoryMediumName:categoryMediumName
 			})
@@ -203,13 +200,13 @@ exports.byCategory = async (req,res) => {
 }
 
 /* 카테고리데이터 출력 모듈 */
-exports.getCategory = async (req,res) => { 
+exports.getCategoryInfo = async (req,res) => { 
 	try{
 		/* 카테고리 데이터 조회 */
 		const [data] = await conn.query("SELECT category_large_id,category_large_name,group_concat(category_medium_name) as category_medium_name ,group_concat(category_medium_id) as category_medium_id from category_medium group by category_large_id;");
 		const zip = (a1, a2) => a1.map((x, i) => [x, a2[i]]); 
 
-		const categoryList = data.map((data) => {
+		const categoryInfo = data.map((data) => {
 			const large = zip(
 				data.category_large_id.split(","),
 				data.category_large_name.split(","),
@@ -226,7 +223,7 @@ exports.getCategory = async (req,res) => {
 
 		return res.send({
 			success:true,
-			categoryList:categoryList,
+			categoryInfo:categoryInfo,
 		})
 	}
 	catch(err){
@@ -246,7 +243,7 @@ exports.product = async (req,res) => {
 		const memberNo = data[0].member_no // 유저 넘버
 
 		/* 상품정보 조회 쿼리 */
-		const [product] = await conn.query("SELECT a.*, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productNo);
+		const [productInfo] = await conn.query("SELECT a.*, group_concat(b.image_name) AS image_name FROM product a, product_image b WHERE b.id = a.id AND a.id = ?;",productNo);
 
 		/* 조회수 조회 쿼리 */
 		var [data] = await conn.query("SELECT views FROM product WHERE id = ?", productNo);
@@ -269,7 +266,7 @@ exports.product = async (req,res) => {
 			if(memberId == loginId) { 
 				return res.send({
 					myProduct:true, 
-					product:product,
+					productInfo:productInfo,
 				})
 			}
 			/* 다른유저의 게시물이라면 */
@@ -283,7 +280,7 @@ exports.product = async (req,res) => {
 					return res.send({
 						myProduct:false, // 다른유저 게시물
 						dibsState:false,  // 찜하기 안한상태
-						product:product,
+						productInfo:productInfo,
 						memberNo:memberNo
 					})
 				}
@@ -292,7 +289,7 @@ exports.product = async (req,res) => {
 					return res.send({
 						myProduct:false, // 다른유저 게시물
 						dibsState:true,  // 찜하기 한 상태
-						product:product,
+						productInfo:productInfo,
 						memberNo:memberNo
 					})
 				}
@@ -303,7 +300,7 @@ exports.product = async (req,res) => {
 			console.log("비로그인 상태입니다")
 			return res.send({
 				myProduct:false, 
-				product:product
+				productInfo:productInfo
 			})
 
 		}
@@ -366,7 +363,7 @@ exports.dibs = async (req,res) => {
 exports.update = async (req,res) => {
 	multertUpload(req,res, async (err) =>{ //multer
 		/* req.body */
-		const { title, price, state, content, select_category_large, select_category_medium, area, ea} = req.body; 
+		const { title, price, state, content, select_category_large, select_category_medium, area} = req.body; 
 		/* req.files */
 		const files = req.files; // 파일
 		/* req.params */
@@ -393,21 +390,18 @@ exports.update = async (req,res) => {
 		if(state.length < 1){ // 상품상태 선택 공백 체크
 			return res.send("stateCheckError") ;
 		}
-		if(parseInt(ea) < 1){ // 상품상태 선택  체크
-			return res.send("stateCheckError") ;
-		}
 		try{
 			/* 기존 이미지가 남아있는경우 */
 			if(remainImage != ''){ 
 				/* 수정하기 쿼리 */
-				await conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, content = ?, category_large_name = ?, category_medium_name = ?, area = ?, state = ?, ea = ? WHERE id = ?;",
-				[remainImage[0], title, price, content, select_category_large, select_category_medium, area, state, ea, productId]);			
+				await conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, content = ?, category_large_name = ?, category_medium_name = ?, area = ?, state = ? WHERE id = ?;",
+				[remainImage[0], title, price, content, select_category_large, select_category_medium, area, state, productId]);			
 			}
 			/* 기존 이미지가 남아있지 않은경우 */
 			else{
 				/* 수정하기 쿼리 */
-				await conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, content = ?, category_large_name = ?, category_medium_name = ?, area = ?, state = ?, ea = ? WHERE id = ?;",
-				[files[0].filename, title, price, content, select_category_large, select_category_medium, area, state, ea, productId]);
+				await conn.query("UPDATE product SET thumbnail = ?, title = ?, price = ?, content = ?, category_large_name = ?, category_medium_name = ?, area = ?, state = ? WHERE id = ?;",
+				[files[0].filename, title, price, content, select_category_large, select_category_medium, area, state, productId]);
 			}
 
 			/* 추가된 이미지 INSERT 쿼리 */

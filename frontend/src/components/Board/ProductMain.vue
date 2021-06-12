@@ -101,38 +101,39 @@
 </template>
 <script>
 import Header from '@/components/Header.vue'
+import axios from 'axios';
 
 export default {
     components: {Header},
     data(){
         return{
-            newProduct:'', // 신규상품 데이터
-            bestProduct:'', // 인기상품 데이터
+            newProduct:'', // 신규상품 정보
+            bestProduct:'', // 인기상품 정보
         }
     },
     mounted() {
-		this.getList();
+		this.getProductList();
 	},
 	methods:{
-        /* 상품 데이터 조회 */
-        getList() {
-			this.$axios.get("http://localhost:3000/api/board/")
-			.then((res)=>{
+        /* 상품 리스트 조회 */
+        async getProductList() {
+            try{
+                const res = await axios.get("http://localhost:3000/api/board/getMainList");
                 this.newProduct = res.data.newProduct; // 신규상품
                 this.bestProduct = res.data.bestProduct; // 인기상품
 
-                // 신규상품 등록 시간
+                /* 신규상품 등록 시간 */
                 for(let i=0;  i<this.newProduct.length; i++){
                     this.newProduct[i].date = this.timeForToday(this.newProduct[i].date)
                 }
-                // 인기상품 등록 시간
+                /* 인기상품 등록 시간 */
                 for(let i=0;  i<this.bestProduct.length; i++){
                     this.bestProduct[i].date = this.timeForToday(this.bestProduct[i].date)
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }
+            catch(err){
+                console.log(err);
+            }
 		},
         /* 시간 계산 */
         timeForToday(value){
@@ -152,7 +153,6 @@ export default {
                 return betweenTimeDay + '일전';
             } 
         },
-		
 	}
 }
 </script>
@@ -160,11 +160,9 @@ export default {
 
 <style scoped>
 body{
-    background: #ffffff;
     padding-top: 189px;
     font-family: apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
-
 /* === 신규상품 wrap === */
 .newproduct_wrap{
     height: 920px;
@@ -205,18 +203,21 @@ body{
     white-space:nowrap;
     text-align: left;
     padding: 0px 0px 4px 0px;
+    color: #696969;
 }
 /* 가격 */
 .price{
     text-align: left;
     font-size: 15px;
     padding: 0px 0px 4px 0px;
+    color: black;
 }
 /* 거래 지역 */
 .area{
     text-align: left;
     font-size: 13px;
     padding: 0px 0px 4px 0px;
+    color: #696969;
 }
 /*  */
 .info{

@@ -15,9 +15,13 @@ exports.byCategoryCount = async (req,res) => {
 		const categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
 
 		/* 상품 개수 조회 쿼리 */
-		var [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ?;", categoryLargeName);
+		var [data] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ? AND transaction_status = ?;", [categoryLargeName, "판매등록"]);
+		const count = data[0].count // 상품 총 개수
 
-		return res.send({count:count})
+		return res.send({
+			success:true,
+			count:count
+		})
 	}
 	//중분류 클릭시
 	else{
@@ -27,9 +31,13 @@ exports.byCategoryCount = async (req,res) => {
 		const categoryMediumName = data[0].category_medium_name; //카테고리 중분류 name
 
 		/* 상품 개수 조회 쿼리 */
-		let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ? AND category_medium_name = ?;",[categoryLargeName,categoryMediumName]);
-		
-		return res.send({count:count})
+		var [data] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ? AND category_medium_name = ? AND transaction_status = ?",[categoryLargeName,categoryMediumName, "판매등록"]);
+		const count = data[0].count // 상품 총 개수
+
+		return res.send({
+			success:true,
+			count:count
+		})
 	}
 }
 
@@ -41,20 +49,28 @@ exports.bySearchCount = async (req,res) => {
     // 카테고리 전체선택 검색
 	if(categoryLargeId == "all"){ 
 		/* 상품 개수 조회 쿼리 */
-		let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE title LIKE ?;", "%"+search+"%");
-	
-		return res.send({count:count})
+		const [data] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE title LIKE ? AND transaction_status = ?;", ["%"+search+"%", "판매등록"]);
+		const count = data[0].count // 상품 총 개수
+
+		return res.send({
+			success:true,
+			count:count
+		})
 	}
 	// 카테고리 대분류 선택 검색
 	else{
 		/* 카테고리 이름 조회 쿼리 */
-		let [data] = await conn.query("SELECT category_large_name FROM category_medium WHERE category_Large_id = ?",categoryLargeId);
-		let categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
+		var [data] = await conn.query("SELECT category_large_name FROM category_medium WHERE category_Large_id = ?",categoryLargeId);
+		const categoryLargeName = data[0].category_large_name; //카테고리 대분류 name
 		
 		/* 상품 개수 조회 쿼리 */
-		let [count] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ? AND title LIKE ?;",[categoryLargeName,"%"+search+"%" ]);
+		var [data] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE category_large_name = ? AND title LIKE ? AND transaction_status = ?;",[categoryLargeName, "%"+search+"%", "판매등록"]);
+		const count = data[0].count // 상품 총 개수
 
-		return res.send({count:count})
+		return res.send({
+			success:true,
+			count:count
+		})
 	}
 }
 
@@ -66,7 +82,7 @@ exports.myProductCount = async (req,res) => {
 	const memberId = decode.member_id; // 로그인 ID
 
 	/* 상품 개수 조회 */
-	const [data] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE member_id = ?;", memberId);
+	const [data] = await conn.query("SELECT COUNT(*) AS count FROM product WHERE member_id = ? AND transaction_status = ?;", [memberId, "판매등록"]);
 	const count = data[0].count // 상품 총 개수
 
 	return res.send({
@@ -85,7 +101,7 @@ exports.myWishListCount = async (req,res) => {
 	let [count] = await conn.query("SELECT COUNT(*) AS count " +  
 								   "FROM dibs_list AS A " +
 								   "LEFT OUTER JOIN product AS B ON (A.product_no = B.id) " +
-								   "WHERE A.member_id = ?", memberId);
+								   "WHERE A.member_id = ? AND B.transaction_status = ?", [memberId, "판매등록"]);
 	return res.send({
 		success:true,
 		count:count

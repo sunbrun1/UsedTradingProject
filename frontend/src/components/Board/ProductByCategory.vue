@@ -13,7 +13,7 @@
                 </div>
                 <!-- 상품 리스트 -->
                 <div class="product_container">
-                    <div class="product" v-for="(item) in product" :key="item.id">
+                    <div class="product" v-for="(item) in productInfo" :key="item.id">
                         <!-- 라우터 이동 -->
                         <router-link :to="{ name: 'productDetail', params: { no: item.id }}">
                             <!-- 상품이미지 -->
@@ -49,7 +49,7 @@
                     <ul>
                         <!-- 이전 버튼 -->
                         <ul>
-                            <router-link :to="{ name: 'productByCategory', query: { no: (startPageIndex - 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex - 1)">
+                            <router-link :to="{ path: '/bycategory/list', query: { no: (startPageIndex - 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex - 1)">
                                 <li class="page-item" v-if="prev">
                                     <span aria-hidden="true">&laquo;</span>      
                                 </li>
@@ -58,7 +58,7 @@
                         
                         <!-- 페이징 -->
                         <ul v-for="index in endPageIndex-startPageIndex + 1 " :key="index">
-                            <router-link :to="{ name: 'productByCategory', query: { no: (startPageIndex+index) -1, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId   }}">
+                            <router-link :to="{ path: '/bycategory/list', query: { no: (startPageIndex+index) -1, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId   }}">
                                 <li class="page-item">    
                                     {{startPageIndex+ index -1 }}
                                 </li>
@@ -67,7 +67,7 @@
 
                         <!-- 다음버튼 -->
                         <ul>
-                            <router-link :to="{ name: 'productByCategory', query: { no: (endPageIndex + 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex + 1)">
+                            <router-link :to="{ path: '/bycategory/list', query: { no: (endPageIndex + 1) * listRowCount, categoryLargeId: $route.query.categoryLargeId, categoryMediumId: $route.query.categoryMediumId}}" @click.native="movePage(endPageIndex + 1)">
                                 <li class="page-item" v-if="next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </li>
@@ -82,107 +82,104 @@
 
 <script>
 import Header from '@/components/Header.vue'
+import axios from 'axios';
 
 export default {
     components: {Header},
-    watch: {
-        '$route' (to, from) { 
-            if(to.query.no != from.query.no){
-                this.getCategoryList();
-                this.myProductCount();
-            }
-            else if(to.query.categoryLargeId != from.query.categoryLargeId){
-                this.getCategoryList();
-                this.myProductCount();
-            }
-            else if(to.query.categoryMediumId != from.query.categoryMediumId){
-                this.getCategoryList();
-                this.myProductCount();
-            }
-        }
-    },
     data(){
         return{
-            product:'', // 상품데이터
+            /* 상품정보 */
+            productInfo:'', // 상품데이터
+            /* 카테고리 이름 */
             categoryLargeName:'', // 대분류 이름
             categoryMediumName:'', // 중분류 이름
-
             /* 페이징 */
             totalListItemCount: 0, //내 게시물 개수
             listRowCount: 30, // 한 페이지당 출력할 게시물 개수
             pageLinkCount: 10, //페이징 단위 
             currentPageIndex: 1, //현재 페이지
-
             pageCount: 0, //출력할 페이지 버튼 개수
             startPageIndex: 0,
             endPageIndex: 0,
             prev: false, //이전버튼
             next: false, //다음버튼
-
+            /* limit, offset */
             pageLimit : 30, //pageLimit = listRowCount sql 2개만 출력
             pageOffset : 0 
         }
     },
-    computed:{
-        
-
-    },
     mounted() {
-		this.getCategoryList();
-        this.myProductCount();
+		this.getProductList();
+        this.byCategoryCount();
 	},
+    watch: {
+        '$route' (to, from) { 
+            if(to.query.no != from.query.no){
+                this.getProductList();
+                this.byCategoryCount();
+            }
+            else if(to.query.categoryLargeId != from.query.categoryLargeId){
+                this.getProductList();
+                this.byCategoryCount();
+            }
+            else if(to.query.categoryMediumId != from.query.categoryMediumId){
+                this.getProductList();
+                this.byCategoryCount();
+            }
+        }
+    },
 	methods:{
         /* 페이지 이동 */
         movePage( param ) {
             this.currentPageIndex = param;
-            this.myProductCount();
-            this.initUI();
+            this.byCategoryCount();
         },
-        /* 초기 상품리스트 조회 */
-        getCategoryList() {
-			this.$axios.get("http://localhost:3000/api/board/bycategory/list",{
-                params: {
-                    categoryLargeId : this.$route.query.categoryLargeId,
-                    categoryMediumId : this.$route.query.categoryMediumId,
-                    limit : this.pageLimit,
-                    offset : (this.$route.query.no - 1) * this.pageLimit
-                }
-            })
-			.then((res)=>{
-                this.product = res.data.product; //대분류 상품데이터
-                for(let i=0;  i<this.product.length; i++){ // 신규 상품등록 시간
-                    this.product[i].date = this.timeForToday(this.product[i].date)
+        /* 상품리스트 조회 */
+        async getProductList() {
+            try{
+                /* 상품리스트 조회 */
+                const res = await axios.get("http://localhost:3000/api/board/bycategory/list",{
+                    params: {
+                        categoryLargeId : this.$route.query.categoryLargeId,
+                        categoryMediumId : this.$route.query.categoryMediumId,
+                        limit : this.pageLimit,
+                        offset : (this.$route.query.no - 1) * this.pageLimit
+                    }
+                })
+                /* 상품정보 */
+                this.productInfo = res.data.productInfo; 
+                console.log(res.data.productInfo)
+                /* 상품등록 시간 */
+                for(let i=0;  i<this.productInfo.length; i++){ 
+                    this.productInfo[i].date = this.timeForToday(this.productInfo[i].date)
                 }
                 if(res.data.success){ 
                     this.categoryLargeName = res.data.categoryLargeName;
                     this.categoryMediumName = "";
-
                 }
                 else{
                     this.categoryLargeName = res.data.categoryLargeName;
                     this.categoryMediumName = res.data.categoryMediumName;
                 }
-			})
-			.catch((err)=>{
-				console.log(err);
-			})
+            }catch(err){
+                console.log(err)
+            }
 		},
-        /* 초기 페이징 화면 */
-        myProductCount(){
-            this.currentPageIndex = this.$route.query.no;
-            this.$axios.get("http://localhost:3000/api/paging/bycategory",{
-                params: {
-                    categoryLargeId : this.$route.query.categoryLargeId,
-                    categoryMediumId : this.$route.query.categoryMediumId
-                }
-            })
-            .then((res)=>{
-                this.totalListItemCount = res.data.count[0].count; 
+        /* 페이징 */
+        async byCategoryCount(){
+            try{
+                /* 상품 총 개수 조회 */
+                const res = await axios.get("http://localhost:3000/api/paging/bycategory",{
+                    params: {
+                        categoryLargeId : this.$route.query.categoryLargeId,
+                        categoryMediumId : this.$route.query.categoryMediumId
+                    }
+                })
+                this.totalListItemCount = res.data.count; 
                 this.initUI();
-            })
-            .catch((err)=>{
+            }catch(err){
                 console.log(err);
-            })
+            }
         },
       
         /* 페이징 계산 */
@@ -217,6 +214,7 @@ export default {
                 this.next = true;
             }
         },
+        /* 시간 계산 */
         timeForToday(value){
             const todayTime = new Date();
             const product_Time = new Date(value);
@@ -292,18 +290,21 @@ export default {
         white-space:nowrap;
         text-align: left;
         padding: 0px 0px 4px 0px;
+        color: #696969;
     }
     /* 가격 */
     .price{
         text-align: left;
         font-size: 15px;
         padding: 0px 0px 4px 0px;
+        color: black;
     }
     /* 거래 지역 */
     .area{
         text-align: left;
         font-size: 13px;
         padding: 0px 0px 4px 0px;
+        color: #696969;
     }
     /*  */
     .info{
@@ -339,6 +340,7 @@ export default {
         float: left;
         width: 30px;
         height: 30px;
+        line-height: 30px;
         color: #9b99a9;
         border: solid 1px rgb(204, 204, 204);;
         margin: 10px 5px 10px 5px;
