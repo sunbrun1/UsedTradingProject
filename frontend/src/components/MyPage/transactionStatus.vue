@@ -23,42 +23,39 @@
                     </div>
                     <!-- 거래상태 컨테이너 -->
                     <div class="main_container">
-                        <div class="status_list" v-for="(item, index) in productInfo" :key="index">
-                            <!-- 라우터 이동 -->
-                            <router-link :to="{ name: 'productDetail', params: { no: item.product_no }}">
-                                <!-- 상품이미지 -->
-                                <div class="image">
-                                    <img :src="`http://localhost:3000/`+item.thumbnail" width="212" height="212"/>
+                        <div class="status_list" v-for="(item, index) in productInfo" :key="index" @click="sellBuyPage(index, item.product_no)">
+                            <!-- 상품이미지 -->
+                            <div class="image">
+                                <img :src="`http://localhost:3000/`+item.thumbnail" width="212" height="212"/>
+                            </div>
+                            <!-- 상품 이름 -->
+                            <div class="info">
+                                <div class="name">
+                                    {{item.title}}
                                 </div>
-                                <!-- 상품 이름 -->
-                                <div class="info">
-                                    <div class="name">
-                                        {{item.title}}
-                                    </div>
-                                    <div class="status">
-                                        {{transactionStatus[index]}}
-                                    </div>
+                                <div class="status">
+                                    {{transactionStatus[index]}}
                                 </div>
-                                
-                                <!-- 상품 가격 -->
-                                <div class="price">
-                                    <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                            </div>
+                            
+                            <!-- 상품 가격 -->
+                            <div class="price">
+                                <b>{{item.price.toLocaleString('ko-KR')}} 원</b>
+                            </div>
+                            <div class="area">
+                                {{item.area}}
+                            </div>
+                            <!-- 찜/날짜 -->
+                            <div class="info">
+                                <!-- 찜 개수 -->
+                                <div class="dibs">
+                                    <font-awesome-icon icon="heart" class="heart"/> 찜 {{item.dibs}}
                                 </div>
-                                <div class="area">
-                                    {{item.area}}
-                                </div>
-                                <!-- 찜/날짜 -->
-                                <div class="info">
-                                    <!-- 찜 개수 -->
-                                    <div class="dibs">
-                                        <font-awesome-icon icon="heart" class="heart"/> 찜 {{item.dibs}}
-                                    </div>
-                                    <!-- 날짜 -->
-                                    <div class="date" >
-                                        {{item.date}}
-                                    </div>  
-                                </div>
-                            </router-link>
+                                <!-- 날짜 -->
+                                <div class="date" >
+                                    {{item.date}}
+                                </div>  
+                            </div>
                         </div>
                         <div class="paging">
                             <ul>
@@ -139,6 +136,20 @@ export default {
         this.pagingCount();
 	},
 	methods:{
+        sellBuyPage(index, productNo){
+            if(this.transactionStatus[index] == "판매중"){
+                return this.$router.push({ path: `/product/${productNo}/sellerPage`}).catch(() => {});
+            }
+            if(this.transactionStatus[index] == "구매중"){
+                return this.$router.push({ path: `/product/${productNo}/sellerPage`}).catch(() => {});
+            }
+            if(this.transactionStatus[index] == "판매완료"){
+                return alert("판매완료된 상품입니다.")
+            }
+            if(this.transactionStatus[index] == "구매완료"){
+                return alert("구매완료된 상품입니다.")
+            }
+        },
         /* 페이지 이동 */
         movePage( param ) {
             this.currentPageIndex = param;
@@ -299,6 +310,7 @@ export default {
         width: 212px;
         height: 309px;
         margin-bottom: 30px;
+        cursor: pointer;
     }
     /* 상품 가로정렬 */
     .status_list:not(:nth-child(4n)){

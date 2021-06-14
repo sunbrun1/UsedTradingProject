@@ -321,7 +321,7 @@ export default {
             this.$axios.get("http://localhost:3000/api/member/someAPI", {withCredentials: true})
             .then(()=>{
                 /* 개인정보 조회 GET */
-                this.$axios.get("http://localhost:3000/api/mypage/mypoint", {withCredentials: true})
+                this.$axios.get("http://localhost:3000/api/mypage/getMyPoint", {withCredentials: true})
                 .then((res)=>{
                     if(res.data.success){
                         const memberInfo = res.data.memberInfo[0];
@@ -417,6 +417,13 @@ export default {
                                 memberPoint: this.memberPoint,
                                 loginId : this.loginId,
                                 productNo : this.$route.params.no,
+                                /* 주문자 정보 */
+                                orderName: this.orderName,
+                                orderDefaultAddress: this.orderDefaultAddress,
+                                orderRemainAddress : this.orderRemainAddress,
+                                orderPhoneNumber : this.orderPhoneNum1+"-"+this.orderPhoneNum2+"-"+this.orderPhoneNum3,
+                                orderEmail: this.orderEmail1+"@"+this.orderEmail2,
+
                             }
                         /* 결제 검증 */
                         this.$axios.post("http://localhost:3000/api/onlyPointPayments/complete", data, {withCredentials: true})
@@ -455,7 +462,13 @@ export default {
                 buyer_addr : this.orderDefaultAddress + " " + this.orderRemainAddress,
                 custom_data : [{"productNo" : this.$route.params.no,
                                 "loginId" : this.loginId,
-                                "memberPoint" : this.memberPoint}]
+                                "memberPoint" : this.memberPoint,
+                                /* 주문자 정보 */
+                                "orderName": this.orderName,
+                                "orderDefaultAddress": this.orderDefaultAddress,
+                                "orderRemainAddress" : this.orderRemainAddress,
+                                "orderPhoneNumber" : this.orderPhoneNum1+"-"+this.orderPhoneNum2+"-"+this.orderPhoneNum3,
+                                "orderEmail": this.orderEmail1+"@"+this.orderEmail2,}]
             }, function (rsp) { // callback
                 if (rsp.success) { // 결제 성공 시: 결제 승인 또는 가상계좌 발급에 성공한 경우
                     console.log("성공")

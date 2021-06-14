@@ -444,6 +444,23 @@ exports.getProductInfo = async (req,res) => {
 			})
 }
 
+exports.getOrderInfo = async (req,res) => {
+	/* req.params */
+	console.log("성공")
+	const productNo = req.params.no; // 상품 ID
+
+	/* 결제내역 정보 조회 */
+	const [paymenyInfo] = await conn.query("SELECT payment_no FROM payment_info WHERE product_no = ?;", productNo);
+	const paymentNo = paymenyInfo[0].payment_no;
+
+	/* 주문자정보 조회 쿼리 */
+	const [orderInfo] = await conn.query("SELECT * FROM order_info WHERE payment_no = ?;", paymentNo);
+	return res.send({
+				success:true,
+				orderInfo:orderInfo
+			})
+}
+
 
 
 

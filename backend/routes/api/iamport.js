@@ -52,7 +52,7 @@ exports.directPayments = async (req,res) => {
 	try {
         /* req.body */
         const { imp_uid, merchant_uid, custom_data} = req.body; // req의 body에서 imp_uid, merchant_uid 추출
-        const { productNo, loginId, memberPoint } = custom_data[0];
+        const { productNo, loginId, memberPoint, orderName, orderDefaultAddress, orderRemainAddress, orderPhoneNumber, orderEmail } = custom_data[0];
    
         // 액세스 토큰(access token) 발급 받기
         const getToken = await axios({
@@ -95,8 +95,12 @@ exports.directPayments = async (req,res) => {
             const sellerId = memberInfo[0].member_id;
             console.log(sellerId)
             // DB에 결제 정보 저장
-            await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point) values(?, ?, ?, ?, ?, ?, ?);",
+            const [data] = await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point) values(?, ?, ?, ?, ?, ?, ?);",
                             [imp_uid, merchant_uid, productNo, sellerId, loginId, amount, memberPoint]); 
+            const paymentNo = data.insertId // 결제 내역 넘버
+
+            await conn.query("INSERT INTO order_info (order_name, order_default_address, order_remain_address, order_phone_number, order_email, payment_no) values(?, ?, ?, ?, ?, ?);",
+                            [orderName, orderDefaultAddress, orderRemainAddress, orderPhoneNumber, orderEmail, paymentNo]);
             /* 포인트 차감 */
             await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [0, loginId]);
             /* 상품 상태 변경 */
@@ -120,11 +124,7 @@ exports.onlyPointPayments = async (req,res) => {
     try{
         console.log("통신성공")
         /* req.body */
-        const { orderPrice, memberPoint, loginId, productNo } = req.body; 
-        console.log(orderPrice)
-        console.log(memberPoint)
-        console.log(loginId)
-        console.log(productNo)
+        const { orderPrice, memberPoint, loginId, productNo, orderName, orderDefaultAddress, orderRemainAddress, orderPhoneNumber, orderEmail} = req.body; 
 
         /* 포인트 조회 */
         var [data] = await conn.query("SELECT member_point FROM member WHERE member_id = ?;", loginId);
@@ -159,8 +159,12 @@ exports.onlyPointPayments = async (req,res) => {
         const sellerId = memberInfo[0].member_id; // 판매자 ID
         console.log(sellerId)
         // DB에 결제 정보 저장
-        await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point) values(?, ?, ?, ?, ?, ?, ?);",
+        var [data] = await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point) values(?, ?, ?, ?, ?, ?, ?);",
                         ["null", "null", productNo, sellerId, loginId, 0, orderPrice]);
+        const paymentNo = data.insertId // 상품 넘버
+        // 주문자 정보 저장
+        await conn.query("INSERT INTO order_info (order_name, order_default_address, order_remain_address, order_phone_number, order_email, payment_no) values(?, ?, ?, ?, ?, ?);",
+                        [orderName, orderDefaultAddress, orderRemainAddress, orderPhoneNumber, orderEmail, paymentNo]);
 
         /* 포인트 차감 */
         await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [remainPoint, loginId]);

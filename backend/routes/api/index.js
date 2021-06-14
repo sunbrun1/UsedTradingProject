@@ -22,6 +22,7 @@ router.post("/board/upload",dao.upload); // 상품 업로드 모듈(POST)
 router.post("/board/areaSelect",dao.areaSelect); // 거래지역 선택 모듈(POST)
 router.post("/board/update/:id",dao.update); // 상품 수정 모듈(POST)
 router.get("/board/getProductInfo/:no",dao.getProductInfo); // 상품정보 조회(GET)
+router.get("/board/product/:no/getOrderInfo",dao.getOrderInfo); // 주문자정보 조회(GET)
 
 
 /*      로그인/회원가입 관련       */
@@ -35,7 +36,7 @@ router.get("/member/loginstatuscheck",member.loginStatusCheck); //Header 컴포�
 router.get("/mypage/getMyProduct/list", mypage.getMyProduct); // 내 상품 리스트 조회 (GET)
 router.get("/mypage/getTransactionStatus/list", mypage.getTransactionStatus); // 거래상태 조회 (GET)
 router.get("/mypage/wishlist", mypage.getWishList); // 관심목록 조회모듈(get)
-router.get("/mypage/mypoint", mypage.getPoint); // 내 포인트 조회 모듈(GET)
+router.get("/mypage/getMyPoint", mypage.getMyPoint); // 내 포인트 조회 모듈(GET)
 router.post("/mypage/myproduct/delete", mypage.myProductDelete); // 내게시물 삭제(post)
 router.post("/mypage/memberinfo/pwcheck", mypage.pwCheck); // 마이페이지-개인정보-비밀번호 재확인
 router.get("/mypage/memberinfo", mypage.getMemberInfo); // 마이페이지-개인정보-조회

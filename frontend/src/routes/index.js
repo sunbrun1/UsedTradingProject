@@ -10,6 +10,7 @@ import productDetail from '@/components/Board/ProductDetail';
 import productByCategory from '@/components/Board/ProductByCategory';
 import productBySearch from '@/components/Board/ProductBySearch';
 import payment from '@/components/Board/payment';
+import sellerPage from '@/components/Board/SellerPage';
 
 /* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
@@ -66,7 +67,11 @@ export default new Router({ //라우터 연결
 			,name:"payment"
 			,component:payment,
 		}
-
+		,{
+			path:'/product/:no/sellerPage'  // 결제하기
+			,name:"sellerPage"
+			,component:sellerPage,
+		}
 		/* 마이페이지 관련 */
 		,{
 			path:'/mypage'

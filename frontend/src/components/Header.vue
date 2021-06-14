@@ -181,7 +181,7 @@ export default {
                 /* 로그인여부 확인, 로그인유지 */
                 const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true});
                 if(res.data.success){
-                    this.$router.push({path:"/upload"}).catch(() => {});;
+                    this.$router.push({path:"/upload"}).catch(() => {});
                 }
                 else{
                     this.openModal();

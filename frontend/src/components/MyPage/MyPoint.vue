@@ -75,7 +75,7 @@ export default {
             this.$axios.get("http://localhost:3000/api/member/someAPI", {withCredentials: true})
             .then(()=>{
                 /* 개인정보 조회 GET */
-                this.$axios.get("http://localhost:3000/api/mypage/mypoint", {withCredentials: true})
+                this.$axios.get("http://localhost:3000/api/mypage/getMyPoint", {withCredentials: true})
                 .then((res)=>{
                     if(res.data.success){
                         this.memberInfo = res.data.memberInfo[0];

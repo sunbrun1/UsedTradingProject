@@ -15,9 +15,9 @@ exports.getMyProduct = async (req,res) => {
 
 	/* 내 게시물 조회 쿼리 */
 	const [productInfo] = await conn.query("SELECT * FROM product " +  
-										  "WHERE member_id = ? " +
+										  "WHERE member_id = ? AND transaction_status = ? " +
 										  "ORDER BY id DESC LIMIT ? OFFSET ?;", 
-										  [loginId, parseInt(limit), parseInt(offset)]);
+										  [loginId, "판매등록", parseInt(limit), parseInt(offset)]);
 
 	return res.send({
 		success:true,
@@ -154,7 +154,7 @@ exports.getWishList = async (req,res) => {
 	})
 }
 /* 내포인트 조회  */
-exports.getPoint = async (req,res) => {
+exports.getMyPoint = async (req,res) => {
 	/* jwt 토큰 */
 	const accessToken = req.cookies.accessToken; // 엑세스토큰
 	const decode = jwt.verify(accessToken, secretObj.secret); //엑세스토큰 복호화
