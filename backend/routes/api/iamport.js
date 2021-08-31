@@ -178,8 +178,6 @@ exports.onlyPointPayments = async (req,res) => {
         console.log(err);
         return res.status(500).send(err)
     }
-    
-
 }
 
 

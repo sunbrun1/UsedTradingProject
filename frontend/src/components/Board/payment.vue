@@ -221,6 +221,7 @@
 import Header from '@/components/Header.vue'
 import AreaModal from '@/components/Board/AreaModal.vue'
 import axios from 'axios';
+import router from '@/routes'; //설정 라우터 호출
 
 export default {
     components: {Header,AreaModal},
@@ -389,6 +390,7 @@ export default {
             this.orderDefaultAddress = area_sido + " " + area_sigugun + " " +area_dongeupmyeon
         },
         onPayment() {
+            const productNo = this.$route.params.no; // 상품 넘버
             if(this.orderName == "" ||  this.deliverName == ""){
                 return alert("주문하시는 분 이름을 입력해주세요.")
             }
@@ -481,6 +483,7 @@ export default {
                     .then((res)=>{
                         if(res.data.success){
                             alert("결제에 성공하였습니다.");
+                            router.push({ path: `/product/${productNo}/sellerPage`}).catch(() => {});
                         }
                     })
                     .catch((err)=>{
