@@ -5,7 +5,7 @@
                 <div class="modal-container">
                     <form>
                         <div class="title">
-                            <h2>주소 검색 </h2> <span @click="$emit('close')">X</span>z
+                            <h2>주소 검색 </h2> <span @click="$emit('close')">X</span>
                         </div>
                         <div class="area_input_wrap">
                             <div class="area_input_container">

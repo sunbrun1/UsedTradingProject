@@ -18,7 +18,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 app.use(logger('dev'));
-app.use(cors({origin: "http://localhost:8080", credentials: true})); // config 추가
+app.use(cors({origin: "http://localhost:8081", credentials: true})); // config 추가
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));

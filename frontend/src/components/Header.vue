@@ -211,7 +211,7 @@ export default {
                 /* 로그인여부 확인, 로그인유지 */
                 const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true});
                 if(res.data.success){
-                    window.open("http://localhost:8080/talk", "talkList", "width=380,height=670");
+                    window.open("http://localhost:8081/talk", "talkList", "width=380,height=670");
                 }
                 else{
                     this.openModal();

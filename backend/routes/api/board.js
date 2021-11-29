@@ -446,15 +446,18 @@ exports.getProductInfo = async (req,res) => {
 
 exports.getOrderInfo = async (req,res) => {
 	/* req.params */
-	console.log("성공")
 	const productNo = req.params.no; // 상품 ID
 
-	/* 결제내역 정보 조회 */
-	const [paymenyInfo] = await conn.query("SELECT payment_no FROM payment_info WHERE product_no = ?;", productNo);
-	const paymentNo = paymenyInfo[0].payment_no;
-
 	/* 주문자정보 조회 쿼리 */
-	const [orderInfo] = await conn.query("SELECT * FROM order_info WHERE payment_no = ?;", paymentNo);
+	const [orderInfo] = await conn.query("SELECT p.id, p.thumbnail, p.title, p.price, p.content "
+									+ ",  oi.order_name ,oi.order_default_address ,oi.order_remain_address ,oi.order_phone_number ,oi.order_email "
+									+ ",  pi.merchant_uid, pi.payment_date, pi.payment_point, pi.payment_final "
+									+ "FROM product p "
+									+ "JOIN order_info oi " 
+									+ "ON p.id = oi.product_no "
+									+ "JOIN payment_info pi "
+									+ "ON p.id = pi.product_no "
+									+ "WHERE p.id = 619", productNo);
 	return res.send({
 				success:true,
 				orderInfo:orderInfo
@@ -466,3 +469,7 @@ exports.getOrderInfo = async (req,res) => {
 
 
 
+// SELECT  p.id, p.thumbnail, p.title, p.price, p.content, m.member_point
+// 	, IF(p.price < m.member_point, 0, p.price - m.member_point) AS final
+// FROM product p, member m
+// WHERE p.id = 622 AND m.member_id = 'asdasd';
