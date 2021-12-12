@@ -126,12 +126,14 @@ exports.directPayments = async (req,res) => {
 exports.onlyPointPayments = async (req,res) => {
     try{
         console.log("통신성공")
+        /* 시간 */
+        const date = new Date(); // 현재 시간
         /* req.body */
         const { orderPrice, memberPoint, loginId, productNo, orderName, orderDefaultAddress, orderRemainAddress, orderPhoneNumber, orderEmail} = req.body; 
 
         /* 포인트 조회 */
-        var [data] = await conn.query("SELECT member_point FROM member WHERE member_id = ?;", loginId);
-        const point = data[0].member_point; // 포인트
+        var [memberData] = await conn.query("SELECT member_point FROM member WHERE member_id = ?;", loginId);
+        const point = memberData[0].member_point; // 포인트
         console.log("멤버포인트: " + memberPoint)
         console.log("포인트: " + point)
 
@@ -162,12 +164,12 @@ exports.onlyPointPayments = async (req,res) => {
         const sellerId = memberInfo[0].member_id; // 판매자 ID
         console.log(sellerId)
         // DB에 결제 정보 저장
-        var [data] = await conn.query("INSERT INTO payment_info (imp_uid, merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point) values(?, ?, ?, ?, ?, ?, ?);",
-                        ["null", "null", productNo, sellerId, loginId, 0, orderPrice]);
-        const paymentNo = data.insertId // 상품 넘버
+        const [data] = await conn.query("INSERT INTO payment_info (merchant_uid, product_no, seller_id, buyer_id, payment_amount, payment_point, payment_final, payment_date) values(?, ?, ?, ?, ?, ?, ?, ?);",
+                 ["point_pay", productNo, sellerId, loginId, amountToBePaid, amountToBePaid, 0, date]); 
+        const paymentNo = data.insertId // 결제 내역 넘버
         // 주문자 정보 저장
-        await conn.query("INSERT INTO order_info (order_name, order_default_address, order_remain_address, order_phone_number, order_email, payment_no) values(?, ?, ?, ?, ?, ?);",
-                        [orderName, orderDefaultAddress, orderRemainAddress, orderPhoneNumber, orderEmail, paymentNo]);
+        await conn.query("INSERT INTO order_info (order_name, order_default_address, order_remain_address, order_phone_number, order_email, product_no) values(?, ?, ?, ?, ?, ?);",
+                        [orderName, orderDefaultAddress, orderRemainAddress, orderPhoneNumber, orderEmail, productNo]);
 
         /* 포인트 차감 */
         await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?", [remainPoint, loginId]);

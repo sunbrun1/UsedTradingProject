@@ -11,7 +11,7 @@ import productByCategory from '@/components/Board/ProductByCategory';
 import productBySearch from '@/components/Board/ProductBySearch';
 import payment from '@/components/Board/payment';
 import sellerPage from '@/components/Board/SellerPage';
-import sellerPage2 from '@/components/Board/SellerPage2';
+import buyerPage from '@/components/Board/BuyerPage';
 
 /* 마이페이지 관련 */
 import myPage from '@/components/MyPage/MyPage';
@@ -69,14 +69,14 @@ export default new Router({ //라우터 연결
 			,component:payment,
 		}
 		,{
-			path:'/product/:no/sellerPage'  // 결제하기
+			path:'/product/:no/sellerPage'  // 판매자 주문상세 페이지
 			,name:"sellerPage"
 			,component:sellerPage,
 		}
 		,{
-			path:'/product/:no/sellerPage2'  // 결제하기
-			,name:"sellerPage2"
-			,component:sellerPage2,
+			path:'/product/:no/buyerPage'  // 구매자 주문상세 페이지
+			,name:"buyerPage"
+			,component:buyerPage,
 		}
 		/* 마이페이지 관련 */
 		,{
@@ -134,7 +134,5 @@ export default new Router({ //라우터 연결
 			,component:Test,
 			props:true 
 		}
-
 	]
-	
 })

@@ -451,17 +451,42 @@ exports.getOrderInfo = async (req,res) => {
 	/* 주문자정보 조회 쿼리 */
 	const [orderInfo] = await conn.query("SELECT p.id, p.thumbnail, p.title, p.price, p.content "
 									+ ",  oi.order_name ,oi.order_default_address ,oi.order_remain_address ,oi.order_phone_number ,oi.order_email "
-									+ ",  pi.merchant_uid, pi.payment_date, pi.payment_point, pi.payment_final "
+									+ ",  pi.payment_no, pi.payment_date, pi.payment_point, pi.payment_final "
 									+ "FROM product p "
 									+ "JOIN order_info oi " 
 									+ "ON p.id = oi.product_no "
 									+ "JOIN payment_info pi "
 									+ "ON p.id = pi.product_no "
-									+ "WHERE p.id = 619", productNo);
+									+ "WHERE p.id = ?", productNo);
 	return res.send({
 				success:true,
 				orderInfo:orderInfo
 			})
+}
+
+exports.getPaymentInfo = async (req,res) => {
+	/* req.params */
+	try {
+	const productNo = req.params.no; // 상품 ID
+
+	/* 주문자정보 조회 쿼리 */
+	const [paymentInfo] = await conn.query("SELECT * FROM payment_info WHERE product_no = ?", productNo);
+	const sellerId = paymentInfo[0].seller_id; 
+	const paymentAmount = paymentInfo[0].payment_amount; 
+	const [memberInfo] = await conn.query("SELECT member_point FROM member WHERE member_id = ?", sellerId);
+	const memberPoint = memberInfo[0].member_point
+	console.log(memberPoint+paymentAmount);
+
+	await conn.query("UPDATE member SET member_point = ? WHERE member_id = ?;", [memberPoint+paymentAmount, sellerId]);
+
+	/* 상품 상태 변경 */
+	await conn.query("UPDATE product SET transaction_status = ? WHERE id = ?", ["판매완료", productNo]);
+	return res.send({
+				success:true
+			})
+	} catch (error) {
+		return res.status(500).send(err)
+	}
 }
 
 

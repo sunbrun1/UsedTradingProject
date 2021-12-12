@@ -23,6 +23,7 @@ router.post("/board/areaSelect",dao.areaSelect); // 거래지역 선택 모듈(P
 router.post("/board/update/:id",dao.update); // 상품 수정 모듈(POST)
 router.get("/board/getProductInfo/:no",dao.getProductInfo); // 상품정보 조회(GET)
 router.get("/board/product/:no/getOrderInfo",dao.getOrderInfo); // 주문정보 조회(GET)
+router.post("/board/product/:no/getPaymentInfo",dao.getPaymentInfo); // 주문정보 조회(GET)
 
 
 /*      로그인/회원가입 관련       */

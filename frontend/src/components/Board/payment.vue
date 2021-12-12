@@ -431,7 +431,8 @@ export default {
                         this.$axios.post("http://localhost:3000/api/onlyPointPayments/complete", data, {withCredentials: true})
                         .then((res)=>{
                             if(res.data.success){
-                                console.log("거래상태 페이지로 이동")
+                                alert("결제에 성공하였습니다.");
+                                router.push({ path: `/product/${productNo}/sellerPage`}).catch(() => {});
                             }
                             else{
                                 
@@ -483,7 +484,7 @@ export default {
                     .then((res)=>{
                         if(res.data.success){
                             alert("결제에 성공하였습니다.");
-                            router.push({ path: `/product/${productNo}/sellerPage`}).catch(() => {});
+                            router.push({ path: `/product/${productNo}/buyerPage`}).catch(() => {});
                         }
                     })
                     .catch((err)=>{

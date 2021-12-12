@@ -138,10 +138,10 @@ export default {
 	methods:{
         sellBuyPage(index, productNo){
             if(this.transactionStatus[index] == "판매중"){
-                return this.$router.push({ path: `/product/${productNo}/sellerPage2`}).catch(() => {});
+                return this.$router.push({ path: `/product/${productNo}/sellerPage`}).catch(() => {});
             }
             if(this.transactionStatus[index] == "구매중"){
-                return this.$router.push({ path: `/product/${productNo}/sellerPage2`}).catch(() => {});
+                return this.$router.push({ path: `/product/${productNo}/buyerPage`}).catch(() => {});
             }
             if(this.transactionStatus[index] == "판매완료"){
                 return alert("판매완료된 상품입니다.")

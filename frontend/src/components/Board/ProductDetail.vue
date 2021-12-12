@@ -215,9 +215,20 @@ export default {
             this.currentNumber = this.image.indexOf(this.imageSlider[index]);
         },
         /* 결제페이지 이동 */
-        paymentPage(){
-            const productNo = this.$route.params.no;
-            this.$router.push({ path: `/product/${productNo}/payment`});
+        async paymentPage(){
+            try{
+                /* 로그인여부 확인, 로그인유지 */
+                const res = await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+                if(res.data.success){ // 로그인 상태
+                    const productNo = this.$route.params.no;
+                    this.$router.push({ path: `/product/${productNo}/payment`});
+                }
+                else{ // 비로그인 상태
+                    this.openModal();
+                }
+            }catch(err){
+                console.log(err);
+            }
         },
         /* 연락하기 페이지 이동 */
         async talk(){

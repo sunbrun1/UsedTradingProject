@@ -107,6 +107,9 @@
                 </div>
             </div>
 
+            <div class="buyCheck_container" @click="buyCheck">
+                <button>구매확정</button>
+            </div>
             
         </body>
     </section>
@@ -161,13 +164,23 @@ export default {
                 this.orderPhoneNum = orderInfo.order_phone_number;
                 this.orderEmail = orderInfo.order_email;
                 /* 결제 정보 */
-                this.paymentNo = orderInfo.merchant_uid;
+                this.paymentNo = orderInfo.payment_no;
                 this.paymentDate = orderInfo.payment_date;
                 this.paymentPoint = orderInfo.payment_point;
                 this.paymentFinal = orderInfo.payment_final;
             }
 
         },
+        async buyCheck() {
+            if (confirm("구매를 확정하시겠습니까?? ")) {
+                 await axios.get("http://localhost:3000/api/member/someAPI",{withCredentials: true})
+                const productNo = this.$route.params.no;
+                const res = await axios.post(`http://localhost:3000/api/board/product/${productNo}/getPaymentInfo`, {withCredentials: true})
+                if(res.data.success){
+                    this.$router.push({path:"/mypage/transactionStatus/list"}).catch(() => {});
+                }
+            }
+        }
     }
 }
 </script>
@@ -220,6 +233,13 @@ export default {
         width: 200px;
         text-align: left;
         padding-right: 50px;
+    }
+    .buyCheck_container{
+        margin: 20px 0px 50px 0px;
+    }
+    .buyCheck_container button{
+        width: 100px;
+        height: 50px;
     }
 
 </style>
